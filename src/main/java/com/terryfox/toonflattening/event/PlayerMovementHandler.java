@@ -27,6 +27,8 @@ public class PlayerMovementHandler {
             return;
         }
 
+        ToonFlattening.LOGGER.debug("Blocking movement for flattened player: {}", player.getName().getString());
+
         player.setDeltaMovement(Vec3.ZERO);
         player.setOnGround(true);
         player.setSprinting(false);

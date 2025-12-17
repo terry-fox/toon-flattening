@@ -2,7 +2,6 @@ package com.terryfox.toonflattening.client;
 
 import com.terryfox.toonflattening.ToonFlattening;
 import com.terryfox.toonflattening.attachment.FlattenedStateAttachment;
-
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.player.Input;
@@ -10,12 +9,12 @@ import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
+import net.neoforged.neoforge.client.event.MovementInputUpdateEvent;
 
 @EventBusSubscriber(modid = ToonFlattening.MODID, value = Dist.CLIENT)
 public class ClientEventHandler {
-
     @SubscribeEvent
-    public static void onClientTick(ClientTickEvent.Post event) {
+    public static void onMovementInput(MovementInputUpdateEvent event) {
         LocalPlayer player = Minecraft.getInstance().player;
         if (player == null) {
             return;
@@ -26,9 +25,8 @@ public class ClientEventHandler {
             return;
         }
 
-        ToonFlattening.LOGGER.info("Cancelling player {} input", player.getName().getString());
-
-        Input input = player.input;
+        // Block all movement input
+        Input input = event.getInput();
         input.leftImpulse = 0.0f;
         input.forwardImpulse = 0.0f;
         input.up = false;

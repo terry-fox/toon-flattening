@@ -4,6 +4,8 @@ import com.terryfox.toonflattening.ToonFlattening;
 import com.terryfox.toonflattening.attachment.FlattenedStateAttachment;
 import com.terryfox.toonflattening.config.ToonFlatteningConfig;
 import com.terryfox.toonflattening.integration.PehkuiIntegration;
+import com.terryfox.toonflattening.network.NetworkHandler;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.entity.item.FallingBlockEntity;
@@ -25,10 +27,16 @@ public class FlatteningHandler {
             return;
         }
 
+        long flattenTime = player.level().getGameTime();
         player.setData(
             ToonFlattening.FLATTENED_STATE.get(),
-            new FlattenedStateAttachment(true, player.level().getGameTime())
+            new FlattenedStateAttachment(true, flattenTime)
         );
+
+        // Sync to clients
+        if (player instanceof ServerPlayer serverPlayer) {
+            NetworkHandler.syncFlattenState(serverPlayer, true, flattenTime);
+        }
 
         double heightScale = ToonFlatteningConfig.CONFIG.heightScale.get();
         PehkuiIntegration.setPlayerScale(player, (float) heightScale, 1.0f);

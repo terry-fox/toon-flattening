@@ -79,6 +79,11 @@ public class ToonFlattening {
         LOGGER.info("ToonFlattening server starting");
         LOGGER.info("Flatten damage: {}", ToonFlatteningConfig.CONFIG.flattenDamage.get());
         LOGGER.info("Height scale: {}", ToonFlatteningConfig.CONFIG.heightScale.get());
+
+        // Reset all players to ensure clean state on server start
+        event.getServer().getPlayerList().getPlayers().forEach(player -> {
+            player.setData(FLATTENED_STATE.get(), FlattenedStateAttachment.DEFAULT);
+        });
     }
 
     @EventBusSubscriber(modid = ToonFlattening.MODID, value = Dist.CLIENT)
