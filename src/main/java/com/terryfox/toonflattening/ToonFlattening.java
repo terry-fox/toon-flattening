@@ -5,11 +5,13 @@ import org.slf4j.Logger;
 import com.mojang.logging.LogUtils;
 import com.terryfox.toonflattening.attachment.FlattenedStateAttachment;
 import com.terryfox.toonflattening.config.ToonFlatteningConfig;
+import com.terryfox.toonflattening.event.FlatteningHandler;
 
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.neoforged.api.distmarker.Dist;
+import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.ModContainer;
@@ -62,6 +64,7 @@ public class ToonFlattening {
         modEventBus.addListener(this::commonSetup);
 
         NeoForge.EVENT_BUS.register(this);
+        NeoForge.EVENT_BUS.addListener(EventPriority.HIGH, FlatteningHandler::onLivingHurt);
     }
 
     private void commonSetup(FMLCommonSetupEvent event) {
