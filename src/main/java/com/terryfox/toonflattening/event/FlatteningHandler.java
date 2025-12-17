@@ -36,6 +36,7 @@ public class FlatteningHandler {
         // Sync to clients
         if (player instanceof ServerPlayer serverPlayer) {
             NetworkHandler.syncFlattenState(serverPlayer, true, flattenTime);
+            NetworkHandler.sendSquashAnimation(serverPlayer);
         }
 
         double heightScale = ToonFlatteningConfig.CONFIG.heightScale.get();

@@ -34,8 +34,12 @@ public record SyncFlattenStatePayload(int playerId, boolean isFlattened, long fl
 
     public static void handle(SyncFlattenStatePayload payload, IPayloadContext context) {
         context.enqueueWork(() -> {
-            LocalPlayer player = Minecraft.getInstance().player;
-            if (player == null) {
+            var level = Minecraft.getInstance().level;
+            if (level == null) {
+                return;
+            }
+            var entity = level.getEntity(payload.playerId());
+            if (!(entity instanceof Player player)) {
                 return;
             }
             player.setData(

@@ -1,26 +1,94 @@
 package com.terryfox.toonflattening.network;
 
+import com.terryfox.toonflattening.ToonFlattening;
+import com.terryfox.toonflattening.attachment.FlattenedStateAttachment;
+import com.terryfox.toonflattening.integration.PehkuiIntegration;
 import net.minecraft.server.level.ServerPlayer;
-import net.neoforged.api.distmarker.Dist;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.network.PacketDistributor;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.neoforged.neoforge.network.registration.PayloadRegistrar;
-import com.terryfox.toonflattening.ToonFlattening;
 
 @EventBusSubscriber(modid = ToonFlattening.MODID, bus = EventBusSubscriber.Bus.MOD)
 public class NetworkHandler {
     @SubscribeEvent
     public static void register(RegisterPayloadHandlersEvent event) {
         PayloadRegistrar registrar = event.registrar("1");
+
+        // Client-bound packets
         registrar.playToClient(
             SyncFlattenStatePayload.TYPE,
             SyncFlattenStatePayload.CODEC,
             SyncFlattenStatePayload::handle
         );
+        registrar.playToClient(
+            TriggerSquashAnimationPayload.TYPE,
+            TriggerSquashAnimationPayload.CODEC,
+            TriggerSquashAnimationPayload::handle
+        );
+
+        // Server-bound packets
+        registrar.playToServer(
+            RequestReformPayload.TYPE,
+            RequestReformPayload.CODEC,
+            NetworkHandler::handleRequestReform
+        );
+    }
+
+    public static void handleRequestReform(RequestReformPayload payload, net.neoforged.neoforge.network.handling.IPayloadContext context) {
+        context.enqueueWork(() -> {
+            var player = context.player();
+            if (!(player instanceof ServerPlayer serverPlayer)) {
+                return;
+            }
+
+            FlattenedStateAttachment state = serverPlayer.getData(ToonFlattening.FLATTENED_STATE.get());
+            if (!state.isFlattened()) {
+                return;
+            }
+
+            // Reset flattened state
+            serverPlayer.setData(
+                ToonFlattening.FLATTENED_STATE.get(),
+                FlattenedStateAttachment.DEFAULT
+            );
+
+            // Reset Pehkui scale
+            PehkuiIntegration.resetPlayerScale(serverPlayer);
+
+            // Sync to all tracking clients
+            syncFlattenState(serverPlayer, false, 0L);
+
+            // Play reform sound
+            serverPlayer.level().playSound(
+                null,
+                serverPlayer.getX(),
+                serverPlayer.getY(),
+                serverPlayer.getZ(),
+                SoundEvents.UI_BUTTON_CLICK,
+                SoundSource.PLAYERS,
+                1.0f,
+                1.0f
+            );
+
+            ToonFlattening.LOGGER.info("Player {} reformed", serverPlayer.getName().getString());
+        });
     }
 
     public static void syncFlattenState(ServerPlayer player, boolean isFlattened, long flattenTime) {
-        player.connection.send(new SyncFlattenStatePayload(player.getId(), isFlattened, flattenTime));
+        PacketDistributor.sendToPlayersTrackingEntityAndSelf(
+            player,
+            new SyncFlattenStatePayload(player.getId(), isFlattened, flattenTime)
+        );
+    }
+
+    public static void sendSquashAnimation(ServerPlayer player) {
+        PacketDistributor.sendToPlayersTrackingEntityAndSelf(
+            player,
+            new TriggerSquashAnimationPayload(player.getId())
+        );
     }
 }
