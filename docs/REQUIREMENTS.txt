@@ -1,0 +1,13 @@
+Version 0.1.0
+- Players shall be flattened by an anvil when it falls on them.
+- The amount to flatten a player by shall be configurable in the server config files.
+- Players shall remain immobilized until reforming via the reforming action
+- The reform action should be mapped to the same key as the jump action by default
+- There shall be a custom sound effect when a player is flattened (Mario Party 4 squish by default)
+- The player should squish down at the same rate as the anvil that is falling on them
+- The custom flattening sound effect shall be audible by other players in a multiplayer setting, if the player is in range
+- The custom flattening animation shall by visible to other players in a multiplayer setting
+
+Future additions
+- Players should flatten against surfaces when colliding them at a high enough velocity
+- Iron Golems shall flatten players
