@@ -1,6 +1,7 @@
 package com.terryfox.toonflattening.network;
 
 import com.terryfox.toonflattening.ToonFlattening;
+import com.terryfox.toonflattening.client.SquashAnimationRenderer;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
@@ -26,7 +27,7 @@ public record TriggerSquashAnimationPayload(int playerId) implements CustomPacke
 
     public static void handle(TriggerSquashAnimationPayload payload, IPayloadContext context) {
         context.enqueueWork(() -> {
-            // Stub for Phase 5 - animation system will be implemented later
+            SquashAnimationRenderer.playSquashEffect(payload.playerId());
         });
     }
 }

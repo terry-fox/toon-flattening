@@ -10,6 +10,7 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.network.PacketDistributor;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
+import net.neoforged.neoforge.network.handling.IPayloadContext;
 import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 
 @EventBusSubscriber(modid = ToonFlattening.MODID, bus = EventBusSubscriber.Bus.MOD)
@@ -38,7 +39,7 @@ public class NetworkHandler {
         );
     }
 
-    public static void handleRequestReform(RequestReformPayload payload, net.neoforged.neoforge.network.handling.IPayloadContext context) {
+    public static void handleRequestReform(RequestReformPayload payload, IPayloadContext context) {
         context.enqueueWork(() -> {
             var player = context.player();
             if (!(player instanceof ServerPlayer serverPlayer)) {
@@ -61,18 +62,6 @@ public class NetworkHandler {
 
             // Sync to all tracking clients
             syncFlattenState(serverPlayer, false, 0L);
-
-            // Play reform sound
-            serverPlayer.level().playSound(
-                null,
-                serverPlayer.getX(),
-                serverPlayer.getY(),
-                serverPlayer.getZ(),
-                SoundEvents.UI_BUTTON_CLICK,
-                SoundSource.PLAYERS,
-                1.0f,
-                1.0f
-            );
 
             ToonFlattening.LOGGER.info("Player {} reformed", serverPlayer.getName().getString());
         });
