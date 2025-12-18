@@ -7,10 +7,10 @@ import com.terryfox.toonflattening.integration.PehkuiIntegration;
 import com.terryfox.toonflattening.network.NetworkHandler;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.entity.item.FallingBlockEntity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.level.block.Blocks;
 import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent;
@@ -90,9 +90,7 @@ public class FlatteningHandler {
         if (directEntity instanceof FallingBlockEntity fallingBlock) {
             var blockState = fallingBlock.getBlockState();
 
-            if (blockState.is(Blocks.ANVIL) ||
-                blockState.is(Blocks.CHIPPED_ANVIL) ||
-                blockState.is(Blocks.DAMAGED_ANVIL)) {
+            if (blockState.is(BlockTags.ANVIL)) {
 
                 double velocity = Math.abs(fallingBlock.getDeltaMovement().y);
                 double flattenDamage = ToonFlatteningConfig.CONFIG.flattenDamage.get();
