@@ -9,6 +9,7 @@ public class ToonFlatteningConfig {
 
     public final ModConfigSpec.DoubleValue flattenDamage;
     public final ModConfigSpec.DoubleValue heightScale;
+    public final ModConfigSpec.IntValue reformationTicks;
 
     private ToonFlatteningConfig(ModConfigSpec.Builder builder) {
         builder.comment("Toon Flattening Server Configuration")
@@ -23,6 +24,10 @@ public class ToonFlatteningConfig {
             .comment("Height multiplier when flattened (default 0.05 = 1/20th height)")
             .translation("config.toonflattening.height_scale")
             .defineInRange("heightScale", 0.05, 0.01, 1.0);
+
+        reformationTicks = builder
+            .comment("Animation duration for reformation in ticks (20 = 1 second)")
+            .defineInRange("reformationTicks", 5, 1, 100);
 
         builder.pop();
     }

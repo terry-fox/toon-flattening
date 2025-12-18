@@ -2,6 +2,7 @@ package com.terryfox.toonflattening.network;
 
 import com.terryfox.toonflattening.ToonFlattening;
 import com.terryfox.toonflattening.attachment.FlattenedStateAttachment;
+import com.terryfox.toonflattening.config.ToonFlatteningConfig;
 import com.terryfox.toonflattening.integration.PehkuiIntegration;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
@@ -58,7 +59,8 @@ public class NetworkHandler {
             );
 
             // Reset Pehkui scale
-            PehkuiIntegration.resetPlayerScale(serverPlayer);
+            int reformationTicks = ToonFlatteningConfig.CONFIG.reformationTicks.get();
+            PehkuiIntegration.resetPlayerScaleWithDelay(serverPlayer, reformationTicks);
 
             // Sync to all tracking clients
             syncFlattenState(serverPlayer, false, 0L);

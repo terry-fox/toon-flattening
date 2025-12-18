@@ -16,7 +16,25 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent;
 
 public class FlatteningHandler {
-    public static void flattenPlayer(Player player, double damage, FlattenCause cause) {
+    private static int calculateFlatteningAnimationTicks(double anvilVelocityBlocksPerTick) {
+        final double PLAYER_HEIGHT = 1.8;
+        final double HEIGHT_SCALE = ToonFlatteningConfig.CONFIG.heightScale.get();
+        final double COMPRESSION = PLAYER_HEIGHT - (PLAYER_HEIGHT * HEIGHT_SCALE);
+        final double VELOCITY_THRESHOLD = 0.01;
+        final int MIN_TICKS = 1;
+        final int MAX_TICKS = 20;
+        final int DEFAULT_TICKS = 10;
+
+        if (anvilVelocityBlocksPerTick < VELOCITY_THRESHOLD) {
+            return DEFAULT_TICKS;
+        }
+
+        double calculatedTicks = COMPRESSION / anvilVelocityBlocksPerTick;
+
+        return Math.max(MIN_TICKS, Math.min(MAX_TICKS, (int) Math.round(calculatedTicks)));
+    }
+
+    public static void flattenPlayer(Player player, double damage, FlattenCause cause, double anvilVelocity) {
         FlattenedStateAttachment currentState = player.getData(ToonFlattening.FLATTENED_STATE.get());
 
         if (currentState.isFlattened()) {
@@ -33,14 +51,18 @@ public class FlatteningHandler {
             new FlattenedStateAttachment(true, flattenTime)
         );
 
+        int animationTicks = calculateFlatteningAnimationTicks(anvilVelocity);
+
+        double heightScale = ToonFlatteningConfig.CONFIG.heightScale.get();
+        PehkuiIntegration.setPlayerScaleWithDelay(player, (float) heightScale, 1.0f, animationTicks);
+
         // Sync to clients
         if (player instanceof ServerPlayer serverPlayer) {
             NetworkHandler.syncFlattenState(serverPlayer, true, flattenTime);
+
+            // Send particles immediately (animation happens via Pehkui scale interpolation)
             NetworkHandler.sendSquashAnimation(serverPlayer);
         }
-
-        double heightScale = ToonFlatteningConfig.CONFIG.heightScale.get();
-        PehkuiIntegration.setPlayerScale(player, (float) heightScale, 1.0f);
 
         player.hurt(player.damageSources().generic(), (float) damage);
 
@@ -72,8 +94,9 @@ public class FlatteningHandler {
                 blockState.is(Blocks.CHIPPED_ANVIL) ||
                 blockState.is(Blocks.DAMAGED_ANVIL)) {
 
+                double velocity = Math.abs(fallingBlock.getDeltaMovement().y);
                 double flattenDamage = ToonFlatteningConfig.CONFIG.flattenDamage.get();
-                flattenPlayer(player, flattenDamage, FlattenCause.ANVIL);
+                flattenPlayer(player, flattenDamage, FlattenCause.ANVIL, velocity);
                 event.setAmount((float) flattenDamage);
             }
         }
