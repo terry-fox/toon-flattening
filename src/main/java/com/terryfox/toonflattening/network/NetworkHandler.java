@@ -1,9 +1,11 @@
 package com.terryfox.toonflattening.network;
 
 import com.terryfox.toonflattening.ToonFlattening;
+import com.terryfox.toonflattening.api.FlattenDirection;
 import com.terryfox.toonflattening.attachment.FlattenedStateAttachment;
 import com.terryfox.toonflattening.config.ToonFlatteningConfig;
 import com.terryfox.toonflattening.integration.PehkuiIntegration;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -13,6 +15,8 @@ import net.neoforged.neoforge.network.PacketDistributor;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 import net.neoforged.neoforge.network.registration.PayloadRegistrar;
+
+import javax.annotation.Nullable;
 
 @EventBusSubscriber(modid = ToonFlattening.MODID)
 public class NetworkHandler {
@@ -63,16 +67,22 @@ public class NetworkHandler {
             PehkuiIntegration.resetPlayerScaleWithDelay(serverPlayer, reformationTicks);
 
             // Sync to all tracking clients
-            syncFlattenState(serverPlayer, false, 0L);
+            syncFlattenState(serverPlayer, false, 0L, null, null);
 
             ToonFlattening.LOGGER.info("Player {} reformed", serverPlayer.getName().getString());
         });
     }
 
-    public static void syncFlattenState(ServerPlayer player, boolean isFlattened, long flattenTime) {
+    public static void syncFlattenState(
+        ServerPlayer player,
+        boolean isFlattened,
+        long flattenTime,
+        @Nullable ResourceLocation causeId,
+        @Nullable FlattenDirection direction
+    ) {
         PacketDistributor.sendToPlayersTrackingEntityAndSelf(
             player,
-            new SyncFlattenStatePayload(player.getId(), isFlattened, flattenTime)
+            new SyncFlattenStatePayload(player.getId(), isFlattened, flattenTime, causeId, direction)
         );
     }
 

@@ -1,6 +1,7 @@
 package com.terryfox.toonflattening.network;
 
 import com.terryfox.toonflattening.ToonFlattening;
+import com.terryfox.toonflattening.api.FlattenDirection;
 import com.terryfox.toonflattening.attachment.FlattenedStateAttachment;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
@@ -12,7 +13,15 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 
-public record SyncFlattenStatePayload(int playerId, boolean isFlattened, long flattenTime) implements CustomPacketPayload {
+import javax.annotation.Nullable;
+
+public record SyncFlattenStatePayload(
+    int playerId,
+    boolean isFlattened,
+    long flattenTime,
+    @Nullable ResourceLocation causeId,
+    @Nullable FlattenDirection direction
+) implements CustomPacketPayload {
     public static final Type<SyncFlattenStatePayload> TYPE =
         new Type<>(ResourceLocation.fromNamespaceAndPath(ToonFlattening.MODID, "sync_flatten_state"));
 
@@ -24,7 +33,12 @@ public record SyncFlattenStatePayload(int playerId, boolean isFlattened, long fl
             SyncFlattenStatePayload::isFlattened,
             ByteBufCodecs.VAR_LONG,
             SyncFlattenStatePayload::flattenTime,
-            SyncFlattenStatePayload::new
+            ResourceLocation.STREAM_CODEC.apply(ByteBufCodecs::optional),
+            p -> java.util.Optional.ofNullable(p.causeId()),
+            ByteBufCodecs.fromCodec(FlattenDirection.CODEC).apply(ByteBufCodecs::optional),
+            p -> java.util.Optional.ofNullable(p.direction()),
+            (playerId, isFlattened, flattenTime, causeId, direction) ->
+                new SyncFlattenStatePayload(playerId, isFlattened, flattenTime, causeId.orElse(null), direction.orElse(null))
         );
 
     @Override
@@ -44,7 +58,12 @@ public record SyncFlattenStatePayload(int playerId, boolean isFlattened, long fl
             }
             player.setData(
                 ToonFlattening.FLATTENED_STATE.get(),
-                new FlattenedStateAttachment(payload.isFlattened(), payload.flattenTime())
+                new FlattenedStateAttachment(
+                    payload.isFlattened(),
+                    payload.flattenTime(),
+                    payload.causeId(),
+                    payload.direction()
+                )
             );
         });
     }

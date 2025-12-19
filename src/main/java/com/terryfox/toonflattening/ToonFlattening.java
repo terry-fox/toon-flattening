@@ -9,6 +9,7 @@ import com.terryfox.toonflattening.event.FlatteningHandler;
 import com.terryfox.toonflattening.event.LoginHandler;
 import com.terryfox.toonflattening.event.PlayerMovementHandler;
 import com.terryfox.toonflattening.event.RespawnHandler;
+import com.terryfox.toonflattening.registry.BuiltinTriggers;
 
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
@@ -76,13 +77,13 @@ public class ToonFlattening {
     private void commonSetup(FMLCommonSetupEvent event) {
         LOGGER.info("ToonFlattening initialized for Minecraft 1.21.1");
         LOGGER.info("Pehkui integration ready");
+        BuiltinTriggers.register();
+        LOGGER.info("Registered builtin triggers");
     }
 
     @SubscribeEvent
     public void onServerStarting(ServerStartingEvent event) {
         LOGGER.info("ToonFlattening server starting");
-        LOGGER.info("Flatten damage: {}", ToonFlatteningConfig.CONFIG.flattenDamage.get());
-        LOGGER.info("Height scale: {}", ToonFlatteningConfig.CONFIG.heightScale.get());
 
         // Reset all players to ensure clean state on server start
         event.getServer().getPlayerList().getPlayers().forEach(player -> {

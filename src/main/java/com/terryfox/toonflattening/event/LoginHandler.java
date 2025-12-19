@@ -3,6 +3,7 @@ package com.terryfox.toonflattening.event;
 import com.terryfox.toonflattening.ToonFlattening;
 import com.terryfox.toonflattening.attachment.FlattenedStateAttachment;
 import com.terryfox.toonflattening.config.ToonFlatteningConfig;
+import com.terryfox.toonflattening.config.TriggerConfigSpec;
 import com.terryfox.toonflattening.integration.PehkuiIntegration;
 import com.terryfox.toonflattening.network.NetworkHandler;
 import net.minecraft.server.level.ServerPlayer;
@@ -20,13 +21,16 @@ public class LoginHandler {
         FlattenedStateAttachment state = serverPlayer.getData(ToonFlattening.FLATTENED_STATE.get());
 
         if (state.isFlattened()) {
-            // Restore flattened scale
-            double heightScale = ToonFlatteningConfig.CONFIG.heightScale.get();
-            double widthScale = ToonFlatteningConfig.CONFIG.widthScale.get();
-            PehkuiIntegration.setPlayerScale(serverPlayer, (float) heightScale, (float) widthScale);
+            // Restore flattened scale using trigger config
+            TriggerConfigSpec config = ToonFlatteningConfig.CONFIG.getTriggerConfig(
+                state.causeId() != null
+                    ? FlattenCause.ANVIL  // Default to ANVIL for now
+                    : FlattenCause.ANVIL
+            );
+            PehkuiIntegration.setPlayerScale(serverPlayer, (float) config.getHeightScale(), (float) config.getWidthScale());
 
             // Sync flattened state to client
-            NetworkHandler.syncFlattenState(serverPlayer, true, state.flattenTime());
+            NetworkHandler.syncFlattenState(serverPlayer, true, state.flattenTime(), state.causeId(), state.direction());
 
             ToonFlattening.LOGGER.debug("Restored flattened state for {} on login",
                 serverPlayer.getName().getString());
@@ -35,7 +39,7 @@ public class LoginHandler {
             PehkuiIntegration.resetPlayerScale(serverPlayer);
 
             // Sync non-flattened state to client
-            NetworkHandler.syncFlattenState(serverPlayer, false, 0L);
+            NetworkHandler.syncFlattenState(serverPlayer, false, 0L, null, null);
 
             ToonFlattening.LOGGER.debug("Synced non-flattened state for {} on login",
                 serverPlayer.getName().getString());
