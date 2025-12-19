@@ -54,7 +54,8 @@ public class FlatteningHandler {
         int animationTicks = calculateFlatteningAnimationTicks(anvilVelocity);
 
         double heightScale = ToonFlatteningConfig.CONFIG.heightScale.get();
-        PehkuiIntegration.setPlayerScaleWithDelay(player, (float) heightScale, 1.0f, animationTicks);
+        double widthScale = ToonFlatteningConfig.CONFIG.widthScale.get();
+        PehkuiIntegration.setPlayerScaleWithDelay(player, (float) heightScale, (float) widthScale, animationTicks);
 
         // Sync to clients
         if (player instanceof ServerPlayer serverPlayer) {
