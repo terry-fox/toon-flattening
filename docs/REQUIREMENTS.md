@@ -11,7 +11,7 @@
 
 ## Future Additions
 
+- [x] Players shall spread horizontally after being squished
+- [x] The amount of horizontal spread shall be configurable in the server config files
 - [ ] Players should flatten against surfaces when colliding with them at a high enough velocity
 - [ ] Iron Golems shall flatten players
-- [ ] Players shall spread horizontally after being squished
-- [ ] The amount of horizontal spread shall be configurable in the server config files
