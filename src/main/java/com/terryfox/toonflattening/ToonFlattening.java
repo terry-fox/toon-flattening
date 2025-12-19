@@ -6,6 +6,7 @@ import com.mojang.logging.LogUtils;
 import com.terryfox.toonflattening.attachment.FlattenedStateAttachment;
 import com.terryfox.toonflattening.config.ToonFlatteningConfig;
 import com.terryfox.toonflattening.event.FlatteningHandler;
+import com.terryfox.toonflattening.event.LoginHandler;
 import com.terryfox.toonflattening.event.PlayerMovementHandler;
 import com.terryfox.toonflattening.event.RespawnHandler;
 
@@ -69,6 +70,7 @@ public class ToonFlattening {
         NeoForge.EVENT_BUS.addListener(EventPriority.HIGH, FlatteningHandler::onLivingHurt);
         NeoForge.EVENT_BUS.addListener(PlayerMovementHandler::onEntityTick);
         NeoForge.EVENT_BUS.addListener(RespawnHandler::onPlayerRespawn);
+        NeoForge.EVENT_BUS.addListener(LoginHandler::onPlayerLogin);
     }
 
     private void commonSetup(FMLCommonSetupEvent event) {
