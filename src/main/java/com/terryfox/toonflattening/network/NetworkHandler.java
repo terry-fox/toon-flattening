@@ -3,7 +3,10 @@ package com.terryfox.toonflattening.network;
 import com.terryfox.toonflattening.ToonFlattening;
 import com.terryfox.toonflattening.attachment.FlattenedStateAttachment;
 import com.terryfox.toonflattening.config.ToonFlatteningConfig;
+import com.terryfox.toonflattening.event.CollisionType;
+import com.terryfox.toonflattening.event.PlayerMovementHandler;
 import com.terryfox.toonflattening.integration.PehkuiIntegration;
+import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -62,17 +65,27 @@ public class NetworkHandler {
             int reformationTicks = ToonFlatteningConfig.CONFIG.reformationTicks.get();
             PehkuiIntegration.resetPlayerScaleWithDelay(serverPlayer, reformationTicks);
 
+            // Restore gravity and clear locked position
+            serverPlayer.setNoGravity(false);
+            PlayerMovementHandler.clearFlattenedPosition(serverPlayer);
+
             // Sync to all tracking clients
-            syncFlattenState(serverPlayer, false, 0L);
+            syncFlattenState(serverPlayer, false, 0L, CollisionType.NONE, null);
 
             ToonFlattening.LOGGER.info("Player {} reformed", serverPlayer.getName().getString());
         });
     }
 
-    public static void syncFlattenState(ServerPlayer player, boolean isFlattened, long flattenTime) {
+    public static void syncFlattenState(ServerPlayer player, boolean isFlattened, long flattenTime, CollisionType collisionType, Direction wallDirection) {
+        int collisionTypeOrdinal = collisionType.ordinal();
+        int wallDirectionId = (wallDirection != null) ? wallDirection.get3DDataValue() : -1;
+
+        ToonFlattening.LOGGER.info("SERVER: Syncing flatten state for {}: isFlattened={}, collisionType={} (ordinal={}), wallDirection={} (id={})",
+            player.getName().getString(), isFlattened, collisionType, collisionTypeOrdinal, wallDirection, wallDirectionId);
+
         PacketDistributor.sendToPlayersTrackingEntityAndSelf(
             player,
-            new SyncFlattenStatePayload(player.getId(), isFlattened, flattenTime)
+            new SyncFlattenStatePayload(player.getId(), isFlattened, flattenTime, collisionTypeOrdinal, wallDirectionId)
         );
     }
 

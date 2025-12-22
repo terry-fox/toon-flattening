@@ -24,4 +24,12 @@ public class PehkuiIntegration {
     public static void resetPlayerScaleWithDelay(Player player, int tickDelay) {
         setPlayerScaleWithDelay(player, 1.0f, 1.0f, tickDelay);
     }
+
+    public static void setWallScale(Player player, float widthScale, int tickDelay) {
+        ScaleTypes.HEIGHT.getScaleData(player).setScaleTickDelay(tickDelay);
+        ScaleTypes.HEIGHT.getScaleData(player).setTargetScale(1.0f);
+
+        ScaleTypes.WIDTH.getScaleData(player).setScaleTickDelay(tickDelay);
+        ScaleTypes.WIDTH.getScaleData(player).setTargetScale(widthScale);
+    }
 }

@@ -11,10 +11,16 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.event.MovementInputUpdateEvent;
+import net.neoforged.neoforge.client.event.RenderLivingEvent;
+import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.network.PacketDistributor;
 
 @EventBusSubscriber(modid = ToonFlattening.MODID, value = Dist.CLIENT)
 public class ClientEventHandler {
+    static {
+        NeoForge.EVENT_BUS.addListener(WallFlattenRenderer::onRenderLivingPre);
+        NeoForge.EVENT_BUS.addListener(WallFlattenRenderer::onRenderLivingPost);
+    }
     @SubscribeEvent
     public static void onMovementInput(MovementInputUpdateEvent event) {
         LocalPlayer player = Minecraft.getInstance().player;

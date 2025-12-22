@@ -5,6 +5,7 @@ import com.terryfox.toonflattening.attachment.FlattenedStateAttachment;
 import com.terryfox.toonflattening.config.ToonFlatteningConfig;
 import com.terryfox.toonflattening.integration.PehkuiIntegration;
 import com.terryfox.toonflattening.network.NetworkHandler;
+import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BlockTags;
@@ -15,29 +16,48 @@ import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent;
 
+import javax.annotation.Nullable;
+
 public class FlatteningHandler {
-    private static int calculateFlatteningAnimationTicks(double anvilVelocityBlocksPerTick) {
+    /**
+     * Calculates animation duration based on impact velocity.
+     *
+     * DESIGN: Animation speed proportional to collision velocity
+     * - Higher velocity = faster flatten = fewer ticks
+     * - Matches physics: faster impact = faster compression
+     *
+     * FORMULA: ticks = COMPRESSION / velocity
+     * - COMPRESSION = 1.71 blocks (1.8 → 0.09 with scale 0.05)
+     * - Bounds prevent visual glitches (MIN_TICKS) and stalls (MAX_TICKS)
+     */
+    private static int calculateFlatteningAnimationTicks(double velocityBlocksPerTick) {
         final double PLAYER_HEIGHT = 1.8;
         final double HEIGHT_SCALE = ToonFlatteningConfig.CONFIG.heightScale.get();
-        final double COMPRESSION = PLAYER_HEIGHT - (PLAYER_HEIGHT * HEIGHT_SCALE);
+        final double COMPRESSION = PLAYER_HEIGHT - (PLAYER_HEIGHT * HEIGHT_SCALE); // 1.71 blocks
         final double VELOCITY_THRESHOLD = 0.01;
         final int MIN_TICKS = 1;
-        final int MAX_TICKS = 20;
+        final int MAX_TICKS = 100;
         final int DEFAULT_TICKS = 10;
 
-        if (anvilVelocityBlocksPerTick < VELOCITY_THRESHOLD) {
+        if (velocityBlocksPerTick < VELOCITY_THRESHOLD) {
             return DEFAULT_TICKS;
         }
 
-        double calculatedTicks = COMPRESSION / anvilVelocityBlocksPerTick;
+        // Animation rate exactly matches collision velocity
+        // Higher velocity = faster compression = fewer ticks
+        double calculatedTicks = COMPRESSION / velocityBlocksPerTick;
 
         return Math.max(MIN_TICKS, Math.min(MAX_TICKS, (int) Math.round(calculatedTicks)));
     }
 
-    public static void flattenPlayer(Player player, double damage, FlattenCause cause, double anvilVelocity) {
+    public static void flattenPlayer(Player player, double damage, FlattenCause cause, double anvilVelocity, CollisionType collisionType, @Nullable Direction wallDirection) {
+        ToonFlattening.LOGGER.info("SERVER: flattenPlayer called for {}: cause={}, collisionType={}, wallDirection={}",
+            player.getName().getString(), cause, collisionType, wallDirection);
+
         FlattenedStateAttachment currentState = player.getData(ToonFlattening.FLATTENED_STATE.get());
 
         if (currentState.isFlattened()) {
+            ToonFlattening.LOGGER.info("SERVER: Player {} already flattened, skipping", player.getName().getString());
             return;
         }
 
@@ -48,22 +68,40 @@ public class FlatteningHandler {
         long flattenTime = player.level().getGameTime();
         player.setData(
             ToonFlattening.FLATTENED_STATE.get(),
-            new FlattenedStateAttachment(true, flattenTime)
+            new FlattenedStateAttachment(true, flattenTime, collisionType, wallDirection)
         );
+
+        ToonFlattening.LOGGER.info("SERVER: Attachment set for {}: collisionType={}, wallDirection={}",
+            player.getName().getString(), collisionType, wallDirection);
 
         int animationTicks = calculateFlatteningAnimationTicks(anvilVelocity);
 
-        double heightScale = ToonFlatteningConfig.CONFIG.heightScale.get();
-        double widthScale = ToonFlatteningConfig.CONFIG.widthScale.get();
-        PehkuiIntegration.setPlayerScaleWithDelay(player, (float) heightScale, (float) widthScale, animationTicks);
+        // Apply different Pehkui scaling based on collision type
+        if (collisionType == CollisionType.WALL) {
+            ToonFlattening.LOGGER.info("SERVER: Applying wall scale for {}", player.getName().getString());
+            double wallHitboxScale = ToonFlatteningConfig.CONFIG.wallHitboxScale.get();
+            PehkuiIntegration.setWallScale(player, (float) wallHitboxScale, animationTicks);
+        } else {
+            // ANVIL, FLOOR, CEILING use standard height/width scaling
+            ToonFlattening.LOGGER.info("SERVER: Applying standard height/width scale for {}", player.getName().getString());
+            double heightScale = ToonFlatteningConfig.CONFIG.heightScale.get();
+            double widthScale = ToonFlatteningConfig.CONFIG.widthScale.get();
+            PehkuiIntegration.setPlayerScaleWithDelay(player, (float) heightScale, (float) widthScale, animationTicks);
+
+            // TODO: CEILING collision type may need position offset (player sticks to ceiling)
+        }
 
         // Sync to clients
         if (player instanceof ServerPlayer serverPlayer) {
-            NetworkHandler.syncFlattenState(serverPlayer, true, flattenTime);
+            ToonFlattening.LOGGER.info("SERVER: Syncing to clients for {}", player.getName().getString());
+            NetworkHandler.syncFlattenState(serverPlayer, true, flattenTime, collisionType, wallDirection);
 
             // Send particles immediately (animation happens via Pehkui scale interpolation)
             NetworkHandler.sendSquashAnimation(serverPlayer);
         }
+
+        // Store position to lock player in place
+        PlayerMovementHandler.storeFlattenedPosition(player);
 
         player.hurt(player.damageSources().generic(), (float) damage);
 
@@ -95,7 +133,7 @@ public class FlatteningHandler {
 
                 double velocity = Math.abs(fallingBlock.getDeltaMovement().y);
                 double flattenDamage = ToonFlatteningConfig.CONFIG.flattenDamage.get();
-                flattenPlayer(player, flattenDamage, FlattenCause.ANVIL, velocity);
+                flattenPlayer(player, flattenDamage, FlattenCause.ANVIL, velocity, CollisionType.ANVIL, null);
                 event.setAmount((float) flattenDamage);
             }
         }

@@ -12,6 +12,17 @@ public class ToonFlatteningConfig {
     public final ModConfigSpec.DoubleValue widthScale;
     public final ModConfigSpec.IntValue reformationTicks;
 
+    public final ModConfigSpec.DoubleValue floorVelocityThreshold;
+    public final ModConfigSpec.DoubleValue ceilingVelocityThreshold;
+    public final ModConfigSpec.DoubleValue wallVelocityThreshold;
+    public final ModConfigSpec.DoubleValue floorDamage;
+    public final ModConfigSpec.DoubleValue ceilingDamage;
+    public final ModConfigSpec.DoubleValue wallDamage;
+    public final ModConfigSpec.DoubleValue wallHitboxScale;
+    public final ModConfigSpec.BooleanValue enableFloorFlatten;
+    public final ModConfigSpec.BooleanValue enableCeilingFlatten;
+    public final ModConfigSpec.BooleanValue enableWallFlatten;
+
     private ToonFlatteningConfig(ModConfigSpec.Builder builder) {
         builder.comment("Toon Flattening Server Configuration")
                .push("flattening");
@@ -34,6 +45,51 @@ public class ToonFlatteningConfig {
         reformationTicks = builder
             .comment("Animation duration for reformation in ticks (20 = 1 second)")
             .defineInRange("reformationTicks", 5, 1, 100);
+
+        builder.pop();
+
+        builder.comment("Collision-based flattening settings")
+               .push("collision_flattening");
+
+        floorVelocityThreshold = builder
+            .comment("Minimum downward velocity to trigger floor flattening")
+            .defineInRange("floorVelocityThreshold", 0.1, 0.1, 5.0);
+
+        ceilingVelocityThreshold = builder
+            .comment("Minimum upward velocity to trigger ceiling flattening")
+            .defineInRange("ceilingVelocityThreshold", 0.1, 0.1, 5.0);
+
+        wallVelocityThreshold = builder
+            .comment("Minimum horizontal velocity to trigger wall flattening")
+            .defineInRange("wallVelocityThreshold", 0.1, 0.1, 5.0);
+
+        floorDamage = builder
+            .comment("Damage dealt when flattened by floor collision")
+            .defineInRange("floorDamage", 4.0, 0.0, 20.0);
+
+        ceilingDamage = builder
+            .comment("Damage dealt when flattened by ceiling collision")
+            .defineInRange("ceilingDamage", 4.0, 0.0, 20.0);
+
+        wallDamage = builder
+            .comment("Damage dealt when flattened by wall collision")
+            .defineInRange("wallDamage", 4.0, 0.0, 20.0);
+
+        wallHitboxScale = builder
+            .comment("Hitbox width/depth scale when wall-flattened")
+            .defineInRange("wallHitboxScale", 0.2, 0.1, 1.0);
+
+        enableFloorFlatten = builder
+            .comment("Enable floor collision flattening")
+            .define("enableFloorFlatten", true);
+
+        enableCeilingFlatten = builder
+            .comment("Enable ceiling collision flattening")
+            .define("enableCeilingFlatten", true);
+
+        enableWallFlatten = builder
+            .comment("Enable wall collision flattening")
+            .define("enableWallFlatten", true);
 
         builder.pop();
     }

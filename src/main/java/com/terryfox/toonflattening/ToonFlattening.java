@@ -5,10 +5,12 @@ import org.slf4j.Logger;
 import com.mojang.logging.LogUtils;
 import com.terryfox.toonflattening.attachment.FlattenedStateAttachment;
 import com.terryfox.toonflattening.config.ToonFlatteningConfig;
+import com.terryfox.toonflattening.event.CollisionFlatteningHandler;
 import com.terryfox.toonflattening.event.FlatteningHandler;
 import com.terryfox.toonflattening.event.LoginHandler;
 import com.terryfox.toonflattening.event.PlayerMovementHandler;
 import com.terryfox.toonflattening.event.RespawnHandler;
+import com.terryfox.toonflattening.event.VelocityTracker;
 
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
@@ -25,7 +27,9 @@ import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.neoforged.neoforge.attachment.AttachmentType;
 import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.server.ServerStartingEvent;
+import net.neoforged.neoforge.event.tick.EntityTickEvent;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import net.neoforged.neoforge.registries.NeoForgeRegistries;
@@ -68,9 +72,15 @@ public class ToonFlattening {
 
         NeoForge.EVENT_BUS.register(this);
         NeoForge.EVENT_BUS.addListener(EventPriority.HIGH, FlatteningHandler::onLivingHurt);
-        NeoForge.EVENT_BUS.addListener(PlayerMovementHandler::onEntityTick);
+        NeoForge.EVENT_BUS.addListener(EventPriority.HIGHEST, PlayerMovementHandler::onEntityTickPre);
+        NeoForge.EVENT_BUS.addListener(PlayerMovementHandler::onEntityTickPost);
         NeoForge.EVENT_BUS.addListener(RespawnHandler::onPlayerRespawn);
         NeoForge.EVENT_BUS.addListener(LoginHandler::onPlayerLogin);
+        NeoForge.EVENT_BUS.addListener(CollisionFlatteningHandler::onEntityTickPre);
+        NeoForge.EVENT_BUS.addListener(CollisionFlatteningHandler::onEntityTickPost);
+        NeoForge.EVENT_BUS.addListener((PlayerEvent.PlayerLoggedOutEvent event) -> {
+            VelocityTracker.clearPlayer(event.getEntity().getUUID());
+        });
     }
 
     private void commonSetup(FMLCommonSetupEvent event) {
