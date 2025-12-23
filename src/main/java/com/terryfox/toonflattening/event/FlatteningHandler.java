@@ -107,7 +107,9 @@ public class FlatteningHandler {
         // Store position to lock player in place
         PlayerMovementHandler.storeFlattenedPosition(player);
 
-        player.hurt(player.damageSources().generic(), (float) damage);
+        if (!player.getAbilities().invulnerable) {
+            player.hurt(player.damageSources().generic(), (float) damage);
+        }
 
         player.level().playSound(
             null,

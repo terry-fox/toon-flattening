@@ -2,5 +2,5 @@
   "required": true,
   "package": "com.terryfox.toonflattening.mixin",
   "compatibilityLevel": "JAVA_21",
-  "mixins": ["PlayerMixin"]
+  "mixins": ["PlayerMixin", "FallingBlockEntityMixin"]
 }
