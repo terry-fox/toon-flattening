@@ -15,7 +15,11 @@
 - [x] The amount of horizontal spread shall be configurable in the server config files
 
 ## Version 0.3.0
-- [ ] Players should flatten against surfaces when colliding with them at a high enough velocity
+- [x] Players should flatten against surfaces when colliding with them at a high enough velocity
+- [x] A player shall not be able to be pushed while flattened
+- [x] Players shall be able to walk directly through flattened players without "bumping" over them
+- [ ] Players shall be immune to being damaged while flattened
+- [ ] Players shall be immune to being damaged while restoring and 1 second after their restoration animation has finished
 - [ ] Players shall be flattened by pistons when compressed between the head and a solid block such as a wall
 - [ ] The mod should an option to stick to a piston head when it retracts (thoughts: random chance for stick, 100% chance for sticky pistons?)
 - [ ] When a player enters a minecart or boat with a player already in it, the player shall flatten under the player entering the minecart/boat

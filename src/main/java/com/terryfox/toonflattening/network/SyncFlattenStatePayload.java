@@ -19,25 +19,38 @@ public record SyncFlattenStatePayload(
     boolean isFlattened,
     long flattenTime,
     int collisionTypeOrdinal,
-    int wallDirectionId
+    int wallDirectionId,
+    boolean isRestoring,
+    long restorationStartTime
 ) implements CustomPacketPayload {
     public static final Type<SyncFlattenStatePayload> TYPE =
         new Type<>(ResourceLocation.fromNamespaceAndPath(ToonFlattening.MODID, "sync_flatten_state"));
 
-    public static final StreamCodec<FriendlyByteBuf, SyncFlattenStatePayload> CODEC =
-        StreamCodec.composite(
-            ByteBufCodecs.VAR_INT,
-            SyncFlattenStatePayload::playerId,
-            ByteBufCodecs.BOOL,
-            SyncFlattenStatePayload::isFlattened,
-            ByteBufCodecs.VAR_LONG,
-            SyncFlattenStatePayload::flattenTime,
-            ByteBufCodecs.VAR_INT,
-            SyncFlattenStatePayload::collisionTypeOrdinal,
-            ByteBufCodecs.VAR_INT,
-            SyncFlattenStatePayload::wallDirectionId,
-            SyncFlattenStatePayload::new
-        );
+    public static final StreamCodec<FriendlyByteBuf, SyncFlattenStatePayload> CODEC = new StreamCodec<>() {
+        @Override
+        public void encode(FriendlyByteBuf buf, SyncFlattenStatePayload payload) {
+            buf.writeVarInt(payload.playerId);
+            buf.writeBoolean(payload.isFlattened);
+            buf.writeVarLong(payload.flattenTime);
+            buf.writeVarInt(payload.collisionTypeOrdinal);
+            buf.writeVarInt(payload.wallDirectionId);
+            buf.writeBoolean(payload.isRestoring);
+            buf.writeVarLong(payload.restorationStartTime);
+        }
+
+        @Override
+        public SyncFlattenStatePayload decode(FriendlyByteBuf buf) {
+            return new SyncFlattenStatePayload(
+                buf.readVarInt(),
+                buf.readBoolean(),
+                buf.readVarLong(),
+                buf.readVarInt(),
+                buf.readVarInt(),
+                buf.readBoolean(),
+                buf.readVarLong()
+            );
+        }
+    };
 
     @Override
     public Type<? extends CustomPacketPayload> type() {
@@ -73,7 +86,9 @@ public record SyncFlattenStatePayload(
                     payload.isFlattened(),
                     payload.flattenTime(),
                     collisionType,
-                    wallDirection
+                    wallDirection,
+                    payload.isRestoring(),
+                    payload.restorationStartTime()
                 )
             );
 

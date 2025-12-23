@@ -11,6 +11,7 @@ public class ToonFlatteningConfig {
     public final ModConfigSpec.DoubleValue heightScale;
     public final ModConfigSpec.DoubleValue widthScale;
     public final ModConfigSpec.IntValue reformationTicks;
+    public final ModConfigSpec.IntValue postRestorationImmunityTicks;
 
     public final ModConfigSpec.DoubleValue floorVelocityThreshold;
     public final ModConfigSpec.DoubleValue ceilingVelocityThreshold;
@@ -45,6 +46,10 @@ public class ToonFlatteningConfig {
         reformationTicks = builder
             .comment("Animation duration for reformation in ticks (20 = 1 second)")
             .defineInRange("reformationTicks", 5, 1, 100);
+
+        postRestorationImmunityTicks = builder
+            .comment("Ticks of damage immunity after restoration completes (20 = 1 second)")
+            .defineInRange("postRestorationImmunityTicks", 20, 0, 100);
 
         builder.pop();
 

@@ -19,6 +19,19 @@ public class LoginHandler {
         // Read persisted flattened state
         FlattenedStateAttachment state = serverPlayer.getData(ToonFlattening.FLATTENED_STATE.get());
 
+        // Handle edge case: restoration animation should be complete on login
+        if (state.isRestoring()) {
+            long currentTime = serverPlayer.level().getGameTime();
+            long elapsed = currentTime - state.restorationStartTime();
+            int reformationTicks = ToonFlatteningConfig.CONFIG.reformationTicks.get();
+
+            if (elapsed >= reformationTicks) {
+                // Restoration complete, clear restoring flag
+                state = FlattenedStateAttachment.DEFAULT;
+                serverPlayer.setData(ToonFlattening.FLATTENED_STATE.get(), state);
+            }
+        }
+
         if (state.isFlattened()) {
             // Restore flattened scale
             double heightScale = ToonFlatteningConfig.CONFIG.heightScale.get();
@@ -26,7 +39,7 @@ public class LoginHandler {
             PehkuiIntegration.setPlayerScale(serverPlayer, (float) heightScale, (float) widthScale);
 
             // Sync flattened state to client
-            NetworkHandler.syncFlattenState(serverPlayer, true, state.flattenTime(), state.collisionType(), state.wallDirection());
+            NetworkHandler.syncFlattenState(serverPlayer, true, state.flattenTime(), state.collisionType(), state.wallDirection(), false, 0L);
 
             ToonFlattening.LOGGER.debug("Restored flattened state for {} on login",
                 serverPlayer.getName().getString());
@@ -35,7 +48,7 @@ public class LoginHandler {
             PehkuiIntegration.resetPlayerScale(serverPlayer);
 
             // Sync non-flattened state to client
-            NetworkHandler.syncFlattenState(serverPlayer, false, 0L, CollisionType.NONE, null);
+            NetworkHandler.syncFlattenState(serverPlayer, false, 0L, CollisionType.NONE, null, state.isRestoring(), state.restorationStartTime());
 
             ToonFlattening.LOGGER.debug("Synced non-flattened state for {} on login",
                 serverPlayer.getName().getString());

@@ -11,14 +11,18 @@ public record FlattenedStateAttachment(
     boolean isFlattened,
     long flattenTime,
     CollisionType collisionType,
-    @Nullable Direction wallDirection
+    @Nullable Direction wallDirection,
+    boolean isRestoring,
+    long restorationStartTime
 ) {
 
     public static final FlattenedStateAttachment DEFAULT = new FlattenedStateAttachment(
         false,
         0L,
         CollisionType.NONE,
-        null
+        null,
+        false,
+        0L
     );
 
     public static final Codec<FlattenedStateAttachment> CODEC = RecordCodecBuilder.create(instance ->
@@ -28,13 +32,17 @@ public record FlattenedStateAttachment(
             Codec.STRING.fieldOf("collisionType").forGetter(state -> state.collisionType().name()),
             Codec.STRING.fieldOf("wallDirection").forGetter(state ->
                 state.wallDirection() != null ? state.wallDirection().getName() : ""
-            )
-        ).apply(instance, (isFlattened, flattenTime, collisionTypeName, wallDirectionName) ->
+            ),
+            Codec.BOOL.fieldOf("isRestoring").forGetter(FlattenedStateAttachment::isRestoring),
+            Codec.LONG.fieldOf("restorationStartTime").forGetter(FlattenedStateAttachment::restorationStartTime)
+        ).apply(instance, (isFlattened, flattenTime, collisionTypeName, wallDirectionName, isRestoring, restorationStartTime) ->
             new FlattenedStateAttachment(
                 isFlattened,
                 flattenTime,
                 CollisionType.valueOf(collisionTypeName),
-                wallDirectionName.isEmpty() ? null : Direction.byName(wallDirectionName)
+                wallDirectionName.isEmpty() ? null : Direction.byName(wallDirectionName),
+                isRestoring,
+                restorationStartTime
             )
         )
     );

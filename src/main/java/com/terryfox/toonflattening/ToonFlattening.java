@@ -6,6 +6,8 @@ import com.mojang.logging.LogUtils;
 import com.terryfox.toonflattening.attachment.FlattenedStateAttachment;
 import com.terryfox.toonflattening.config.ToonFlatteningConfig;
 import com.terryfox.toonflattening.event.CollisionFlatteningHandler;
+import com.terryfox.toonflattening.event.CollisionType;
+import com.terryfox.toonflattening.event.DamageImmunityHandler;
 import com.terryfox.toonflattening.event.FlatteningHandler;
 import com.terryfox.toonflattening.event.LoginHandler;
 import com.terryfox.toonflattening.event.PlayerMovementHandler;
@@ -14,6 +16,7 @@ import com.terryfox.toonflattening.event.VelocityTracker;
 
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.EventPriority;
@@ -71,6 +74,7 @@ public class ToonFlattening {
         modEventBus.addListener(this::commonSetup);
 
         NeoForge.EVENT_BUS.register(this);
+        NeoForge.EVENT_BUS.addListener(EventPriority.HIGHEST, DamageImmunityHandler::onLivingDamage);
         NeoForge.EVENT_BUS.addListener(EventPriority.HIGH, FlatteningHandler::onLivingHurt);
         NeoForge.EVENT_BUS.addListener(EventPriority.HIGHEST, PlayerMovementHandler::onEntityTickPre);
         NeoForge.EVENT_BUS.addListener(PlayerMovementHandler::onEntityTickPost);
@@ -81,11 +85,37 @@ public class ToonFlattening {
         NeoForge.EVENT_BUS.addListener((PlayerEvent.PlayerLoggedOutEvent event) -> {
             VelocityTracker.clearPlayer(event.getEntity().getUUID());
         });
+        NeoForge.EVENT_BUS.addListener((EntityTickEvent.Pre event) -> {
+            if (event.getEntity() instanceof net.minecraft.server.level.ServerPlayer player) {
+                handleRestorationCompletion(player);
+            }
+        });
     }
 
     private void commonSetup(FMLCommonSetupEvent event) {
         LOGGER.info("ToonFlattening initialized for Minecraft 1.21.1");
         LOGGER.info("Pehkui integration ready");
+    }
+
+    private static void handleRestorationCompletion(ServerPlayer player) {
+        FlattenedStateAttachment state = player.getData(FLATTENED_STATE.get());
+
+        if (!state.isRestoring()) {
+            return;
+        }
+
+        long currentTime = player.level().getGameTime();
+        long elapsed = currentTime - state.restorationStartTime();
+        int reformationTicks = ToonFlatteningConfig.CONFIG.reformationTicks.get();
+
+        if (elapsed >= reformationTicks) {
+            // Keep restorationStartTime for post-restoration immunity, just clear isRestoring flag
+            player.setData(
+                FLATTENED_STATE.get(),
+                new FlattenedStateAttachment(false, 0L, state.collisionType(), state.wallDirection(), false, state.restorationStartTime())
+            );
+            LOGGER.debug("Restoration animation complete for {}", player.getName().getString());
+        }
     }
 
     @SubscribeEvent
