@@ -21,7 +21,7 @@
 - [x] Players shall be immune to being damaged while flattened
 - [x] Players shall be immune to being damaged while restoring and 1 second after their restoration animation has finished
 - [x] Players in Creative mode should be able to be flattened by all flattening methods
-- [ ] Player models shall not move at all while flattened
+- [x] Player models shall not move at all while flattened
 
 ## Version 0.4.0
 - [ ] There shall be a custom hammer powerup to allow players to squish other players and mobs
