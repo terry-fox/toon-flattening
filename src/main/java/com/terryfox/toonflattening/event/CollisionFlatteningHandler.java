@@ -2,11 +2,18 @@ package com.terryfox.toonflattening.event;
 
 import com.terryfox.toonflattening.ToonFlattening;
 import com.terryfox.toonflattening.config.ToonFlatteningConfig;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.shapes.VoxelShape;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.neoforge.event.tick.EntityTickEvent;
+
+import java.util.OptionalDouble;
 
 /**
  * Handles collision-based flattening for floor, ceiling, and wall impacts.
@@ -87,14 +94,25 @@ public class CollisionFlatteningHandler {
                 double originalHeight = 1.8;
                 double heightScale = ToonFlatteningConfig.CONFIG.heightScale.get();
                 double scaledHeight = originalHeight * heightScale;
-                double ceilingBlockY = Math.ceil(prevY + originalHeight);
-                double ceilingY = ceilingBlockY - scaledHeight;
+                double headY = player.getY() + originalHeight;
+
+                // Find actual ceiling surface (handles slabs, stairs)
+                OptionalDouble ceilingSurface = findCeilingSurfaceY(player, headY);
+                if (ceilingSurface.isEmpty()) {
+                    // No ceiling found - skip flattening
+                    ToonFlattening.LOGGER.info("SERVER: No ceiling block found for {}, skipping flatten", player.getName().getString());
+                    commitAndRecordState(player);
+                    return;
+                }
+
+                double ceilingSurfaceY = ceilingSurface.getAsDouble();
+                double ceilingY = ceilingSurfaceY - scaledHeight;
                 player.setPos(player.getX(), ceilingY, player.getZ());
-                ToonFlattening.LOGGER.info("SERVER: Ceiling position set to Y={} (ceiling block at Y={})", ceilingY, ceilingBlockY);
+                ToonFlattening.LOGGER.info("SERVER: Ceiling position set to Y={} (ceiling surface at Y={})", ceilingY, ceilingSurfaceY);
 
                 double ceilingDamage = ToonFlatteningConfig.CONFIG.ceilingDamage.get();
                 double velocity = Math.abs(prevVelocity.y);
-                FlatteningHandler.flattenPlayer(player, ceilingDamage, FlattenCause.COLLISION, velocity, CollisionType.CEILING, null, ceilingBlockY);
+                FlatteningHandler.flattenPlayer(player, ceilingDamage, FlattenCause.COLLISION, velocity, CollisionType.CEILING, null, ceilingSurfaceY);
             }
             commitAndRecordState(player);
             return; // Priority: Ceiling prevents wall check
@@ -150,5 +168,38 @@ public class CollisionFlatteningHandler {
     private static void commitAndRecordState(Player player) {
         VelocityTracker.commitVelocity(player);
         VelocityTracker.recordState(player);
+    }
+
+    /**
+     * Finds the ceiling surface Y position above the player's head.
+     * Returns the actual collision surface, not just block coordinate.
+     * Handles partial blocks like slabs by checking collision shape bounds.
+     */
+    private static OptionalDouble findCeilingSurfaceY(Player player, double headY) {
+        Level level = player.level();
+        int playerBlockX = Mth.floor(player.getX());
+        int playerBlockZ = Mth.floor(player.getZ());
+
+        // Start from floor(headY) to avoid skipping blocks on integer boundaries
+        // (ceil(10.5)=11 would skip a slab at Y=10)
+        // Check 3 blocks to cover full range
+        for (int yOffset = 0; yOffset <= 2; yOffset++) {
+            int blockY = Mth.floor(headY) + yOffset;
+            BlockPos pos = new BlockPos(playerBlockX, blockY, playerBlockZ);
+            BlockState state = level.getBlockState(pos);
+            VoxelShape shape = state.getCollisionShape(level, pos);
+
+            if (!shape.isEmpty()) {
+                // Get actual bottom of collision shape (handles slabs, stairs)
+                double shapeMinY = shape.min(net.minecraft.core.Direction.Axis.Y);
+                double ceilingSurfaceY = blockY + shapeMinY;
+
+                // Only return if ceiling is at or above head (with tolerance for collision margin)
+                if (ceilingSurfaceY >= headY - 0.5) {
+                    return OptionalDouble.of(ceilingSurfaceY);
+                }
+            }
+        }
+        return OptionalDouble.empty();
     }
 }
