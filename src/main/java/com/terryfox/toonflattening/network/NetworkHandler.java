@@ -59,7 +59,7 @@ public class NetworkHandler {
             long restorationStartTime = serverPlayer.level().getGameTime();
             serverPlayer.setData(
                 ToonFlattening.FLATTENED_STATE.get(),
-                new FlattenedStateAttachment(false, 0L, CollisionType.NONE, null, true, restorationStartTime)
+                new FlattenedStateAttachment(false, 0L, CollisionType.NONE, null, true, restorationStartTime, -1.0)
             );
 
             // Reset Pehkui scale with animation
@@ -71,22 +71,22 @@ public class NetworkHandler {
             PlayerMovementHandler.clearFlattenedPosition(serverPlayer);
 
             // Sync to all tracking clients
-            syncFlattenState(serverPlayer, false, 0L, CollisionType.NONE, null, true, restorationStartTime);
+            syncFlattenState(serverPlayer, false, 0L, CollisionType.NONE, null, true, restorationStartTime, -1.0);
 
             ToonFlattening.LOGGER.info("Player {} started restoration", serverPlayer.getName().getString());
         });
     }
 
-    public static void syncFlattenState(ServerPlayer player, boolean isFlattened, long flattenTime, CollisionType collisionType, Direction wallDirection, boolean isRestoring, long restorationStartTime) {
+    public static void syncFlattenState(ServerPlayer player, boolean isFlattened, long flattenTime, CollisionType collisionType, Direction wallDirection, boolean isRestoring, long restorationStartTime, double ceilingBlockY) {
         int collisionTypeOrdinal = collisionType.ordinal();
         int wallDirectionId = (wallDirection != null) ? wallDirection.get3DDataValue() : -1;
 
-        ToonFlattening.LOGGER.info("SERVER: Syncing flatten state for {}: isFlattened={}, collisionType={} (ordinal={}), wallDirection={} (id={}), isRestoring={}, restorationStartTime={}",
-            player.getName().getString(), isFlattened, collisionType, collisionTypeOrdinal, wallDirection, wallDirectionId, isRestoring, restorationStartTime);
+        ToonFlattening.LOGGER.info("SERVER: Syncing flatten state for {}: isFlattened={}, collisionType={} (ordinal={}), wallDirection={} (id={}), isRestoring={}, restorationStartTime={}, ceilingBlockY={}",
+            player.getName().getString(), isFlattened, collisionType, collisionTypeOrdinal, wallDirection, wallDirectionId, isRestoring, restorationStartTime, ceilingBlockY);
 
         PacketDistributor.sendToPlayersTrackingEntityAndSelf(
             player,
-            new SyncFlattenStatePayload(player.getId(), isFlattened, flattenTime, collisionTypeOrdinal, wallDirectionId, isRestoring, restorationStartTime)
+            new SyncFlattenStatePayload(player.getId(), isFlattened, flattenTime, collisionTypeOrdinal, wallDirectionId, isRestoring, restorationStartTime, ceilingBlockY)
         );
     }
 

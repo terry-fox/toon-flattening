@@ -32,4 +32,8 @@ public class PehkuiIntegration {
         ScaleTypes.WIDTH.getScaleData(player).setScaleTickDelay(tickDelay);
         ScaleTypes.WIDTH.getScaleData(player).setTargetScale(widthScale);
     }
+
+    public static float getHeightScale(Player player) {
+        return ScaleTypes.HEIGHT.getScaleData(player).getScale();
+    }
 }

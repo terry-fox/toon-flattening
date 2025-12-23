@@ -94,7 +94,7 @@ public class CollisionFlatteningHandler {
 
                 double ceilingDamage = ToonFlatteningConfig.CONFIG.ceilingDamage.get();
                 double velocity = Math.abs(prevVelocity.y);
-                FlatteningHandler.flattenPlayer(player, ceilingDamage, FlattenCause.COLLISION, velocity, CollisionType.CEILING, null);
+                FlatteningHandler.flattenPlayer(player, ceilingDamage, FlattenCause.COLLISION, velocity, CollisionType.CEILING, null, ceilingBlockY);
             }
             commitAndRecordState(player);
             return; // Priority: Ceiling prevents wall check

@@ -4,6 +4,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.terryfox.toonflattening.ToonFlattening;
 import com.terryfox.toonflattening.attachment.FlattenedStateAttachment;
 import com.terryfox.toonflattening.event.CollisionType;
+import com.terryfox.toonflattening.integration.PehkuiIntegration;
 import net.minecraft.core.Direction;
 import net.minecraft.world.entity.player.Player;
 import net.neoforged.api.distmarker.Dist;
@@ -82,8 +83,24 @@ public class WallFlattenRenderer {
                 }
                 default -> {}
             }
+        } else if (collisionType == CollisionType.CEILING) {
+            poseStack.pushPose();
+            pushedEntities.add(player.getId());
+
+            double ceilingBlockY = attachment.ceilingBlockY();
+            if (ceilingBlockY > 0) {
+                // Use stored ceiling position for consistent offset
+                float currentScale = PehkuiIntegration.getHeightScale(player);
+                float scaledHeight = 1.8f * currentScale;
+
+                // Calculate offset so top of hitbox reaches ceiling
+                double currentY = player.getY();
+                double targetY = ceilingBlockY - scaledHeight;
+                float yOffset = (float)(targetY - currentY);
+
+                poseStack.translate(0, yOffset, 0);
+            }
         }
-        // CEILING: No render offset needed - server positions player so scaled head is at ceiling
     }
 
     @SubscribeEvent

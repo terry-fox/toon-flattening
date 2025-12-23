@@ -51,8 +51,12 @@ public class FlatteningHandler {
     }
 
     public static void flattenPlayer(Player player, double damage, FlattenCause cause, double anvilVelocity, CollisionType collisionType, @Nullable Direction wallDirection) {
-        ToonFlattening.LOGGER.info("SERVER: flattenPlayer called for {}: cause={}, collisionType={}, wallDirection={}",
-            player.getName().getString(), cause, collisionType, wallDirection);
+        flattenPlayer(player, damage, cause, anvilVelocity, collisionType, wallDirection, -1.0);
+    }
+
+    public static void flattenPlayer(Player player, double damage, FlattenCause cause, double anvilVelocity, CollisionType collisionType, @Nullable Direction wallDirection, double ceilingBlockY) {
+        ToonFlattening.LOGGER.info("SERVER: flattenPlayer called for {}: cause={}, collisionType={}, wallDirection={}, ceilingBlockY={}",
+            player.getName().getString(), cause, collisionType, wallDirection, ceilingBlockY);
 
         FlattenedStateAttachment currentState = player.getData(ToonFlattening.FLATTENED_STATE.get());
 
@@ -68,7 +72,7 @@ public class FlatteningHandler {
         long flattenTime = player.level().getGameTime();
         player.setData(
             ToonFlattening.FLATTENED_STATE.get(),
-            new FlattenedStateAttachment(true, flattenTime, collisionType, wallDirection, false, 0L)
+            new FlattenedStateAttachment(true, flattenTime, collisionType, wallDirection, false, 0L, ceilingBlockY)
         );
 
         ToonFlattening.LOGGER.info("SERVER: Attachment set for {}: collisionType={}, wallDirection={}",
@@ -94,7 +98,7 @@ public class FlatteningHandler {
         // Sync to clients
         if (player instanceof ServerPlayer serverPlayer) {
             ToonFlattening.LOGGER.info("SERVER: Syncing to clients for {}", player.getName().getString());
-            NetworkHandler.syncFlattenState(serverPlayer, true, flattenTime, collisionType, wallDirection, false, 0L);
+            NetworkHandler.syncFlattenState(serverPlayer, true, flattenTime, collisionType, wallDirection, false, 0L, ceilingBlockY);
 
             // Send particles immediately (animation happens via Pehkui scale interpolation)
             NetworkHandler.sendSquashAnimation(serverPlayer);
