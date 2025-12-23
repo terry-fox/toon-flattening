@@ -70,9 +70,10 @@ public class FlatteningHandler {
         }
 
         long flattenTime = player.level().getGameTime();
+        float frozenYaw = player.getYRot();
         player.setData(
             ToonFlattening.FLATTENED_STATE.get(),
-            new FlattenedStateAttachment(true, flattenTime, collisionType, wallDirection, false, 0L, ceilingBlockY)
+            new FlattenedStateAttachment(true, flattenTime, collisionType, wallDirection, false, 0L, ceilingBlockY, frozenYaw)
         );
 
         ToonFlattening.LOGGER.info("SERVER: Attachment set for {}: collisionType={}, wallDirection={}",
@@ -98,7 +99,7 @@ public class FlatteningHandler {
         // Sync to clients
         if (player instanceof ServerPlayer serverPlayer) {
             ToonFlattening.LOGGER.info("SERVER: Syncing to clients for {}", player.getName().getString());
-            NetworkHandler.syncFlattenState(serverPlayer, true, flattenTime, collisionType, wallDirection, false, 0L, ceilingBlockY);
+            NetworkHandler.syncFlattenState(serverPlayer, true, flattenTime, collisionType, wallDirection, false, 0L, ceilingBlockY, frozenYaw);
 
             // Send particles immediately (animation happens via Pehkui scale interpolation)
             NetworkHandler.sendSquashAnimation(serverPlayer);

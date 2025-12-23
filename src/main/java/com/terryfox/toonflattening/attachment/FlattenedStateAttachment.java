@@ -14,7 +14,8 @@ public record FlattenedStateAttachment(
     @Nullable Direction wallDirection,
     boolean isRestoring,
     long restorationStartTime,
-    double ceilingBlockY
+    double ceilingBlockY,
+    float frozenYaw
 ) {
 
     public static final FlattenedStateAttachment DEFAULT = new FlattenedStateAttachment(
@@ -24,7 +25,8 @@ public record FlattenedStateAttachment(
         null,
         false,
         0L,
-        -1.0
+        -1.0,
+        0.0f
     );
 
     public static final Codec<FlattenedStateAttachment> CODEC = RecordCodecBuilder.create(instance ->
@@ -37,8 +39,9 @@ public record FlattenedStateAttachment(
             ),
             Codec.BOOL.fieldOf("isRestoring").forGetter(FlattenedStateAttachment::isRestoring),
             Codec.LONG.fieldOf("restorationStartTime").forGetter(FlattenedStateAttachment::restorationStartTime),
-            Codec.DOUBLE.fieldOf("ceilingBlockY").forGetter(FlattenedStateAttachment::ceilingBlockY)
-        ).apply(instance, (isFlattened, flattenTime, collisionTypeName, wallDirectionName, isRestoring, restorationStartTime, ceilingBlockY) ->
+            Codec.DOUBLE.fieldOf("ceilingBlockY").forGetter(FlattenedStateAttachment::ceilingBlockY),
+            Codec.FLOAT.fieldOf("frozenYaw").forGetter(FlattenedStateAttachment::frozenYaw)
+        ).apply(instance, (isFlattened, flattenTime, collisionTypeName, wallDirectionName, isRestoring, restorationStartTime, ceilingBlockY, frozenYaw) ->
             new FlattenedStateAttachment(
                 isFlattened,
                 flattenTime,
@@ -46,7 +49,8 @@ public record FlattenedStateAttachment(
                 wallDirectionName.isEmpty() ? null : Direction.byName(wallDirectionName),
                 isRestoring,
                 restorationStartTime,
-                ceilingBlockY
+                ceilingBlockY,
+                frozenYaw
             )
         )
     );

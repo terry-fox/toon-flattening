@@ -25,7 +25,7 @@ public class RespawnHandler {
         PehkuiIntegration.resetPlayerScale(serverPlayer);
 
         // Sync to clients
-        NetworkHandler.syncFlattenState(serverPlayer, false, 0L, CollisionType.NONE, null, false, 0L, -1.0);
+        NetworkHandler.syncFlattenState(serverPlayer, false, 0L, CollisionType.NONE, null, false, 0L, -1.0, 0.0f);
 
         ToonFlattening.LOGGER.debug("Reset flattened state for {} on respawn",
             serverPlayer.getName().getString());

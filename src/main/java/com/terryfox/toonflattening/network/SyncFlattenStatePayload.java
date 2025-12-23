@@ -22,7 +22,8 @@ public record SyncFlattenStatePayload(
     int wallDirectionId,
     boolean isRestoring,
     long restorationStartTime,
-    double ceilingBlockY
+    double ceilingBlockY,
+    float frozenYaw
 ) implements CustomPacketPayload {
     public static final Type<SyncFlattenStatePayload> TYPE =
         new Type<>(ResourceLocation.fromNamespaceAndPath(ToonFlattening.MODID, "sync_flatten_state"));
@@ -38,6 +39,7 @@ public record SyncFlattenStatePayload(
             buf.writeBoolean(payload.isRestoring);
             buf.writeVarLong(payload.restorationStartTime);
             buf.writeDouble(payload.ceilingBlockY);
+            buf.writeFloat(payload.frozenYaw);
         }
 
         @Override
@@ -50,7 +52,8 @@ public record SyncFlattenStatePayload(
                 buf.readVarInt(),
                 buf.readBoolean(),
                 buf.readVarLong(),
-                buf.readDouble()
+                buf.readDouble(),
+                buf.readFloat()
             );
         }
     };
@@ -92,7 +95,8 @@ public record SyncFlattenStatePayload(
                     wallDirection,
                     payload.isRestoring(),
                     payload.restorationStartTime(),
-                    payload.ceilingBlockY()
+                    payload.ceilingBlockY(),
+                    payload.frozenYaw()
                 )
             );
 

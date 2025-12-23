@@ -12,6 +12,8 @@ import net.neoforged.api.distmarker.OnlyIn;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.neoforge.client.event.RenderLivingEvent;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -31,11 +33,20 @@ import java.util.concurrent.ConcurrentHashMap;
  * - Must pair pushPose() in Pre with popPose() in Post
  * - ConcurrentHashMap prevents unmatched push/pop crashes
  * - Tracks which entities had transformations applied
+ *
+ * WHY ROTATION TRACKING:
+ * - Store original yBodyRot/yHeadRot values in Pre
+ * - Override with frozenYaw during render
+ * - Restore original values in Post
+ * - Prevents body/head rotation while flattened
  */
 @OnlyIn(Dist.CLIENT)
 public class WallFlattenRenderer {
 
     private static final Set<Integer> pushedEntities = ConcurrentHashMap.newKeySet();
+    private static final Map<Integer, RotationState> rotationStates = new ConcurrentHashMap<>();
+
+    private record RotationState(float yBodyRot, float yBodyRotO, float yHeadRot, float yHeadRotO) {}
 
     // Counteract Pehkui's uniform WIDTH scaling (0.2 on both axes)
     // Multiply to achieve target scales: 0.05 for thin axis, 1.0 for normal axis
@@ -56,6 +67,19 @@ public class WallFlattenRenderer {
 
         CollisionType collisionType = attachment.collisionType();
         Direction wallDirection = attachment.wallDirection();
+        float frozenYaw = attachment.frozenYaw();
+
+        // Store and override rotation
+        rotationStates.put(player.getId(), new RotationState(
+            player.yBodyRot,
+            player.yBodyRotO,
+            player.yHeadRot,
+            player.yHeadRotO
+        ));
+        player.yBodyRot = frozenYaw;
+        player.yBodyRotO = frozenYaw;
+        player.yHeadRot = frozenYaw;
+        player.yHeadRotO = frozenYaw;
 
         PoseStack poseStack = event.getPoseStack();
 
@@ -107,6 +131,15 @@ public class WallFlattenRenderer {
     public static void onRenderLivingPost(RenderLivingEvent.Post<?, ?> event) {
         if (!(event.getEntity() instanceof Player player)) {
             return;
+        }
+
+        // Restore rotation
+        RotationState state = rotationStates.remove(player.getId());
+        if (state != null) {
+            player.yBodyRot = state.yBodyRot;
+            player.yBodyRotO = state.yBodyRotO;
+            player.yHeadRot = state.yHeadRot;
+            player.yHeadRotO = state.yHeadRotO;
         }
 
         if (pushedEntities.remove(player.getId())) {
