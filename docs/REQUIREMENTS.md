@@ -27,3 +27,4 @@
 ## Version 0.4.0
 - [ ] Iron Golems shall flatten players
 - [ ] The mod may have an option to leave a still-flattened clone of a player when they die and respawn from flattening
+- [ ] Players may take on random poses when flattened
