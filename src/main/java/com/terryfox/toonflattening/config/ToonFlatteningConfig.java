@@ -8,7 +8,7 @@ public class ToonFlatteningConfig {
     public static final ModConfigSpec CONFIG_SPEC;
 
     public final ModConfigSpec.DoubleValue flattenDamage;
-    public final ModConfigSpec.DoubleValue heightScale;
+    public final ModConfigSpec.DoubleValue depthScale;
     public final ModConfigSpec.DoubleValue widthScale;
     public final ModConfigSpec.IntValue reformationTicks;
     public final ModConfigSpec.IntValue postRestorationImmunityTicks;
@@ -33,10 +33,10 @@ public class ToonFlatteningConfig {
             .translation("config.toonflattening.flatten_damage")
             .defineInRange("flattenDamage", 4.0, 0.0, 20.0);
 
-        heightScale = builder
-            .comment("Height multiplier when flattened (default 0.05 = 1/20th height)")
-            .translation("config.toonflattening.height_scale")
-            .defineInRange("heightScale", 0.05, 0.01, 1.0);
+        depthScale = builder
+            .comment("Depth multiplier when flattened (default 0.05 = 1/20th depth)")
+            .translation("config.toonflattening.depth_scale")
+            .defineInRange("depthScale", 0.05, 0.01, 1.0);
 
         widthScale = builder
             .comment("Width multiplier when flattened (default 1.8 = 1.8x width)")

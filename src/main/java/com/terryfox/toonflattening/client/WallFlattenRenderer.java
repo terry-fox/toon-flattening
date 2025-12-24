@@ -3,6 +3,7 @@ package com.terryfox.toonflattening.client;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.terryfox.toonflattening.ToonFlattening;
 import com.terryfox.toonflattening.attachment.FlattenedStateAttachment;
+import com.terryfox.toonflattening.config.ToonFlatteningConfig;
 import com.terryfox.toonflattening.event.CollisionType;
 import com.terryfox.toonflattening.integration.PehkuiIntegration;
 import com.terryfox.toonflattening.util.FlattenedStateHelper;
@@ -48,11 +49,6 @@ public class WallFlattenRenderer {
     private static final Set<Integer> pushedEntities = ConcurrentHashMap.newKeySet();
     private static final Map<Integer, RotationState> rotationStates = new ConcurrentHashMap<>();
 
-    // Counteract Pehkui's uniform WIDTH scaling (0.2 on both axes)
-    // Multiply to achieve target scales: 0.05 for thin axis, 1.0 for normal axis
-    private static final float THIN_SCALE = 0.25f;   // 0.05 / 0.2
-    private static final float NORMAL_SCALE = 5.0f;  // 1.0 / 0.2
-
     @SubscribeEvent
     public static void onRenderLivingPre(RenderLivingEvent.Pre<?, ?> event) {
         if (!(event.getEntity() instanceof Player player)) {
@@ -68,6 +64,12 @@ public class WallFlattenRenderer {
         CollisionType collisionType = attachment.collisionType();
         Direction wallDirection = attachment.wallDirection();
         float frozenYaw = attachment.frozenYaw();
+
+        // Calculate dynamic scales based on config
+        double depthScale = ToonFlatteningConfig.CONFIG.depthScale.get();
+        double wallHitboxScale = ToonFlatteningConfig.CONFIG.wallHitboxScale.get();
+        float thinScale = (float)(depthScale / wallHitboxScale);
+        float normalScale = (float)(1.0 / wallHitboxScale);
 
         // Store and override rotation
         RotationState stored = RotationState.capture(player);
@@ -88,8 +90,8 @@ public class WallFlattenRenderer {
 
             if (wallSurfacePos > 0) {
                 // Calculate exact offset so model touches wall
-                // halfModelWidth = 0.6 * 0.05 / 2 = 0.015 blocks
-                double halfModelWidth = 0.6 * 0.05 / 2;
+                // halfModelWidth = 0.6 * depthScale / 2
+                double halfModelWidth = 0.6 * depthScale / 2;
 
                 switch (wallDirection) {
                     case EAST -> {
@@ -115,19 +117,19 @@ public class WallFlattenRenderer {
             switch (wallDirection) {
                 case NORTH -> {
                     poseStack.translate(0, 0, renderOffset);
-                    poseStack.scale(NORMAL_SCALE, 1.0f, THIN_SCALE);
+                    poseStack.scale(normalScale, 1.0f, thinScale);
                 }
                 case SOUTH -> {
                     poseStack.translate(0, 0, renderOffset);
-                    poseStack.scale(NORMAL_SCALE, 1.0f, THIN_SCALE);
+                    poseStack.scale(normalScale, 1.0f, thinScale);
                 }
                 case EAST -> {
                     poseStack.translate(renderOffset, 0, 0);
-                    poseStack.scale(THIN_SCALE, 1.0f, NORMAL_SCALE);
+                    poseStack.scale(thinScale, 1.0f, normalScale);
                 }
                 case WEST -> {
                     poseStack.translate(renderOffset, 0, 0);
-                    poseStack.scale(THIN_SCALE, 1.0f, NORMAL_SCALE);
+                    poseStack.scale(thinScale, 1.0f, normalScale);
                 }
                 default -> {}
             }

@@ -35,9 +35,9 @@ public class LoginHandler {
 
         if (state.isFlattened()) {
             // Restore flattened scale
-            double heightScale = ToonFlatteningConfig.CONFIG.heightScale.get();
+            double depthScale = ToonFlatteningConfig.CONFIG.depthScale.get();
             double widthScale = ToonFlatteningConfig.CONFIG.widthScale.get();
-            PehkuiIntegration.setPlayerScale(serverPlayer, (float) heightScale, (float) widthScale);
+            PehkuiIntegration.setPlayerScale(serverPlayer, (float) depthScale, (float) widthScale);
 
             // Sync flattened state to client
             NetworkHandler.syncFlattenState(serverPlayer, new FlattenedStateAttachment(true, state.flattenTime(), state.collisionType(), state.wallDirection(), false, 0L, state.ceilingBlockY(), state.frozenYaw(), state.wallSurfacePos()));

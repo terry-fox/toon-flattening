@@ -18,7 +18,7 @@
 - [x] Players shall flatten when hitting a floor, wall or ceiling at a velocity that would deal 4 hearts of damage when landing on the ground after falling with no special armor or enchantements
 - [x] A player shall not be able to be pushed while flattened
 - [x] Players shall be able to walk directly through flattened players without "bumping" over them
-- [x] Players shall be immune to being damaged while flattened
+- [x] Players shall be immune to being damaged from mob or player attacks while flattened
 - [x] Players shall be immune to being damaged while restoring and 1 second after their restoration animation has finished
 - [x] Players in Creative mode should be able to be flattened by all flattening methods
 - [x] Player models shall not move at all while flattened

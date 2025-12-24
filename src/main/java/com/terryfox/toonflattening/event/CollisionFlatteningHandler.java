@@ -138,8 +138,8 @@ public class CollisionFlatteningHandler {
 
                 // Position player BEFORE flattenPlayer() to ensure correct position is locked
                 double originalHeight = 1.8;
-                double heightScale = ToonFlatteningConfig.CONFIG.heightScale.get();
-                double scaledHeight = originalHeight * heightScale;
+                double depthScale = ToonFlatteningConfig.CONFIG.depthScale.get();
+                double scaledHeight = originalHeight * depthScale;
                 double headY = player.getY() + originalHeight;
 
                 // Find actual ceiling surface (handles slabs, stairs)

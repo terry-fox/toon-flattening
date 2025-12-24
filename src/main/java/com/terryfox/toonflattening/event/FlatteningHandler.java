@@ -33,8 +33,8 @@ public class FlatteningHandler {
      */
     private static int calculateFlatteningAnimationTicks(double velocityBlocksPerTick) {
         final double PLAYER_HEIGHT = 1.8;
-        final double HEIGHT_SCALE = ToonFlatteningConfig.CONFIG.heightScale.get();
-        final double COMPRESSION = PLAYER_HEIGHT - (PLAYER_HEIGHT * HEIGHT_SCALE); // 1.71 blocks
+        final double DEPTH_SCALE = ToonFlatteningConfig.CONFIG.depthScale.get();
+        final double COMPRESSION = PLAYER_HEIGHT - (PLAYER_HEIGHT * DEPTH_SCALE);
         final double VELOCITY_THRESHOLD = 0.01;
         final int MIN_TICKS = 1;
         final int MAX_TICKS = 100;
@@ -93,9 +93,9 @@ public class FlatteningHandler {
         } else {
             // ANVIL, FLOOR, CEILING use standard height/width scaling
             ToonFlattening.LOGGER.info("SERVER: Applying standard height/width scale for {}", player.getName().getString());
-            double heightScale = ToonFlatteningConfig.CONFIG.heightScale.get();
+            double depthScale = ToonFlatteningConfig.CONFIG.depthScale.get();
             double widthScale = ToonFlatteningConfig.CONFIG.widthScale.get();
-            PehkuiIntegration.setPlayerScaleWithDelay(player, (float) heightScale, (float) widthScale, animationTicks);
+            PehkuiIntegration.setPlayerScaleWithDelay(player, (float) depthScale, (float) widthScale, animationTicks);
 
             // TODO: CEILING collision type may need position offset (player sticks to ceiling)
         }

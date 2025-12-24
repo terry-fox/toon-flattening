@@ -123,7 +123,7 @@ public class ToonFlattening {
     public void onServerStarting(ServerStartingEvent event) {
         LOGGER.info("ToonFlattening server starting");
         LOGGER.info("Flatten damage: {}", ToonFlatteningConfig.CONFIG.flattenDamage.get());
-        LOGGER.info("Height scale: {}", ToonFlatteningConfig.CONFIG.heightScale.get());
+        LOGGER.info("Depth scale: {}", ToonFlatteningConfig.CONFIG.depthScale.get());
 
         // Reset all players to ensure clean state on server start
         event.getServer().getPlayerList().getPlayers().forEach(player -> {
