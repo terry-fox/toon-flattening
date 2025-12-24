@@ -2,6 +2,7 @@ package com.terryfox.toonflattening.event;
 
 import com.terryfox.toonflattening.ToonFlattening;
 import com.terryfox.toonflattening.config.ToonFlatteningConfig;
+import com.terryfox.toonflattening.util.FallDamageCalculator;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.Mth;
@@ -106,13 +107,20 @@ public class CollisionFlatteningHandler {
         boolean wasInAir = !VelocityTracker.wasOnGround(player);
         double prevY = VelocityTracker.getPreviousY(player);
 
+        // Slow Falling blocks all flattening
+        if (FallDamageCalculator.hasSlowFalling(player)) {
+            commitAndRecordState(player);
+            return;
+        }
+
         // ========== FLOOR COLLISION ==========
         // Use onGround() because it's set immediately on landing
         // Detection: Player is on ground AND had high downward velocity in previous tick
-        double floorThreshold = ToonFlatteningConfig.CONFIG.floorVelocityThreshold.get();
+        double baseDamageThreshold = ToonFlatteningConfig.CONFIG.baseDamageThreshold.get();
+        double floorThreshold = FallDamageCalculator.calculateFallThresholdVelocity(player, baseDamageThreshold);
         if (player.onGround() && prevVelocity.y < -floorThreshold) {
             if (ToonFlatteningConfig.CONFIG.enableFloorFlatten.get()) {
-                double floorDamage = ToonFlatteningConfig.CONFIG.floorDamage.get();
+                double floorDamage = FallDamageCalculator.calculateFallDamage(player, Math.abs(prevVelocity.y));
                 double velocity = Math.abs(prevVelocity.y);
                 FlatteningHandler.flattenPlayer(player, floorDamage, FlattenCause.COLLISION, velocity, CollisionType.FLOOR, null);
             }
@@ -129,7 +137,8 @@ public class CollisionFlatteningHandler {
         // - Height scale 0.05: hitbox shrinks from 1.8 to 0.09 blocks
         // - Scaling from feet (origin): need to translate up to compensate
         // - Calculate ceiling block Y, then position feet so top of scaled hitbox reaches it
-        double ceilingThreshold = ToonFlatteningConfig.CONFIG.ceilingVelocityThreshold.get();
+        double baseDamageThresholdCeiling = ToonFlatteningConfig.CONFIG.baseDamageThreshold.get();
+        double ceilingThreshold = FallDamageCalculator.calculateFallThresholdVelocity(player, baseDamageThresholdCeiling);
         boolean hitCeiling = prevVelocity.y > ceilingThreshold && currentVelocity.y <= 0.01 && wasInAir;
         if (hitCeiling && !player.onClimbable()) {
             if (ToonFlatteningConfig.CONFIG.enableCeilingFlatten.get()) {
@@ -172,7 +181,8 @@ public class CollisionFlatteningHandler {
         // - Z dominant: SOUTH (positive) or NORTH (negative)
         //
         // POSITIONING: Offset toward wall surface for visual stick effect
-        double wallThreshold = ToonFlatteningConfig.CONFIG.wallVelocityThreshold.get();
+        double baseDamageThresholdWall = ToonFlatteningConfig.CONFIG.baseDamageThreshold.get();
+        double wallThreshold = FallDamageCalculator.calculateWallThresholdVelocity(player, baseDamageThresholdWall);
         double prevHorizSpeed = Math.sqrt(prevVelocity.x * prevVelocity.x + prevVelocity.z * prevVelocity.z);
         double currHorizSpeed = Math.sqrt(currentVelocity.x * currentVelocity.x + currentVelocity.z * currentVelocity.z);
         boolean hitWall = prevHorizSpeed > wallThreshold && currHorizSpeed < prevHorizSpeed * 0.3;

@@ -13,10 +13,7 @@ public class ToonFlatteningConfig {
     public final ModConfigSpec.IntValue reformationTicks;
     public final ModConfigSpec.IntValue postRestorationImmunityTicks;
 
-    public final ModConfigSpec.DoubleValue floorVelocityThreshold;
-    public final ModConfigSpec.DoubleValue ceilingVelocityThreshold;
-    public final ModConfigSpec.DoubleValue wallVelocityThreshold;
-    public final ModConfigSpec.DoubleValue floorDamage;
+    public final ModConfigSpec.DoubleValue baseDamageThreshold;
     public final ModConfigSpec.DoubleValue ceilingDamage;
     public final ModConfigSpec.DoubleValue wallDamage;
     public final ModConfigSpec.DoubleValue wallHitboxScale;
@@ -56,21 +53,9 @@ public class ToonFlatteningConfig {
         builder.comment("Collision-based flattening settings")
                .push("collision_flattening");
 
-        floorVelocityThreshold = builder
-            .comment("Minimum downward velocity to trigger floor flattening")
-            .defineInRange("floorVelocityThreshold", 0.8, 0.1, 5.0);
-
-        ceilingVelocityThreshold = builder
-            .comment("Minimum upward velocity to trigger ceiling flattening")
-            .defineInRange("ceilingVelocityThreshold", 0.8, 0.1, 5.0);
-
-        wallVelocityThreshold = builder
-            .comment("Minimum horizontal velocity to trigger wall flattening")
-            .defineInRange("wallVelocityThreshold", 0.8, 0.1, 5.0);
-
-        floorDamage = builder
-            .comment("Damage dealt when flattened by floor collision")
-            .defineInRange("floorDamage", 4.0, 0.0, 20.0);
+        baseDamageThreshold = builder
+            .comment("Damage threshold for triggering flattening (4 hearts = 8.0)")
+            .defineInRange("baseDamageThreshold", 8.0, 0.0, 40.0);
 
         ceilingDamage = builder
             .comment("Damage dealt when flattened by ceiling collision")
