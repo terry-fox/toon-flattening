@@ -36,7 +36,7 @@ public class CollisionFlatteningHandler {
      */
     @SubscribeEvent
     public static void onEntityTickPre(EntityTickEvent.Pre event) {
-        if (event.getEntity() instanceof Player player && !player.level().isClientSide) {
+        if (event.getEntity() instanceof Player player && !player.level().isClientSide()) {
             VelocityTracker.recordPreTickVelocity(player);
         }
     }
@@ -51,7 +51,7 @@ public class CollisionFlatteningHandler {
             return;
         }
 
-        if (player.level().isClientSide) {
+        if (player.level().isClientSide()) {
             return;
         }
 

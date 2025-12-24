@@ -6,6 +6,7 @@ import com.terryfox.toonflattening.config.ToonFlatteningConfig;
 import com.terryfox.toonflattening.event.CollisionType;
 import com.terryfox.toonflattening.event.PlayerMovementHandler;
 import com.terryfox.toonflattening.integration.PehkuiIntegration;
+import com.terryfox.toonflattening.util.FlattenedStateHelper;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
@@ -50,15 +51,14 @@ public class NetworkHandler {
                 return;
             }
 
-            FlattenedStateAttachment state = serverPlayer.getData(ToonFlattening.FLATTENED_STATE.get());
-            if (!state.isFlattened()) {
+            if (!FlattenedStateHelper.isFlattened(serverPlayer)) {
                 return;
             }
 
             // Enter restoration state
             long restorationStartTime = serverPlayer.level().getGameTime();
-            serverPlayer.setData(
-                ToonFlattening.FLATTENED_STATE.get(),
+            FlattenedStateHelper.setState(
+                serverPlayer,
                 new FlattenedStateAttachment(false, 0L, CollisionType.NONE, null, true, restorationStartTime, -1.0, 0.0f)
             );
 
@@ -71,22 +71,20 @@ public class NetworkHandler {
             PlayerMovementHandler.clearFlattenedPosition(serverPlayer);
 
             // Sync to all tracking clients
-            syncFlattenState(serverPlayer, false, 0L, CollisionType.NONE, null, true, restorationStartTime, -1.0, 0.0f);
+            FlattenedStateAttachment restoringState = new FlattenedStateAttachment(false, 0L, CollisionType.NONE, null, true, restorationStartTime, -1.0, 0.0f);
+            syncFlattenState(serverPlayer, restoringState);
 
             ToonFlattening.LOGGER.info("Player {} started restoration", serverPlayer.getName().getString());
         });
     }
 
-    public static void syncFlattenState(ServerPlayer player, boolean isFlattened, long flattenTime, CollisionType collisionType, Direction wallDirection, boolean isRestoring, long restorationStartTime, double ceilingBlockY, float frozenYaw) {
-        int collisionTypeOrdinal = collisionType.ordinal();
-        int wallDirectionId = (wallDirection != null) ? wallDirection.get3DDataValue() : -1;
-
-        ToonFlattening.LOGGER.info("SERVER: Syncing flatten state for {}: isFlattened={}, collisionType={} (ordinal={}), wallDirection={} (id={}), isRestoring={}, restorationStartTime={}, ceilingBlockY={}, frozenYaw={}",
-            player.getName().getString(), isFlattened, collisionType, collisionTypeOrdinal, wallDirection, wallDirectionId, isRestoring, restorationStartTime, ceilingBlockY, frozenYaw);
+    public static void syncFlattenState(ServerPlayer player, FlattenedStateAttachment state) {
+        ToonFlattening.LOGGER.info("SERVER: Syncing flatten state for {}: isFlattened={}, collisionType={}, wallDirection={}, isRestoring={}",
+            player.getName().getString(), state.isFlattened(), state.collisionType(), state.wallDirection(), state.isRestoring());
 
         PacketDistributor.sendToPlayersTrackingEntityAndSelf(
             player,
-            new SyncFlattenStatePayload(player.getId(), isFlattened, flattenTime, collisionTypeOrdinal, wallDirectionId, isRestoring, restorationStartTime, ceilingBlockY, frozenYaw)
+            SyncFlattenStatePayload.fromAttachment(player.getId(), state)
         );
     }
 

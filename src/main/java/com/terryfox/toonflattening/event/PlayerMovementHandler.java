@@ -2,6 +2,8 @@ package com.terryfox.toonflattening.event;
 
 import com.terryfox.toonflattening.ToonFlattening;
 import com.terryfox.toonflattening.attachment.FlattenedStateAttachment;
+import com.terryfox.toonflattening.util.FlattenedStateHelper;
+import com.terryfox.toonflattening.util.RotationState;
 
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
@@ -68,8 +70,7 @@ public class PlayerMovementHandler {
             return;
         }
 
-        FlattenedStateAttachment state = player.getData(ToonFlattening.FLATTENED_STATE.get());
-        if (state == null || !state.isFlattened()) {
+        if (!FlattenedStateHelper.isFlattened(player)) {
             return;
         }
 
@@ -96,8 +97,7 @@ public class PlayerMovementHandler {
             return;
         }
 
-        FlattenedStateAttachment state = player.getData(ToonFlattening.FLATTENED_STATE.get());
-        if (state == null || !state.isFlattened()) {
+        if (!FlattenedStateHelper.isFlattened(player)) {
             flattenedPositions.remove(player.getUUID());
             return;
         }
@@ -118,10 +118,7 @@ public class PlayerMovementHandler {
 
         // ROTATION LOCKING: Prevent model from spinning while flattened
         // Setting current rotation to previous rotation freezes it
-        player.setYRot(player.yRotO);   // Horizontal rotation
-        player.setXRot(player.xRotO);   // Vertical rotation (pitch)
-        player.yHeadRot = player.yHeadRotO;  // Head rotation
-        player.yBodyRot = player.yBodyRotO;  // Body rotation
+        RotationState.freeze(player);
 
         // Prevent other movement states
         if (player.isPassenger()) {

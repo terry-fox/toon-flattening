@@ -28,7 +28,7 @@ public abstract class FallingBlockEntityMixin {
     private void onTick(CallbackInfo ci) {
         FallingBlockEntity self = (FallingBlockEntity)(Object)this;
 
-        if (self.level().isClientSide) {
+        if (self.level().isClientSide()) {
             return;
         }
 

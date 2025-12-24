@@ -13,6 +13,7 @@ import com.terryfox.toonflattening.event.LoginHandler;
 import com.terryfox.toonflattening.event.PlayerMovementHandler;
 import com.terryfox.toonflattening.event.RespawnHandler;
 import com.terryfox.toonflattening.event.VelocityTracker;
+import com.terryfox.toonflattening.util.FlattenedStateHelper;
 
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
@@ -98,7 +99,7 @@ public class ToonFlattening {
     }
 
     private static void handleRestorationCompletion(ServerPlayer player) {
-        FlattenedStateAttachment state = player.getData(FLATTENED_STATE.get());
+        FlattenedStateAttachment state = FlattenedStateHelper.getState(player);
 
         if (!state.isRestoring()) {
             return;
@@ -110,8 +111,8 @@ public class ToonFlattening {
 
         if (elapsed >= reformationTicks) {
             // Keep restorationStartTime for post-restoration immunity, just clear isRestoring flag
-            player.setData(
-                FLATTENED_STATE.get(),
+            FlattenedStateHelper.setState(
+                player,
                 new FlattenedStateAttachment(false, 0L, state.collisionType(), state.wallDirection(), false, state.restorationStartTime(), -1.0, 0.0f)
             );
             LOGGER.debug("Restoration animation complete for {}", player.getName().getString());
@@ -126,7 +127,7 @@ public class ToonFlattening {
 
         // Reset all players to ensure clean state on server start
         event.getServer().getPlayerList().getPlayers().forEach(player -> {
-            player.setData(FLATTENED_STATE.get(), FlattenedStateAttachment.DEFAULT);
+            FlattenedStateHelper.setState(player, FlattenedStateAttachment.DEFAULT);
         });
     }
 

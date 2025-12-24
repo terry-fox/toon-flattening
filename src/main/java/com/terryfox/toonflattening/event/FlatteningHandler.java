@@ -5,6 +5,7 @@ import com.terryfox.toonflattening.attachment.FlattenedStateAttachment;
 import com.terryfox.toonflattening.config.ToonFlatteningConfig;
 import com.terryfox.toonflattening.integration.PehkuiIntegration;
 import com.terryfox.toonflattening.network.NetworkHandler;
+import com.terryfox.toonflattening.util.FlattenedStateHelper;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundSource;
@@ -58,9 +59,7 @@ public class FlatteningHandler {
         ToonFlattening.LOGGER.info("SERVER: flattenPlayer called for {}: cause={}, collisionType={}, wallDirection={}, ceilingBlockY={}",
             player.getName().getString(), cause, collisionType, wallDirection, ceilingBlockY);
 
-        FlattenedStateAttachment currentState = player.getData(ToonFlattening.FLATTENED_STATE.get());
-
-        if (currentState.isFlattened()) {
+        if (FlattenedStateHelper.isFlattened(player)) {
             ToonFlattening.LOGGER.info("SERVER: Player {} already flattened, skipping", player.getName().getString());
             return;
         }
@@ -99,7 +98,7 @@ public class FlatteningHandler {
         // Sync to clients
         if (player instanceof ServerPlayer serverPlayer) {
             ToonFlattening.LOGGER.info("SERVER: Syncing to clients for {}", player.getName().getString());
-            NetworkHandler.syncFlattenState(serverPlayer, true, flattenTime, collisionType, wallDirection, false, 0L, ceilingBlockY, frozenYaw);
+            NetworkHandler.syncFlattenState(serverPlayer, new FlattenedStateAttachment(true, flattenTime, collisionType, wallDirection, false, 0L, ceilingBlockY, frozenYaw));
 
             // Send particles immediately (animation happens via Pehkui scale interpolation)
             NetworkHandler.sendSquashAnimation(serverPlayer);

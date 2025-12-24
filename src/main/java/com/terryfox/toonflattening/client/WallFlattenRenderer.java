@@ -5,6 +5,8 @@ import com.terryfox.toonflattening.ToonFlattening;
 import com.terryfox.toonflattening.attachment.FlattenedStateAttachment;
 import com.terryfox.toonflattening.event.CollisionType;
 import com.terryfox.toonflattening.integration.PehkuiIntegration;
+import com.terryfox.toonflattening.util.FlattenedStateHelper;
+import com.terryfox.toonflattening.util.RotationState;
 import net.minecraft.core.Direction;
 import net.minecraft.world.entity.player.Player;
 import net.neoforged.api.distmarker.Dist;
@@ -46,8 +48,6 @@ public class WallFlattenRenderer {
     private static final Set<Integer> pushedEntities = ConcurrentHashMap.newKeySet();
     private static final Map<Integer, RotationState> rotationStates = new ConcurrentHashMap<>();
 
-    private record RotationState(float yBodyRot, float yBodyRotO, float yHeadRot, float yHeadRotO) {}
-
     // Counteract Pehkui's uniform WIDTH scaling (0.2 on both axes)
     // Multiply to achieve target scales: 0.05 for thin axis, 1.0 for normal axis
     private static final float THIN_SCALE = 0.25f;   // 0.05 / 0.2
@@ -59,23 +59,19 @@ public class WallFlattenRenderer {
             return;
         }
 
-        FlattenedStateAttachment attachment = player.getData(ToonFlattening.FLATTENED_STATE.get());
-
-        if (!attachment.isFlattened()) {
+        if (!FlattenedStateHelper.isFlattened(player)) {
             return;
         }
+
+        FlattenedStateAttachment attachment = FlattenedStateHelper.getState(player);
 
         CollisionType collisionType = attachment.collisionType();
         Direction wallDirection = attachment.wallDirection();
         float frozenYaw = attachment.frozenYaw();
 
         // Store and override rotation
-        rotationStates.put(player.getId(), new RotationState(
-            player.yBodyRot,
-            player.yBodyRotO,
-            player.yHeadRot,
-            player.yHeadRotO
-        ));
+        RotationState stored = RotationState.capture(player);
+        rotationStates.put(player.getId(), stored);
         player.yBodyRot = frozenYaw;
         player.yBodyRotO = frozenYaw;
         player.yHeadRot = frozenYaw;
@@ -136,10 +132,7 @@ public class WallFlattenRenderer {
         // Restore rotation
         RotationState state = rotationStates.remove(player.getId());
         if (state != null) {
-            player.yBodyRot = state.yBodyRot;
-            player.yBodyRotO = state.yBodyRotO;
-            player.yHeadRot = state.yHeadRot;
-            player.yHeadRotO = state.yHeadRotO;
+            state.restore(player);
         }
 
         if (pushedEntities.remove(player.getId())) {

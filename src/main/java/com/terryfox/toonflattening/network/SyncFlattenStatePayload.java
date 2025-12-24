@@ -63,6 +63,33 @@ public record SyncFlattenStatePayload(
         return TYPE;
     }
 
+    public static SyncFlattenStatePayload fromAttachment(int playerId, FlattenedStateAttachment state) {
+        return new SyncFlattenStatePayload(
+            playerId,
+            state.isFlattened(),
+            state.flattenTime(),
+            state.collisionType().ordinal(),
+            state.wallDirection() != null ? state.wallDirection().get3DDataValue() : -1,
+            state.isRestoring(),
+            state.restorationStartTime(),
+            state.ceilingBlockY(),
+            state.frozenYaw()
+        );
+    }
+
+    public FlattenedStateAttachment toAttachment() {
+        return new FlattenedStateAttachment(
+            isFlattened,
+            flattenTime,
+            CollisionType.values()[collisionTypeOrdinal],
+            wallDirectionId == -1 ? null : Direction.from3DDataValue(wallDirectionId),
+            isRestoring,
+            restorationStartTime,
+            ceilingBlockY,
+            frozenYaw
+        );
+    }
+
     public static void handle(SyncFlattenStatePayload payload, IPayloadContext context) {
         context.enqueueWork(() -> {
             ToonFlattening.LOGGER.info("CLIENT: Received sync packet: playerId={}, isFlattened={}, collisionTypeOrdinal={}, wallDirectionId={}",
@@ -78,27 +105,12 @@ public record SyncFlattenStatePayload(
                 ToonFlattening.LOGGER.warn("CLIENT: Entity {} is not a player", payload.playerId());
                 return;
             }
-            CollisionType collisionType = CollisionType.values()[payload.collisionTypeOrdinal()];
-            Direction wallDirection = payload.wallDirectionId() == -1
-                ? null
-                : Direction.from3DDataValue(payload.wallDirectionId());
 
+            FlattenedStateAttachment attachment = payload.toAttachment();
             ToonFlattening.LOGGER.info("CLIENT: Syncing to player {}: collisionType={}, wallDirection={}",
-                player.getName().getString(), collisionType, wallDirection);
+                player.getName().getString(), attachment.collisionType(), attachment.wallDirection());
 
-            player.setData(
-                ToonFlattening.FLATTENED_STATE.get(),
-                new FlattenedStateAttachment(
-                    payload.isFlattened(),
-                    payload.flattenTime(),
-                    collisionType,
-                    wallDirection,
-                    payload.isRestoring(),
-                    payload.restorationStartTime(),
-                    payload.ceilingBlockY(),
-                    payload.frozenYaw()
-                )
-            );
+            player.setData(ToonFlattening.FLATTENED_STATE.get(), attachment);
 
             ToonFlattening.LOGGER.info("CLIENT: Sync complete for player {}", player.getName().getString());
         });

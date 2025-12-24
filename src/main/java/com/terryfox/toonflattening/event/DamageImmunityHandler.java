@@ -3,6 +3,7 @@ package com.terryfox.toonflattening.event;
 import com.terryfox.toonflattening.ToonFlattening;
 import com.terryfox.toonflattening.attachment.FlattenedStateAttachment;
 import com.terryfox.toonflattening.config.ToonFlatteningConfig;
+import com.terryfox.toonflattening.util.FlattenedStateHelper;
 import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.entity.player.Player;
 import net.neoforged.bus.api.EventPriority;
@@ -16,7 +17,7 @@ public class DamageImmunityHandler {
             return;
         }
 
-        FlattenedStateAttachment state = player.getData(ToonFlattening.FLATTENED_STATE.get());
+        FlattenedStateAttachment state = FlattenedStateHelper.getState(player);
         long currentTime = player.level().getGameTime();
 
         // Only block specific damage types (combat-related)
