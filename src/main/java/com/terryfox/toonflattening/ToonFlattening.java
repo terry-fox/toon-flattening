@@ -113,7 +113,7 @@ public class ToonFlattening {
             // Keep restorationStartTime for post-restoration immunity, just clear isRestoring flag
             FlattenedStateHelper.setState(
                 player,
-                new FlattenedStateAttachment(false, 0L, state.collisionType(), state.wallDirection(), false, state.restorationStartTime(), -1.0, 0.0f)
+                new FlattenedStateAttachment(false, 0L, state.collisionType(), state.wallDirection(), false, state.restorationStartTime(), -1.0, 0.0f, -1.0)
             );
             LOGGER.debug("Restoration animation complete for {}", player.getName().getString());
         }

@@ -83,22 +83,50 @@ public class WallFlattenRenderer {
             poseStack.pushPose();
             pushedEntities.add(player.getId());
 
-            float offsetAmount = 0.45f;
+            double wallSurfacePos = attachment.wallSurfacePos();
+            float renderOffset = 0;
+
+            if (wallSurfacePos > 0) {
+                // Calculate exact offset so model touches wall
+                // halfModelWidth = 0.6 * 0.05 / 2 = 0.015 blocks
+                double halfModelWidth = 0.6 * 0.05 / 2;
+
+                switch (wallDirection) {
+                    case EAST -> {
+                        // Wall to east: offset = (wallSurface - entityX) - halfWidth
+                        renderOffset = (float)((wallSurfacePos - player.getX()) - halfModelWidth);
+                    }
+                    case WEST -> {
+                        // Wall to west: offset = (wallSurface - entityX) + halfWidth
+                        renderOffset = (float)((wallSurfacePos - player.getX()) + halfModelWidth);
+                    }
+                    case SOUTH -> {
+                        // Wall to south: offset = (wallSurface - entityZ) - halfWidth
+                        renderOffset = (float)((wallSurfacePos - player.getZ()) - halfModelWidth);
+                    }
+                    case NORTH -> {
+                        // Wall to north: offset = (wallSurface - entityZ) + halfWidth
+                        renderOffset = (float)((wallSurfacePos - player.getZ()) + halfModelWidth);
+                    }
+                    default -> {}
+                }
+            }
+
             switch (wallDirection) {
                 case NORTH -> {
-                    poseStack.translate(0, 0, -offsetAmount);
+                    poseStack.translate(0, 0, renderOffset);
                     poseStack.scale(NORMAL_SCALE, 1.0f, THIN_SCALE);
                 }
                 case SOUTH -> {
-                    poseStack.translate(0, 0, offsetAmount);
+                    poseStack.translate(0, 0, renderOffset);
                     poseStack.scale(NORMAL_SCALE, 1.0f, THIN_SCALE);
                 }
                 case EAST -> {
-                    poseStack.translate(offsetAmount, 0, 0);
+                    poseStack.translate(renderOffset, 0, 0);
                     poseStack.scale(THIN_SCALE, 1.0f, NORMAL_SCALE);
                 }
                 case WEST -> {
-                    poseStack.translate(-offsetAmount, 0, 0);
+                    poseStack.translate(renderOffset, 0, 0);
                     poseStack.scale(THIN_SCALE, 1.0f, NORMAL_SCALE);
                 }
                 default -> {}

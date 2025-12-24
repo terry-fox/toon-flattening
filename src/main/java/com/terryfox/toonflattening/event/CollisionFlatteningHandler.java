@@ -31,6 +31,52 @@ import java.util.OptionalDouble;
 public class CollisionFlatteningHandler {
 
     /**
+     * Finds the wall surface position for a given direction.
+     * Returns the actual collision surface, not just block coordinate.
+     * Handles partial blocks like slabs, stairs by checking collision shape bounds.
+     *
+     * @param player Player entity
+     * @param direction Wall direction (NORTH/SOUTH/EAST/WEST)
+     * @return Wall surface position (X for EAST/WEST, Z for NORTH/SOUTH), or empty if not found
+     */
+    private static OptionalDouble findWallSurface(Player player, Direction direction) {
+        Level level = player.level();
+        int playerBlockX = Mth.floor(player.getX());
+        int playerBlockZ = Mth.floor(player.getZ());
+
+        // Determine which block to check based on direction
+        BlockPos targetPos = switch (direction) {
+            case EAST -> new BlockPos(playerBlockX + 1, Mth.floor(player.getY()), playerBlockZ);
+            case WEST -> new BlockPos(playerBlockX - 1, Mth.floor(player.getY()), playerBlockZ);
+            case SOUTH -> new BlockPos(playerBlockX, Mth.floor(player.getY()), playerBlockZ + 1);
+            case NORTH -> new BlockPos(playerBlockX, Mth.floor(player.getY()), playerBlockZ - 1);
+            default -> null;
+        };
+
+        if (targetPos == null) {
+            return OptionalDouble.empty();
+        }
+
+        BlockState state = level.getBlockState(targetPos);
+        VoxelShape shape = state.getCollisionShape(level, targetPos);
+
+        if (shape.isEmpty()) {
+            return OptionalDouble.empty();
+        }
+
+        // Get actual surface based on direction
+        double surface = switch (direction) {
+            case EAST -> targetPos.getX() + shape.min(Direction.Axis.X);  // West face of block to the east
+            case WEST -> targetPos.getX() + shape.max(Direction.Axis.X);  // East face of block to the west
+            case SOUTH -> targetPos.getZ() + shape.min(Direction.Axis.Z); // North face of block to the south
+            case NORTH -> targetPos.getZ() + shape.max(Direction.Axis.Z); // South face of block to the north
+            default -> -1.0;
+        };
+
+        return surface >= 0 ? OptionalDouble.of(surface) : OptionalDouble.empty();
+    }
+
+    /**
      * Records velocity BEFORE collision processing.
      * This captures the impact velocity before Minecraft modifies it.
      */
@@ -144,21 +190,39 @@ public class CollisionFlatteningHandler {
                 ToonFlattening.LOGGER.info("SERVER: Wall collision detected for {}, direction={}, speed={}",
                     player.getName().getString(), wallDirection, prevHorizSpeed);
 
-                double wallDamage = ToonFlatteningConfig.CONFIG.wallDamage.get();
-                FlatteningHandler.flattenPlayer(player, wallDamage, FlattenCause.COLLISION, prevHorizSpeed, CollisionType.WALL, wallDirection);
+                // Find actual wall surface using VoxelShape
+                OptionalDouble wallSurfaceOpt = findWallSurface(player, wallDirection);
+                if (wallSurfaceOpt.isEmpty()) {
+                    ToonFlattening.LOGGER.info("SERVER: No wall block found for {}, skipping flatten",
+                        player.getName().getString());
+                    commitAndRecordState(player);
+                    return;
+                }
 
-                // Position player against wall surface
-                double offsetAmount = 0.4; // Move toward wall to appear stuck
+                double wallSurface = wallSurfaceOpt.getAsDouble();
+
+                // Position player so hitbox touches wall
+                // halfHitboxWidth = 0.6 * wallHitboxScale / 2
+                double wallHitboxScale = ToonFlatteningConfig.CONFIG.wallHitboxScale.get();
+                double halfHitboxWidth = 0.6 * wallHitboxScale / 2;
+
                 double newX = player.getX();
                 double newZ = player.getZ();
                 switch (wallDirection) {
-                    case EAST -> newX = Math.floor(player.getX()) + 1 - offsetAmount;
-                    case WEST -> newX = Math.ceil(player.getX()) - 1 + offsetAmount;
-                    case SOUTH -> newZ = Math.floor(player.getZ()) + 1 - offsetAmount;
-                    case NORTH -> newZ = Math.ceil(player.getZ()) - 1 + offsetAmount;
+                    case EAST -> newX = wallSurface - halfHitboxWidth;
+                    case WEST -> newX = wallSurface + halfHitboxWidth;
+                    case SOUTH -> newZ = wallSurface - halfHitboxWidth;
+                    case NORTH -> newZ = wallSurface + halfHitboxWidth;
                     default -> {}
                 }
                 player.setPos(newX, player.getY(), newZ);
+
+                ToonFlattening.LOGGER.info("SERVER: Wall position set to X={}, Z={} (wall surface at {})",
+                    newX, newZ, wallSurface);
+
+                double wallDamage = ToonFlatteningConfig.CONFIG.wallDamage.get();
+                FlatteningHandler.flattenPlayer(player, wallDamage, FlattenCause.COLLISION, prevHorizSpeed,
+                    CollisionType.WALL, wallDirection, wallSurface);
             }
         }
 

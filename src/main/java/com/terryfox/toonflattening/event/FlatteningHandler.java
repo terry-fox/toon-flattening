@@ -55,9 +55,9 @@ public class FlatteningHandler {
         flattenPlayer(player, damage, cause, anvilVelocity, collisionType, wallDirection, -1.0);
     }
 
-    public static void flattenPlayer(Player player, double damage, FlattenCause cause, double anvilVelocity, CollisionType collisionType, @Nullable Direction wallDirection, double ceilingBlockY) {
-        ToonFlattening.LOGGER.info("SERVER: flattenPlayer called for {}: cause={}, collisionType={}, wallDirection={}, ceilingBlockY={}",
-            player.getName().getString(), cause, collisionType, wallDirection, ceilingBlockY);
+    public static void flattenPlayer(Player player, double damage, FlattenCause cause, double anvilVelocity, CollisionType collisionType, @Nullable Direction wallDirection, double surfacePos) {
+        ToonFlattening.LOGGER.info("SERVER: flattenPlayer called for {}: cause={}, collisionType={}, wallDirection={}, surfacePos={}",
+            player.getName().getString(), cause, collisionType, wallDirection, surfacePos);
 
         if (FlattenedStateHelper.isFlattened(player)) {
             ToonFlattening.LOGGER.info("SERVER: Player {} already flattened, skipping", player.getName().getString());
@@ -70,13 +70,18 @@ public class FlatteningHandler {
 
         long flattenTime = player.level().getGameTime();
         float frozenYaw = player.getYRot();
+
+        // Store surface position based on collision type
+        double ceilingBlockY = collisionType == CollisionType.CEILING ? surfacePos : -1.0;
+        double wallSurfacePos = collisionType == CollisionType.WALL ? surfacePos : -1.0;
+
         player.setData(
             ToonFlattening.FLATTENED_STATE.get(),
-            new FlattenedStateAttachment(true, flattenTime, collisionType, wallDirection, false, 0L, ceilingBlockY, frozenYaw)
+            new FlattenedStateAttachment(true, flattenTime, collisionType, wallDirection, false, 0L, ceilingBlockY, frozenYaw, wallSurfacePos)
         );
 
-        ToonFlattening.LOGGER.info("SERVER: Attachment set for {}: collisionType={}, wallDirection={}",
-            player.getName().getString(), collisionType, wallDirection);
+        ToonFlattening.LOGGER.info("SERVER: Attachment set for {}: collisionType={}, wallDirection={}, ceilingBlockY={}, wallSurfacePos={}",
+            player.getName().getString(), collisionType, wallDirection, ceilingBlockY, wallSurfacePos);
 
         int animationTicks = calculateFlatteningAnimationTicks(anvilVelocity);
 
@@ -98,7 +103,7 @@ public class FlatteningHandler {
         // Sync to clients
         if (player instanceof ServerPlayer serverPlayer) {
             ToonFlattening.LOGGER.info("SERVER: Syncing to clients for {}", player.getName().getString());
-            NetworkHandler.syncFlattenState(serverPlayer, new FlattenedStateAttachment(true, flattenTime, collisionType, wallDirection, false, 0L, ceilingBlockY, frozenYaw));
+            NetworkHandler.syncFlattenState(serverPlayer, new FlattenedStateAttachment(true, flattenTime, collisionType, wallDirection, false, 0L, ceilingBlockY, frozenYaw, wallSurfacePos));
 
             // Send particles immediately (animation happens via Pehkui scale interpolation)
             NetworkHandler.sendSquashAnimation(serverPlayer);

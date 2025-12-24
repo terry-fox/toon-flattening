@@ -59,7 +59,7 @@ public class NetworkHandler {
             long restorationStartTime = serverPlayer.level().getGameTime();
             FlattenedStateHelper.setState(
                 serverPlayer,
-                new FlattenedStateAttachment(false, 0L, CollisionType.NONE, null, true, restorationStartTime, -1.0, 0.0f)
+                new FlattenedStateAttachment(false, 0L, CollisionType.NONE, null, true, restorationStartTime, -1.0, 0.0f, -1.0)
             );
 
             // Reset Pehkui scale with animation
@@ -71,7 +71,7 @@ public class NetworkHandler {
             PlayerMovementHandler.clearFlattenedPosition(serverPlayer);
 
             // Sync to all tracking clients
-            FlattenedStateAttachment restoringState = new FlattenedStateAttachment(false, 0L, CollisionType.NONE, null, true, restorationStartTime, -1.0, 0.0f);
+            FlattenedStateAttachment restoringState = new FlattenedStateAttachment(false, 0L, CollisionType.NONE, null, true, restorationStartTime, -1.0, 0.0f, -1.0);
             syncFlattenState(serverPlayer, restoringState);
 
             ToonFlattening.LOGGER.info("Player {} started restoration", serverPlayer.getName().getString());
