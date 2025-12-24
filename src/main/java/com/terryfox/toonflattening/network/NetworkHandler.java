@@ -5,7 +5,6 @@ import com.terryfox.toonflattening.attachment.FlattenedStateAttachment;
 import com.terryfox.toonflattening.config.ToonFlatteningConfig;
 import com.terryfox.toonflattening.event.CollisionType;
 import com.terryfox.toonflattening.event.PlayerMovementHandler;
-import com.terryfox.toonflattening.integration.PehkuiIntegration;
 import com.terryfox.toonflattening.util.FlattenedStateHelper;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerPlayer;
@@ -61,10 +60,6 @@ public class NetworkHandler {
                 serverPlayer,
                 new FlattenedStateAttachment(false, 0L, CollisionType.NONE, null, true, restorationStartTime, -1.0, 0.0f, -1.0)
             );
-
-            // Reset Pehkui scale with animation
-            int reformationTicks = ToonFlatteningConfig.CONFIG.reformationTicks.get();
-            PehkuiIntegration.resetPlayerScaleWithDelay(serverPlayer, reformationTicks);
 
             // Restore gravity and clear locked position
             serverPlayer.setNoGravity(false);

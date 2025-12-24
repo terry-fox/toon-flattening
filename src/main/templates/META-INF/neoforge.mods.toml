@@ -77,14 +77,6 @@ config="${mod_id}.mixins.json"
     # Side this dependency is applied on - BOTH, CLIENT, or SERVER
     side="BOTH"
 
-# Pehkui dependency for entity scaling
-[[dependencies.${mod_id}]]
-    modId="pehkui"
-    type="required"
-    versionRange="[3.8,)"
-    ordering="BEFORE"
-    side="BOTH"
-
 # Here's another dependency
 [[dependencies.${mod_id}]]
     modId="minecraft"

@@ -95,7 +95,7 @@ public class ToonFlattening {
 
     private void commonSetup(FMLCommonSetupEvent event) {
         LOGGER.info("ToonFlattening initialized for Minecraft 1.21.1");
-        LOGGER.info("Pehkui integration ready");
+        LOGGER.info("Direct rendering with matrix transforms");
     }
 
     private static void handleRestorationCompletion(ServerPlayer player) {

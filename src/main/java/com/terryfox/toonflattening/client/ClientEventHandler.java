@@ -19,8 +19,8 @@ import net.neoforged.neoforge.network.PacketDistributor;
 @EventBusSubscriber(modid = ToonFlattening.MODID, value = Dist.CLIENT)
 public class ClientEventHandler {
     static {
-        NeoForge.EVENT_BUS.addListener(WallFlattenRenderer::onRenderLivingPre);
-        NeoForge.EVENT_BUS.addListener(WallFlattenRenderer::onRenderLivingPost);
+        NeoForge.EVENT_BUS.addListener(FlattenRenderer::onRenderLivingPre);
+        NeoForge.EVENT_BUS.addListener(FlattenRenderer::onRenderLivingPost);
     }
     @SubscribeEvent
     public static void onMovementInput(MovementInputUpdateEvent event) {

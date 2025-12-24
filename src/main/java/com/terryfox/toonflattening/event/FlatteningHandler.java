@@ -3,7 +3,6 @@ package com.terryfox.toonflattening.event;
 import com.terryfox.toonflattening.ToonFlattening;
 import com.terryfox.toonflattening.attachment.FlattenedStateAttachment;
 import com.terryfox.toonflattening.config.ToonFlatteningConfig;
-import com.terryfox.toonflattening.integration.PehkuiIntegration;
 import com.terryfox.toonflattening.network.NetworkHandler;
 import com.terryfox.toonflattening.util.FlattenedStateHelper;
 import net.minecraft.core.Direction;
@@ -82,23 +81,6 @@ public class FlatteningHandler {
 
         ToonFlattening.LOGGER.info("SERVER: Attachment set for {}: collisionType={}, wallDirection={}, ceilingBlockY={}, wallSurfacePos={}",
             player.getName().getString(), collisionType, wallDirection, ceilingBlockY, wallSurfacePos);
-
-        int animationTicks = calculateFlatteningAnimationTicks(anvilVelocity);
-
-        // Apply different Pehkui scaling based on collision type
-        if (collisionType == CollisionType.WALL) {
-            ToonFlattening.LOGGER.info("SERVER: Applying wall scale for {}", player.getName().getString());
-            double wallHitboxScale = ToonFlatteningConfig.CONFIG.wallHitboxScale.get();
-            PehkuiIntegration.setWallScale(player, (float) wallHitboxScale, animationTicks);
-        } else {
-            // ANVIL, FLOOR, CEILING use standard height/width scaling
-            ToonFlattening.LOGGER.info("SERVER: Applying standard height/width scale for {}", player.getName().getString());
-            double depthScale = ToonFlatteningConfig.CONFIG.depthScale.get();
-            double widthScale = ToonFlatteningConfig.CONFIG.widthScale.get();
-            PehkuiIntegration.setPlayerScaleWithDelay(player, (float) depthScale, (float) widthScale, animationTicks);
-
-            // TODO: CEILING collision type may need position offset (player sticks to ceiling)
-        }
 
         // Sync to clients
         if (player instanceof ServerPlayer serverPlayer) {

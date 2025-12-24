@@ -3,5 +3,5 @@
   "package": "com.terryfox.toonflattening.mixin",
   "compatibilityLevel": "JAVA_21",
   "mixins": ["PlayerMixin", "FallingBlockEntityMixin"],
-  "client": ["client.PlayerModelMixin"]
+  "client": ["client.PlayerModelMixin", "client.CameraMixin"]
 }
