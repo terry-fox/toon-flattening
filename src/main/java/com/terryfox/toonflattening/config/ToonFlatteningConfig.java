@@ -58,15 +58,15 @@ public class ToonFlatteningConfig {
 
         floorVelocityThreshold = builder
             .comment("Minimum downward velocity to trigger floor flattening")
-            .defineInRange("floorVelocityThreshold", 0.1, 0.1, 5.0);
+            .defineInRange("floorVelocityThreshold", 0.8, 0.1, 5.0);
 
         ceilingVelocityThreshold = builder
             .comment("Minimum upward velocity to trigger ceiling flattening")
-            .defineInRange("ceilingVelocityThreshold", 0.1, 0.1, 5.0);
+            .defineInRange("ceilingVelocityThreshold", 0.8, 0.1, 5.0);
 
         wallVelocityThreshold = builder
             .comment("Minimum horizontal velocity to trigger wall flattening")
-            .defineInRange("wallVelocityThreshold", 0.1, 0.1, 5.0);
+            .defineInRange("wallVelocityThreshold", 0.8, 0.1, 5.0);
 
         floorDamage = builder
             .comment("Damage dealt when flattened by floor collision")
