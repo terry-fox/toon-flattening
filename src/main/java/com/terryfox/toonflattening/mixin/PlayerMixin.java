@@ -45,4 +45,11 @@ public abstract class PlayerMixin {
             ci.cancel();
         }
     }
+
+    @Inject(method = "canCollideWith", at = @At("HEAD"), cancellable = true)
+    private void onCanCollideWith(Entity entity, CallbackInfoReturnable<Boolean> cir) {
+        if (toonflattening$shouldBlockInteraction()) {
+            cir.setReturnValue(false);
+        }
+    }
 }
