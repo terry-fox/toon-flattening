@@ -8,8 +8,6 @@ import com.terryfox.toonflattening.config.ToonFlatteningConfig;
 import com.terryfox.toonflattening.integration.PehkuiIntegration;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvents;
-import net.minecraft.sounds.SoundSource;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.network.PacketDistributor;

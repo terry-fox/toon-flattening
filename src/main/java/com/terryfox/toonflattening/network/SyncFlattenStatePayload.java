@@ -5,7 +5,6 @@ import com.terryfox.toonflattening.api.FlattenDirection;
 import com.terryfox.toonflattening.attachment.FlattenedStateAttachment;
 import com.terryfox.toonflattening.attachment.FrozenPoseData;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
