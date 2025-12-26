@@ -18,7 +18,6 @@ public record FrozenPoseData(
     float attackAnim,
     int swingTime,
     boolean swinging,
-    float swimAmount,
     boolean crouching
 ) {
     public static final Codec<FrozenPoseData> CODEC = RecordCodecBuilder.create(instance ->
@@ -31,7 +30,6 @@ public record FrozenPoseData(
             Codec.FLOAT.fieldOf("attackAnim").forGetter(FrozenPoseData::attackAnim),
             Codec.INT.fieldOf("swingTime").forGetter(FrozenPoseData::swingTime),
             Codec.BOOL.fieldOf("swinging").forGetter(FrozenPoseData::swinging),
-            Codec.FLOAT.fieldOf("swimAmount").forGetter(FrozenPoseData::swimAmount),
             Codec.BOOL.fieldOf("crouching").forGetter(FrozenPoseData::crouching)
         ).apply(instance, FrozenPoseData::new)
     );
@@ -49,7 +47,6 @@ public record FrozenPoseData(
             player.getAttackAnim(1.0f),
             player.swingTime,
             player.swinging,
-            player.getSwimAmount(1.0f),
             player.isCrouching()
         );
     }
