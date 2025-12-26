@@ -15,29 +15,38 @@
 - [x] The amount of horizontal spread shall be configurable in the server config files
 
 ## Version 0.3.0
-- [x] Players shall flatten when hitting a floor, wall or ceiling at a velocity that would deal 4 hearts of damage when landing on the ground after falling with no special armor or enchantements
-- [x] A player shall not be able to be pushed while flattened
-- [x] Players shall be able to walk directly through flattened players without "bumping" over them
-- [x] Players shall be immune to being damaged from mob or player attacks while flattened
-- [x] Players shall be immune to being damaged while restoring and 1 second after their restoration animation has finished
-- [x] Players in Creative mode should be able to be flattened by all flattening methods
-- [x] Player models shall not move at all while flattened
+(Moved to later version)
+- [x] ~~Players shall flatten when hitting a floor, wall or ceiling at a velocity that would deal 4 hearts of damage when landing on the ground after falling with no special armor or enchantements~~
+- [x] ~~A player shall not be able to be pushed while flattened~~
+- [x] ~~Players shall be able to walk directly through flattened players without "bumping" over them~~
+- [x] ~~Players shall be immune to being damaged from mob or player attacks while flattened~~
+- [x] ~~Players shall be immune to being damaged while restoring and 1 second after their restoration animation has finished~~
+- [x] ~~Players in Creative mode should be able to be flattened by all flattening methods~~
+- [x] ~~Player models shall not move at all while flattened~~
 
 ## Version 0.4.0
-- [ ] There shall be a custom hammer powerup to allow players to squish other players and mobs
+- [ ] Players in creative mode shall be flattenable
+- [ ] Players in creative mode shall not be flattenable
+- [ ] A player's model shall freeze in the middle of its current state when it is hit
+- [ ] No animations except for lighting and particle effects (eg from enchanted armor) shall occur while a player is flattened
+- [ ] When an anvil is dropped on a player while they are flattened, the player shall continue to gradually spread up to a maximum limit
+- [ ] The maximum spread limit shall be configurable in the server config files
 
 ## Version 0.5.0
-- [ ] Players shall be flattened by pistons when compressed between the head and a solid block such as a wall
-- [ ] The mod should an option to stick to a piston head when it retracts (thoughts: random chance for stick, 100% chance for sticky pistons?)
+- [ ] There shall be a custom hammer powerup to allow players to squish other players and mobs
 
 ## Version 0.6.0
 - [ ] Players shall be flattened by pistons when compressed between the head and a solid block such as a wall
 - [ ] The mod should an option to stick to a piston head when it retracts (thoughts: random chance for stick, 100% chance for sticky pistons?)
 
 ## Version 0.7.0
-- [ ] When a player enters a minecart or boat with a player already in it, the player shall flatten under the player entering the minecart/boat
+- [ ] Players shall be flattened by pistons when compressed between the head and a solid block such as a wall
+- [ ] The mod should an option to stick to a piston head when it retracts (thoughts: random chance for stick, 100% chance for sticky pistons?)
 
 ## Version 0.8.0
+- [ ] When a player enters a minecart or boat with a player already in it, the player shall flatten under the player entering the minecart/boat
+
+## Version 0.9.0
 - [ ] Iron Golems shall flatten players
 - [ ] The mod may have an option to leave a still-flattened clone of a player when they die and respawn from flattening
 - [ ] Players may take on random poses when flattened
