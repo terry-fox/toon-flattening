@@ -33,9 +33,10 @@ public class FlatteningService {
      * @param player The player to flatten
      * @param context The flatten context (trigger ID, velocity, direction, source)
      * @param config The trigger configuration
+     * @param dealDamage Whether to deal damage when flattening
      * @return true if player was flattened, false if already flattened or spectator
      */
-    public static boolean tryFlattenPlayer(Player player, FlattenContext context, TriggerConfigSpec config) {
+    public static boolean tryFlattenPlayer(Player player, FlattenContext context, TriggerConfigSpec config, boolean dealDamage) {
         FlattenedStateAttachment currentState = player.getData(ToonFlattening.FLATTENED_STATE.get());
 
         // First-wins logic: already flattened
@@ -48,15 +49,15 @@ public class FlatteningService {
             return false;
         }
 
-        applyFlatteningEffect(player, context, config);
+        applyFlatteningEffect(player, context, config, dealDamage);
         return true;
     }
 
     /**
      * Applies the flattening effect to a player without checking preconditions.
-     * Updates state, applies scale, syncs to clients, deals damage, plays sound.
+     * Updates state, applies scale, syncs to clients, deals damage (if enabled), plays sound.
      */
-    private static void applyFlatteningEffect(Player player, FlattenContext context, TriggerConfigSpec config) {
+    private static void applyFlatteningEffect(Player player, FlattenContext context, TriggerConfigSpec config, boolean dealDamage) {
         long flattenTime = player.level().getGameTime();
         player.setData(
             ToonFlattening.FLATTENED_STATE.get(),
@@ -75,7 +76,9 @@ public class FlatteningService {
             NetworkHandler.sendSquashAnimation(serverPlayer);
         }
 
-        player.hurt(player.damageSources().generic(), (float) config.getDamage());
+        if (dealDamage) {
+            player.hurt(player.damageSources().generic(), (float) config.getDamage());
+        }
 
         player.level().playSound(
             null,
@@ -129,75 +132,6 @@ public class FlatteningService {
 
         TriggerConfigSpec config = ToonFlatteningConfig.CONFIG.getTriggerConfig(FlattenCause.ANVIL);
 
-        if (player.getAbilities().invulnerable) {
-            tryFlattenPlayerNoDamage(player, context, config);
-        } else {
-            tryFlattenPlayer(player, context, config);
-        }
-    }
-
-    /**
-     * Attempts to flatten a player without dealing damage.
-     * Used for creative mode players who are invulnerable to damage.
-     *
-     * @param player The player to flatten
-     * @param context The flatten context
-     * @param config The trigger configuration
-     * @return true if player was flattened, false if already flattened or spectator
-     */
-    public static boolean tryFlattenPlayerNoDamage(Player player, FlattenContext context, TriggerConfigSpec config) {
-        FlattenedStateAttachment currentState = player.getData(ToonFlattening.FLATTENED_STATE.get());
-
-        // First-wins logic: already flattened
-        if (currentState.isFlattened()) {
-            return false;
-        }
-
-        // Spectators cannot be flattened
-        if (player.isSpectator()) {
-            return false;
-        }
-
-        applyFlatteningEffectNoDamage(player, context, config);
-        return true;
-    }
-
-    /**
-     * Applies the flattening effect to a player without dealing damage.
-     * Updates state, applies scale, syncs to clients, plays sound (no damage).
-     */
-    private static void applyFlatteningEffectNoDamage(Player player, FlattenContext context, TriggerConfigSpec config) {
-        long flattenTime = player.level().getGameTime();
-        player.setData(
-            ToonFlattening.FLATTENED_STATE.get(),
-            new FlattenedStateAttachment(true, flattenTime, context.triggerId(), context.direction())
-        );
-
-        int animationTicks = calculateFlatteningAnimationTicks(context.impactVelocity());
-
-        double heightScale = config.getHeightScale();
-        double widthScale = config.getWidthScale();
-        PehkuiIntegration.setPlayerScaleWithDelay(player, (float) heightScale, (float) widthScale, animationTicks);
-
-        // Sync to clients
-        if (player instanceof ServerPlayer serverPlayer) {
-            NetworkHandler.syncFlattenState(serverPlayer, true, flattenTime, context.triggerId(), context.direction());
-            NetworkHandler.sendSquashAnimation(serverPlayer);
-        }
-
-        // Skip damage for creative players
-
-        player.level().playSound(
-            null,
-            player.getX(),
-            player.getY(),
-            player.getZ(),
-            ToonFlattening.FLATTEN_SOUND.get(),
-            SoundSource.PLAYERS,
-            1.0f,
-            1.0f
-        );
-
-        ToonFlattening.LOGGER.info("Player {} flattened by trigger {} (no damage)", player.getName().getString(), context.triggerId());
+        tryFlattenPlayer(player, context, config, !player.getAbilities().invulnerable);
     }
 }

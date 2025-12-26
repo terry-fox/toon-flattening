@@ -30,7 +30,7 @@ public class FlatteningHandler {
 
             FlattenContext context = trigger.shouldTrigger(event);
             if (context != null) {
-                boolean wasFlattened = FlatteningService.tryFlattenPlayer(player, context, config);
+                boolean wasFlattened = FlatteningService.tryFlattenPlayer(player, context, config, true);
                 if (wasFlattened) {
                     event.setAmount((float) config.getDamage());
                 }

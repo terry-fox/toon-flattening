@@ -2,9 +2,5 @@
   "key.categories.toonflattening": "Toon Flattening",
   "key.toonflattening.reform": "Reform from Flattened",
   "subtitles.toonflattening.flatten": "Player flattened",
-  "toonflattening.config.title": "Toon Flattening Config",
-  "toonflattening.config.flattenDamage": "Flatten Damage",
-  "toonflattening.config.flattenDamage.tooltip": "Damage dealt when player is flattened (default: 4.0)",
-  "toonflattening.config.heightScale": "Height Scale",
-  "toonflattening.config.heightScale.tooltip": "Player height multiplier when flattened (default: 0.25)"
+  "toonflattening.config.title": "Toon Flattening Config"
 }

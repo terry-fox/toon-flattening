@@ -11,12 +11,6 @@ public class ToonFlatteningConfig {
     public static final ToonFlatteningConfig CONFIG;
     public static final ModConfigSpec CONFIG_SPEC;
 
-    @Deprecated(forRemoval = true)
-    public final ModConfigSpec.DoubleValue flattenDamage;
-    @Deprecated(forRemoval = true)
-    public final ModConfigSpec.DoubleValue heightScale;
-    @Deprecated(forRemoval = true)
-    public final ModConfigSpec.DoubleValue widthScale;
     public final ModConfigSpec.IntValue reformationTicks;
 
     private final Map<FlattenCause, TriggerConfigSpec> triggerConfigs;
@@ -24,22 +18,6 @@ public class ToonFlatteningConfig {
     private ToonFlatteningConfig(ModConfigSpec.Builder builder) {
         builder.comment("Toon Flattening Server Configuration")
                .push("flattening");
-
-        // Legacy config - kept for backwards compatibility
-        flattenDamage = builder
-            .comment("Amount of damage dealt when a player is flattened by an anvil")
-            .translation("config.toonflattening.flatten_damage")
-            .defineInRange("flattenDamage", 4.0, 0.0, 20.0);
-
-        heightScale = builder
-            .comment("Height multiplier when flattened (default 0.05 = 1/20th height)")
-            .translation("config.toonflattening.height_scale")
-            .defineInRange("heightScale", 0.05, 0.01, 1.0);
-
-        widthScale = builder
-            .comment("Width multiplier when flattened (default 1.8 = 1.8x width)")
-            .translation("config.toonflattening.width_scale")
-            .defineInRange("widthScale", 1.8, 1.0, 6.0);
 
         reformationTicks = builder
             .comment("Animation duration for reformation in ticks (20 = 1 second)")

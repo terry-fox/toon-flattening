@@ -11,6 +11,7 @@ import net.minecraft.world.entity.player.Player;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
 import net.neoforged.neoforge.client.event.RenderPlayerEvent;
 
 import java.util.HashMap;
@@ -106,11 +107,8 @@ public class DepthScaleRenderer {
         }
     }
 
-    public static void cleanupPlayer(UUID playerId) {
-        animations.remove(playerId);
-    }
-
-    public static void clearAll() {
+    @SubscribeEvent
+    public static void onClientPlayerLogout(ClientPlayerNetworkEvent.LoggingOut event) {
         animations.clear();
     }
 }
