@@ -27,7 +27,7 @@
 ## Version 0.4.0
 - [x] Players in creative mode shall be flattenable
 - [x] Players in spectator mode shall not be flattenable
-- [ ] A player's model shall freeze in the middle of its current state when it is hit
+- [x] A player's model shall freeze in the middle of its current state when it is hit
 - [ ] No animations except for lighting and particle effects (eg from enchanted armor) shall occur while a player is flattened
 - [ ] When an anvil is dropped on a player while they are flattened, the player shall continue to gradually spread up to a maximum limit
 - [ ] The maximum spread limit shall be configurable in the server config files
