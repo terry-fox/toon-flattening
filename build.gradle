@@ -20,6 +20,10 @@ group = mod_group_id
 repositories {
     // Add here additional repositories if required by some of the dependencies below.
     maven {
+        name = "JitPack"
+        url = "https://jitpack.io"
+    }
+    maven {
         name = "Modrinth"
         url = "https://api.modrinth.com/maven"
     }
@@ -116,6 +120,9 @@ configurations {
 }
 
 dependencies {
+    // Pehkui for entity scaling
+    implementation "com.github.Virtuoel:Pehkui:${pehkui_version}"
+
     // Freecam for debugging (local runtime only)
     localRuntime "maven.modrinth:freecam:1.3.0+mc1.21.1-neoforge"
 

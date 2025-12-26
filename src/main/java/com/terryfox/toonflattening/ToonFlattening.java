@@ -5,19 +5,14 @@ import org.slf4j.Logger;
 import com.mojang.logging.LogUtils;
 import com.terryfox.toonflattening.attachment.FlattenedStateAttachment;
 import com.terryfox.toonflattening.config.ToonFlatteningConfig;
-import com.terryfox.toonflattening.event.CollisionFlatteningHandler;
-import com.terryfox.toonflattening.event.CollisionType;
-import com.terryfox.toonflattening.event.DamageImmunityHandler;
 import com.terryfox.toonflattening.event.FlatteningHandler;
 import com.terryfox.toonflattening.event.LoginHandler;
 import com.terryfox.toonflattening.event.PlayerMovementHandler;
 import com.terryfox.toonflattening.event.RespawnHandler;
-import com.terryfox.toonflattening.event.VelocityTracker;
-import com.terryfox.toonflattening.util.FlattenedStateHelper;
+import com.terryfox.toonflattening.registry.BuiltinTriggers;
 
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.EventPriority;
@@ -31,9 +26,7 @@ import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.neoforged.neoforge.attachment.AttachmentType;
 import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.server.ServerStartingEvent;
-import net.neoforged.neoforge.event.tick.EntityTickEvent;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import net.neoforged.neoforge.registries.NeoForgeRegistries;
@@ -75,59 +68,26 @@ public class ToonFlattening {
         modEventBus.addListener(this::commonSetup);
 
         NeoForge.EVENT_BUS.register(this);
-        NeoForge.EVENT_BUS.addListener(EventPriority.HIGHEST, DamageImmunityHandler::onLivingDamage);
         NeoForge.EVENT_BUS.addListener(EventPriority.HIGH, FlatteningHandler::onLivingHurt);
-        NeoForge.EVENT_BUS.addListener(EventPriority.HIGHEST, PlayerMovementHandler::onEntityTickPre);
-        NeoForge.EVENT_BUS.addListener(PlayerMovementHandler::onEntityTickPost);
+        NeoForge.EVENT_BUS.addListener(PlayerMovementHandler::onEntityTick);
         NeoForge.EVENT_BUS.addListener(RespawnHandler::onPlayerRespawn);
         NeoForge.EVENT_BUS.addListener(LoginHandler::onPlayerLogin);
-        NeoForge.EVENT_BUS.addListener(CollisionFlatteningHandler::onEntityTickPre);
-        NeoForge.EVENT_BUS.addListener(CollisionFlatteningHandler::onEntityTickPost);
-        NeoForge.EVENT_BUS.addListener((PlayerEvent.PlayerLoggedOutEvent event) -> {
-            VelocityTracker.clearPlayer(event.getEntity().getUUID());
-        });
-        NeoForge.EVENT_BUS.addListener((EntityTickEvent.Pre event) -> {
-            if (event.getEntity() instanceof net.minecraft.server.level.ServerPlayer player) {
-                handleRestorationCompletion(player);
-            }
-        });
     }
 
     private void commonSetup(FMLCommonSetupEvent event) {
         LOGGER.info("ToonFlattening initialized for Minecraft 1.21.1");
-        LOGGER.info("Direct rendering with matrix transforms");
-    }
-
-    private static void handleRestorationCompletion(ServerPlayer player) {
-        FlattenedStateAttachment state = FlattenedStateHelper.getState(player);
-
-        if (!state.isRestoring()) {
-            return;
-        }
-
-        long currentTime = player.level().getGameTime();
-        long elapsed = currentTime - state.restorationStartTime();
-        int reformationTicks = ToonFlatteningConfig.CONFIG.reformationTicks.get();
-
-        if (elapsed >= reformationTicks) {
-            // Keep restorationStartTime for post-restoration immunity, just clear isRestoring flag
-            FlattenedStateHelper.setState(
-                player,
-                new FlattenedStateAttachment(false, 0L, state.collisionType(), state.wallDirection(), false, state.restorationStartTime(), -1.0, 0.0f, -1.0)
-            );
-            LOGGER.debug("Restoration animation complete for {}", player.getName().getString());
-        }
+        LOGGER.info("Pehkui integration ready");
+        BuiltinTriggers.register();
+        LOGGER.info("Registered builtin triggers");
     }
 
     @SubscribeEvent
     public void onServerStarting(ServerStartingEvent event) {
         LOGGER.info("ToonFlattening server starting");
-        LOGGER.info("Flatten damage: {}", ToonFlatteningConfig.CONFIG.flattenDamage.get());
-        LOGGER.info("Depth scale: {}", ToonFlatteningConfig.CONFIG.depthScale.get());
 
         // Reset all players to ensure clean state on server start
         event.getServer().getPlayerList().getPlayers().forEach(player -> {
-            FlattenedStateHelper.setState(player, FlattenedStateAttachment.DEFAULT);
+            player.setData(FLATTENED_STATE.get(), FlattenedStateAttachment.DEFAULT);
         });
     }
 

@@ -1,39 +1,40 @@
 package com.terryfox.toonflattening.config;
 
+import com.terryfox.toonflattening.event.FlattenCause;
 import net.neoforged.neoforge.common.ModConfigSpec;
 import org.apache.commons.lang3.tuple.Pair;
+
+import java.util.EnumMap;
+import java.util.Map;
 
 public class ToonFlatteningConfig {
     public static final ToonFlatteningConfig CONFIG;
     public static final ModConfigSpec CONFIG_SPEC;
 
+    @Deprecated(forRemoval = true)
     public final ModConfigSpec.DoubleValue flattenDamage;
-    public final ModConfigSpec.DoubleValue depthScale;
+    @Deprecated(forRemoval = true)
+    public final ModConfigSpec.DoubleValue heightScale;
+    @Deprecated(forRemoval = true)
     public final ModConfigSpec.DoubleValue widthScale;
     public final ModConfigSpec.IntValue reformationTicks;
-    public final ModConfigSpec.IntValue postRestorationImmunityTicks;
 
-    public final ModConfigSpec.DoubleValue baseDamageThreshold;
-    public final ModConfigSpec.DoubleValue ceilingDamage;
-    public final ModConfigSpec.DoubleValue wallDamage;
-    public final ModConfigSpec.DoubleValue wallHitboxScale;
-    public final ModConfigSpec.BooleanValue enableFloorFlatten;
-    public final ModConfigSpec.BooleanValue enableCeilingFlatten;
-    public final ModConfigSpec.BooleanValue enableWallFlatten;
+    private final Map<FlattenCause, TriggerConfigSpec> triggerConfigs;
 
     private ToonFlatteningConfig(ModConfigSpec.Builder builder) {
         builder.comment("Toon Flattening Server Configuration")
                .push("flattening");
 
+        // Legacy config - kept for backwards compatibility
         flattenDamage = builder
             .comment("Amount of damage dealt when a player is flattened by an anvil")
             .translation("config.toonflattening.flatten_damage")
             .defineInRange("flattenDamage", 4.0, 0.0, 20.0);
 
-        depthScale = builder
-            .comment("Depth multiplier when flattened (default 0.05 = 1/20th depth)")
-            .translation("config.toonflattening.depth_scale")
-            .defineInRange("depthScale", 0.05, 0.01, 1.0);
+        heightScale = builder
+            .comment("Height multiplier when flattened (default 0.05 = 1/20th height)")
+            .translation("config.toonflattening.height_scale")
+            .defineInRange("heightScale", 0.05, 0.01, 1.0);
 
         widthScale = builder
             .comment("Width multiplier when flattened (default 1.8 = 1.8x width)")
@@ -44,44 +45,23 @@ public class ToonFlatteningConfig {
             .comment("Animation duration for reformation in ticks (20 = 1 second)")
             .defineInRange("reformationTicks", 5, 1, 100);
 
-        postRestorationImmunityTicks = builder
-            .comment("Ticks of damage immunity after restoration completes (20 = 1 second)")
-            .defineInRange("postRestorationImmunityTicks", 20, 0, 100);
-
         builder.pop();
 
-        builder.comment("Collision-based flattening settings")
-               .push("collision_flattening");
+        // Per-trigger configuration
+        builder.comment("Per-trigger settings (hot-reloadable)")
+               .push("triggers");
 
-        baseDamageThreshold = builder
-            .comment("Damage threshold for triggering flattening (4 hearts = 8.0)")
-            .defineInRange("baseDamageThreshold", 8.0, 0.0, 40.0);
-
-        ceilingDamage = builder
-            .comment("Damage dealt when flattened by ceiling collision")
-            .defineInRange("ceilingDamage", 4.0, 0.0, 20.0);
-
-        wallDamage = builder
-            .comment("Damage dealt when flattened by wall collision")
-            .defineInRange("wallDamage", 4.0, 0.0, 20.0);
-
-        wallHitboxScale = builder
-            .comment("Hitbox width/depth scale when wall-flattened")
-            .defineInRange("wallHitboxScale", 0.2, 0.1, 1.0);
-
-        enableFloorFlatten = builder
-            .comment("Enable floor collision flattening")
-            .define("enableFloorFlatten", true);
-
-        enableCeilingFlatten = builder
-            .comment("Enable ceiling collision flattening")
-            .define("enableCeilingFlatten", true);
-
-        enableWallFlatten = builder
-            .comment("Enable wall collision flattening")
-            .define("enableWallFlatten", true);
+        triggerConfigs = new EnumMap<>(FlattenCause.class);
+        for (FlattenCause cause : FlattenCause.values()) {
+            TriggerDefaults defaults = TriggerDefaults.forCause(cause);
+            triggerConfigs.put(cause, new TriggerConfigSpec(builder, cause.name(), defaults));
+        }
 
         builder.pop();
+    }
+
+    public TriggerConfigSpec getTriggerConfig(FlattenCause cause) {
+        return triggerConfigs.get(cause);
     }
 
     static {

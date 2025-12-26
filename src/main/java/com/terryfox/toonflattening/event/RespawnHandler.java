@@ -2,8 +2,8 @@ package com.terryfox.toonflattening.event;
 
 import com.terryfox.toonflattening.ToonFlattening;
 import com.terryfox.toonflattening.attachment.FlattenedStateAttachment;
+import com.terryfox.toonflattening.integration.PehkuiIntegration;
 import com.terryfox.toonflattening.network.NetworkHandler;
-import com.terryfox.toonflattening.util.FlattenedStateHelper;
 import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
@@ -16,10 +16,16 @@ public class RespawnHandler {
         }
 
         // Reset flattened state on respawn
-        FlattenedStateHelper.setState(serverPlayer, FlattenedStateAttachment.DEFAULT);
+        serverPlayer.setData(
+            ToonFlattening.FLATTENED_STATE.get(),
+            FlattenedStateAttachment.DEFAULT
+        );
+
+        // Reset Pehkui scale
+        PehkuiIntegration.resetPlayerScale(serverPlayer);
 
         // Sync to clients
-        NetworkHandler.syncFlattenState(serverPlayer, FlattenedStateAttachment.DEFAULT);
+        NetworkHandler.syncFlattenState(serverPlayer, false, 0L, null, null);
 
         ToonFlattening.LOGGER.debug("Reset flattened state for {} on respawn",
             serverPlayer.getName().getString());

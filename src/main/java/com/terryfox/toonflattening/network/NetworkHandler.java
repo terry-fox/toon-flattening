@@ -1,12 +1,11 @@
 package com.terryfox.toonflattening.network;
 
 import com.terryfox.toonflattening.ToonFlattening;
+import com.terryfox.toonflattening.api.FlattenDirection;
 import com.terryfox.toonflattening.attachment.FlattenedStateAttachment;
 import com.terryfox.toonflattening.config.ToonFlatteningConfig;
-import com.terryfox.toonflattening.event.CollisionType;
-import com.terryfox.toonflattening.event.PlayerMovementHandler;
-import com.terryfox.toonflattening.util.FlattenedStateHelper;
-import net.minecraft.core.Direction;
+import com.terryfox.toonflattening.integration.PehkuiIntegration;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -16,6 +15,8 @@ import net.neoforged.neoforge.network.PacketDistributor;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 import net.neoforged.neoforge.network.registration.PayloadRegistrar;
+
+import javax.annotation.Nullable;
 
 @EventBusSubscriber(modid = ToonFlattening.MODID)
 public class NetworkHandler {
@@ -50,36 +51,38 @@ public class NetworkHandler {
                 return;
             }
 
-            if (!FlattenedStateHelper.isFlattened(serverPlayer)) {
+            FlattenedStateAttachment state = serverPlayer.getData(ToonFlattening.FLATTENED_STATE.get());
+            if (!state.isFlattened()) {
                 return;
             }
 
-            // Enter restoration state
-            long restorationStartTime = serverPlayer.level().getGameTime();
-            FlattenedStateHelper.setState(
-                serverPlayer,
-                new FlattenedStateAttachment(false, 0L, CollisionType.NONE, null, true, restorationStartTime, -1.0, 0.0f, -1.0)
+            // Reset flattened state
+            serverPlayer.setData(
+                ToonFlattening.FLATTENED_STATE.get(),
+                FlattenedStateAttachment.DEFAULT
             );
 
-            // Restore gravity and clear locked position
-            serverPlayer.setNoGravity(false);
-            PlayerMovementHandler.clearFlattenedPosition(serverPlayer);
+            // Reset Pehkui scale
+            int reformationTicks = ToonFlatteningConfig.CONFIG.reformationTicks.get();
+            PehkuiIntegration.resetPlayerScaleWithDelay(serverPlayer, reformationTicks);
 
             // Sync to all tracking clients
-            FlattenedStateAttachment restoringState = new FlattenedStateAttachment(false, 0L, CollisionType.NONE, null, true, restorationStartTime, -1.0, 0.0f, -1.0);
-            syncFlattenState(serverPlayer, restoringState);
+            syncFlattenState(serverPlayer, false, 0L, null, null);
 
-            ToonFlattening.LOGGER.info("Player {} started restoration", serverPlayer.getName().getString());
+            ToonFlattening.LOGGER.info("Player {} reformed", serverPlayer.getName().getString());
         });
     }
 
-    public static void syncFlattenState(ServerPlayer player, FlattenedStateAttachment state) {
-        ToonFlattening.LOGGER.info("SERVER: Syncing flatten state for {}: isFlattened={}, collisionType={}, wallDirection={}, isRestoring={}",
-            player.getName().getString(), state.isFlattened(), state.collisionType(), state.wallDirection(), state.isRestoring());
-
+    public static void syncFlattenState(
+        ServerPlayer player,
+        boolean isFlattened,
+        long flattenTime,
+        @Nullable ResourceLocation causeId,
+        @Nullable FlattenDirection direction
+    ) {
         PacketDistributor.sendToPlayersTrackingEntityAndSelf(
             player,
-            SyncFlattenStatePayload.fromAttachment(player.getId(), state)
+            new SyncFlattenStatePayload(player.getId(), isFlattened, flattenTime, causeId, direction)
         );
     }
 
