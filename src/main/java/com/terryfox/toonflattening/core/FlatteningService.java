@@ -119,6 +119,12 @@ public class FlatteningService {
      * @param anvil The falling anvil entity
      */
     public static void flattenPlayerFromAnvil(Player player, FallingBlockEntity anvil) {
+        TriggerConfigSpec config = ToonFlatteningConfig.CONFIG.getTriggerConfig(FlattenCause.ANVIL);
+
+        if (!config.isEnabled()) {
+            return;
+        }
+
         ResourceLocation triggerId = ResourceLocation.fromNamespaceAndPath(
             ToonFlattening.MODID,
             "anvil"
@@ -132,8 +138,6 @@ public class FlatteningService {
             FlattenDirection.DOWN,
             anvil
         );
-
-        TriggerConfigSpec config = ToonFlatteningConfig.CONFIG.getTriggerConfig(FlattenCause.ANVIL);
 
         tryFlattenPlayer(player, context, config, !player.getAbilities().invulnerable);
     }
