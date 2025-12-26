@@ -30,7 +30,7 @@ public class LoginHandler {
             PehkuiIntegration.setPlayerScale(serverPlayer, (float) config.getHeightScale(), (float) config.getWidthScale());
 
             // Sync flattened state to client
-            NetworkHandler.syncFlattenState(serverPlayer, true, state.flattenTime(), state.causeId(), state.direction());
+            NetworkHandler.syncFlattenState(serverPlayer, true, state.flattenTime(), state.causeId(), state.direction(), state.frozenPose());
 
             ToonFlattening.LOGGER.debug("Restored flattened state for {} on login",
                 serverPlayer.getName().getString());
@@ -39,7 +39,7 @@ public class LoginHandler {
             PehkuiIntegration.resetPlayerScale(serverPlayer);
 
             // Sync non-flattened state to client
-            NetworkHandler.syncFlattenState(serverPlayer, false, 0L, null, null);
+            NetworkHandler.syncFlattenState(serverPlayer, false, 0L, null, null, null);
 
             ToonFlattening.LOGGER.debug("Synced non-flattened state for {} on login",
                 serverPlayer.getName().getString());

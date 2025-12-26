@@ -3,6 +3,7 @@ package com.terryfox.toonflattening.network;
 import com.terryfox.toonflattening.ToonFlattening;
 import com.terryfox.toonflattening.api.FlattenDirection;
 import com.terryfox.toonflattening.attachment.FlattenedStateAttachment;
+import com.terryfox.toonflattening.attachment.FrozenPoseData;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.FriendlyByteBuf;
@@ -20,7 +21,8 @@ public record SyncFlattenStatePayload(
     boolean isFlattened,
     long flattenTime,
     @Nullable ResourceLocation causeId,
-    @Nullable FlattenDirection direction
+    @Nullable FlattenDirection direction,
+    @Nullable FrozenPoseData frozenPose
 ) implements CustomPacketPayload {
     public static final Type<SyncFlattenStatePayload> TYPE =
         new Type<>(ResourceLocation.fromNamespaceAndPath(ToonFlattening.MODID, "sync_flatten_state"));
@@ -37,8 +39,10 @@ public record SyncFlattenStatePayload(
             p -> java.util.Optional.ofNullable(p.causeId()),
             ByteBufCodecs.fromCodec(FlattenDirection.CODEC).apply(ByteBufCodecs::optional),
             p -> java.util.Optional.ofNullable(p.direction()),
-            (playerId, isFlattened, flattenTime, causeId, direction) ->
-                new SyncFlattenStatePayload(playerId, isFlattened, flattenTime, causeId.orElse(null), direction.orElse(null))
+            ByteBufCodecs.fromCodec(FrozenPoseData.CODEC).apply(ByteBufCodecs::optional),
+            p -> java.util.Optional.ofNullable(p.frozenPose()),
+            (playerId, isFlattened, flattenTime, causeId, direction, frozenPose) ->
+                new SyncFlattenStatePayload(playerId, isFlattened, flattenTime, causeId.orElse(null), direction.orElse(null), frozenPose.orElse(null))
         );
 
     @Override
@@ -62,7 +66,8 @@ public record SyncFlattenStatePayload(
                     payload.isFlattened(),
                     payload.flattenTime(),
                     payload.causeId(),
-                    payload.direction()
+                    payload.direction(),
+                    payload.frozenPose()
                 )
             );
         });

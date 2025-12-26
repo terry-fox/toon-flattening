@@ -4,6 +4,7 @@ import com.terryfox.toonflattening.ToonFlattening;
 import com.terryfox.toonflattening.api.FlattenContext;
 import com.terryfox.toonflattening.api.FlattenDirection;
 import com.terryfox.toonflattening.attachment.FlattenedStateAttachment;
+import com.terryfox.toonflattening.attachment.FrozenPoseData;
 import com.terryfox.toonflattening.config.ToonFlatteningConfig;
 import com.terryfox.toonflattening.config.TriggerConfigSpec;
 import com.terryfox.toonflattening.event.FlattenCause;
@@ -59,9 +60,11 @@ public class FlatteningService {
      */
     private static void applyFlatteningEffect(Player player, FlattenContext context, TriggerConfigSpec config, boolean dealDamage) {
         long flattenTime = player.level().getGameTime();
+        FrozenPoseData frozenPose = FrozenPoseData.capture(player);
+
         player.setData(
             ToonFlattening.FLATTENED_STATE.get(),
-            new FlattenedStateAttachment(true, flattenTime, context.triggerId(), context.direction())
+            new FlattenedStateAttachment(true, flattenTime, context.triggerId(), context.direction(), frozenPose)
         );
 
         int animationTicks = calculateFlatteningAnimationTicks(context.impactVelocity());
@@ -72,7 +75,7 @@ public class FlatteningService {
 
         // Sync to clients
         if (player instanceof ServerPlayer serverPlayer) {
-            NetworkHandler.syncFlattenState(serverPlayer, true, flattenTime, context.triggerId(), context.direction());
+            NetworkHandler.syncFlattenState(serverPlayer, true, flattenTime, context.triggerId(), context.direction(), frozenPose);
             NetworkHandler.sendSquashAnimation(serverPlayer);
         }
 

@@ -2,7 +2,12 @@
   "required": true,
   "package": "com.terryfox.toonflattening.mixin",
   "compatibilityLevel": "JAVA_21",
-  "mixins": ["FallingBlockEntityMixin"],
-  "client": [],
+  "mixins": [
+    "FallingBlockEntityMixin",
+    "accessor.WalkAnimationStateAccessor"
+  ],
+  "client": [
+    "client.PlayerRendererMixin"
+  ],
   "injectors": {"defaultRequire": 1}
 }

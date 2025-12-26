@@ -3,6 +3,7 @@ package com.terryfox.toonflattening.network;
 import com.terryfox.toonflattening.ToonFlattening;
 import com.terryfox.toonflattening.api.FlattenDirection;
 import com.terryfox.toonflattening.attachment.FlattenedStateAttachment;
+import com.terryfox.toonflattening.attachment.FrozenPoseData;
 import com.terryfox.toonflattening.config.ToonFlatteningConfig;
 import com.terryfox.toonflattening.integration.PehkuiIntegration;
 import net.minecraft.resources.ResourceLocation;
@@ -67,7 +68,7 @@ public class NetworkHandler {
             PehkuiIntegration.resetPlayerScaleWithDelay(serverPlayer, reformationTicks);
 
             // Sync to all tracking clients
-            syncFlattenState(serverPlayer, false, 0L, null, null);
+            syncFlattenState(serverPlayer, false, 0L, null, null, null);
 
             ToonFlattening.LOGGER.info("Player {} reformed", serverPlayer.getName().getString());
         });
@@ -78,11 +79,12 @@ public class NetworkHandler {
         boolean isFlattened,
         long flattenTime,
         @Nullable ResourceLocation causeId,
-        @Nullable FlattenDirection direction
+        @Nullable FlattenDirection direction,
+        @Nullable FrozenPoseData frozenPose
     ) {
         PacketDistributor.sendToPlayersTrackingEntityAndSelf(
             player,
-            new SyncFlattenStatePayload(player.getId(), isFlattened, flattenTime, causeId, direction)
+            new SyncFlattenStatePayload(player.getId(), isFlattened, flattenTime, causeId, direction, frozenPose)
         );
     }
 
