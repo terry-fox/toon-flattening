@@ -5,11 +5,9 @@ import org.slf4j.Logger;
 import com.mojang.logging.LogUtils;
 import com.terryfox.toonflattening.attachment.FlattenedStateAttachment;
 import com.terryfox.toonflattening.config.ToonFlatteningConfig;
-import com.terryfox.toonflattening.event.FlatteningHandler;
 import com.terryfox.toonflattening.event.LoginHandler;
 import com.terryfox.toonflattening.event.PlayerMovementHandler;
 import com.terryfox.toonflattening.event.RespawnHandler;
-import com.terryfox.toonflattening.registry.BuiltinTriggers;
 
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
@@ -68,7 +66,6 @@ public class ToonFlattening {
         modEventBus.addListener(this::commonSetup);
 
         NeoForge.EVENT_BUS.register(this);
-        NeoForge.EVENT_BUS.addListener(EventPriority.HIGH, FlatteningHandler::onLivingHurt);
         NeoForge.EVENT_BUS.addListener(PlayerMovementHandler::onEntityTick);
         NeoForge.EVENT_BUS.addListener(RespawnHandler::onPlayerRespawn);
         NeoForge.EVENT_BUS.addListener(LoginHandler::onPlayerLogin);
@@ -77,8 +74,6 @@ public class ToonFlattening {
     private void commonSetup(FMLCommonSetupEvent event) {
         LOGGER.info("ToonFlattening initialized for Minecraft 1.21.1");
         LOGGER.info("Pehkui integration ready");
-        BuiltinTriggers.register();
-        LOGGER.info("Registered builtin triggers");
     }
 
     @SubscribeEvent
