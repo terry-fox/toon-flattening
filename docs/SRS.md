@@ -1,692 +1,524 @@
 # Software Requirements Specification
-## Toon Flattening Mod
-
-**Version:** 0.4.1
-**Document Version:** 1.0
-**Date:** 2025-12-26
-**Standard:** ISO/IEC/IEEE 29148:2018
-
----
-
-## Table of Contents
-
-1. [Introduction](#1-introduction)
-2. [Overall Description](#2-overall-description)
-3. [System Features](#3-system-features)
-4. [Data Requirements](#4-data-requirements)
-5. [External Interface Requirements](#5-external-interface-requirements)
-6. [Quality Attributes](#6-quality-attributes)
+## Toon Flattening
 
 ---
 
 ## 1. Introduction
 
 ### 1.1 Purpose
+This Software Requirements Specification (SRS) defines functional, nonfunctional, API, and configuration requirements for Toon Flattening, a NeoForge modification for Minecraft 1.21. The document establishes acceptance criteria for development, testing, and integration.
 
-This Software Requirements Specification (SRS) documents the functional and non-functional requirements of the Toon Flattening mod for Minecraft. The document serves as a reverse-engineered specification derived from the existing codebase.
+### 1.2 Document Conventions
+- **Requirement IDs**: Hierarchical format (e.g., FR-ANVIL.1, API-EVENT.1, NFR-PERF.1)
+- **Priority**: P0 (Critical), P1 (High), P2 (Medium)
+- **Modality**: "shall" indicates mandatory requirement
+- **TBD**: Marks unresolved specification items (see Appendix C)
+- **Quantification**: All performance metrics use Planguage notation where applicable
 
-### 1.2 Scope
+### 1.3 Intended Audience
+- **Development Team**: Implementation and testing reference
+- **QA Engineers**: Validation and acceptance testing
+- **Mod Developers**: API consumers requiring integration specifications
+- **Server Administrators**: Configuration and deployment planning
+- **Project Stakeholders**: Feature scope and acceptance criteria
 
-**Product Name:** Toon Flattening
-**Mod ID:** `toonflattening`
+### 1.4 Product Scope
+Toon Flattening implements cartoon-style flattening mechanics triggered by anvil collision. Players experience height compression (5% vertical scale) and width expansion (180% horizontal scale) with blocked movement, reformation keybinding, and configurable stacking behavior. The system persists across sessions but resets on respawn.
 
-Toon Flattening is a NeoForge mod that implements cartoon-physics-inspired flattening mechanics in Minecraft. When players are struck by falling anvils, they become compressed into a flattened state with altered dimensions, frozen poses, and restricted movement.
-
-**In Scope:**
-- Anvil-triggered player flattening
-- Visual scaling via Pehkui integration
-- Pose freezing during flattened state
-- Movement restriction system
-- Reformation mechanic via keybind
-- State persistence across sessions
-- Client-server synchronization
-
-**Out of Scope:**
-- Flattening from non-anvil triggers (planned for future versions)
-- Multiplayer entity support (mobs, NPCs)
-- Compatibility with specific third-party mods
-
-### 1.3 Definitions, Acronyms, and Abbreviations
-
-| Term | Definition |
-|------|------------|
-| Flattening | Process of compressing a player entity vertically while expanding horizontally |
-| Reformation | Process of returning a flattened player to normal dimensions |
-| Trigger | An event that initiates the flattening process |
-| Pehkui | Third-party mod providing entity scaling API |
-| Tick | Minecraft game loop iteration (20 ticks = 1 second) |
-| Attachment | NeoForge persistent data storage mechanism for entities |
-| Mixin | Bytecode injection framework for modifying Minecraft classes |
-| AABB | Axis-Aligned Bounding Box for collision detection |
-| Payload | Network packet data structure |
+### 1.5 References
+- ISO/IEC/IEEE 29148:2018 – Systems and software engineering — Life cycle processes — Requirements engineering
+- Wiegers, Karl; Beatty, Joy. *Software Requirements, 3rd Edition*. Microsoft Press, 2013
+- NeoForge 21.1.214 Documentation: https://docs.neoforged.net/
+- Pehkui API 3.8.3: https://github.com/Virtuoel/Pehkui
+- Minecraft Java Edition 1.21 Documentation
 
 ---
 
 ## 2. Overall Description
 
 ### 2.1 Product Perspective
+Toon Flattening is a standalone NeoForge mod with a hard dependency on Pehkui for entity scaling. It operates within Minecraft's entity tick and event systems, integrating with:
+- NeoForge event bus for collision detection
+- Pehkui API for scale manipulation
+- Minecraft client/server synchronization for state persistence
+- Keybinding system for player input
 
-Toon Flattening operates as a modification to Minecraft Java Edition via the NeoForge mod loader. It integrates with:
+The mod exposes public APIs and events for third-party integration.
 
-- **Minecraft 1.21.1** - Base game platform
-- **NeoForge 21.1.214+** - Mod loader framework
-- **Pehkui 3.8+** - Required dependency for entity scaling
+### 2.2 Product Functions
+- **Anvil Collision Detection**: Monitors player-anvil collisions to trigger flattening
+- **Scale Transformation**: Reduces height to 5% and expands width to 180% via Pehkui
+- **Movement Control**: Blocks player movement and item interaction during flattened state
+- **Stacking Mechanism**: Incrementally increases horizontal spread on repeated flattening
+- **State Persistence**: Maintains flattened state across logout/reconnect
+- **Reformation Control**: Player-initiated animation returning to normal scale, with anvil-blocking and fallback timeout
+- **Visual/Audio Feedback**: Particles and sound effects for flatten events
+- **Configuration Management**: Hot-reloadable TOML-based settings
 
-The mod functions within Minecraft's client-server architecture, maintaining state consistency between dedicated servers and connected clients.
+### 2.3 User Classes and Characteristics
+| User Class | Description | Technical Expertise | Usage Frequency |
+|------------|-------------|---------------------|-----------------|
+| Player | Experiences flattening mechanics during gameplay | Low | Continuous |
+| Server Administrator | Configures mod settings via TOML files | Medium | Per-deployment |
+| Mod Developer | Integrates flattening API into custom mods | High | Development phase |
 
-### 2.2 User Classes and Characteristics
+### 2.4 Operating Environment
+- **Platform**: Java 21 (LTS)
+- **Mod Loader**: NeoForge 21.1.214 or later
+- **Minecraft Version**: 1.21
+- **Required Dependencies**: Pehkui 3.8.3 or later
+- **Target Environment**: Client-side and server-side (dedicated servers supported)
 
-| User Class | Description | Technical Proficiency |
-|------------|-------------|----------------------|
-| Player | End-user interacting with flattening mechanics | Low - Basic Minecraft familiarity |
-| Server Operator | Configures mod settings via TOML files | Medium - Server administration |
-| Modpack Developer | Integrates mod with other mods | High - Mod compatibility knowledge |
+### 2.5 Design and Implementation Constraints
+- **CON-1**: Shall operate within NeoForge event lifecycle constraints
+- **CON-2**: Shall not modify Minecraft base classes directly (mixin-based approach)
+- **CON-3**: Shall maintain compatibility with Pehkui 3.8.3+ API contract
+- **CON-4**: Shall synchronize state between client and server using NeoForge networking
+- **CON-5**: Shall respect Minecraft's creative mode and spectator mode behavior
 
-### 2.3 Operating Environment
-
-| Requirement | Specification |
-|-------------|---------------|
-| Minecraft Version | 1.21.1 |
-| Mod Loader | NeoForge 21.1.214+ |
-| Java Version | 21 |
-| Required Dependency | Pehkui 3.8+ |
-| Sides | Client and Server (requires both) |
-
-### 2.4 Design and Implementation Constraints
-
-| Constraint ID | Description |
-|---------------|-------------|
-| DC-1 | The system shall use Pehkui API for all entity scaling operations |
-| DC-2 | The system shall use NeoForge attachment API for persistent state storage |
-| DC-3 | Client-side rendering modifications shall use Mixin injection at priority 1500 |
-| DC-4 | Network payloads shall use NeoForge StreamCodec serialization |
-| DC-5 | Configuration shall use NeoForge ModConfigSpec with SERVER type |
-
-### 2.5 Assumptions and Dependencies
-
-| ID | Assumption/Dependency | Type |
-|----|----------------------|------|
-| AD-1 | Pehkui mod is installed and provides ScaleTypes.HEIGHT and ScaleTypes.WIDTH | Dependency |
-| AD-2 | Players have standard dimensions of 1.8 blocks height | Assumption |
-| AD-3 | Falling anvils are identifiable via BlockTags.ANVIL tag | Assumption |
-| AD-4 | Network connectivity allows custom payload transmission | Assumption |
-| AD-5 | Client and server run compatible mod versions | Assumption |
-
----
-
-## 3. System Features
-
-### 3.1 Anvil Flattening Trigger
-
-#### 3.1.1 Description
-
-The system detects falling anvil blocks colliding with players and initiates the flattening process. This trigger handles both survival and creative mode players through direct AABB collision detection.
-
-#### 3.1.2 Functional Requirements
-
-**FR-3.1.1** When a FallingBlockEntity with block state matching BlockTags.ANVIL executes its tick method on the server, the system shall query for Player entities within the anvil's AABB.
-
-**FR-3.1.2** For each player intersecting the anvil's AABB, the system shall invoke FlatteningService.flattenPlayerFromAnvil with the player and anvil entity references.
-
-**FR-3.1.3** The system shall skip flattening processing when the game level is client-side (level.isClientSide() returns true).
-
-**FR-3.1.4** The system shall skip flattening for players in spectator mode.
-
-**FR-3.1.5** The system shall calculate impact velocity as the absolute value of the anvil's Y-axis delta movement.
-
-**FR-3.1.6** The system shall create a FlattenContext with:
-- triggerId: `toonflattening:anvil`
-- impactVelocity: calculated velocity from FR-3.1.5
-- direction: FlattenDirection.DOWN
-- sourceEntity: the anvil FallingBlockEntity
-
-**FR-3.1.7** The system shall not deal damage to players with invulnerable abilities (creative mode).
-
-#### 3.1.3 Decision Table: Anvil Trigger Conditions
-
-| Condition | C1 | C2 | C3 | C4 | C5 |
-|-----------|----|----|----|----|-----|
-| Is server-side | N | Y | Y | Y | Y |
-| Block is anvil | - | N | Y | Y | Y |
-| Player in AABB | - | - | N | Y | Y |
-| Player is spectator | - | - | - | Y | N |
-| **Action: Flatten** | No | No | No | No | Yes |
+### 2.6 Assumptions and Dependencies
+- **DEP-1**: Pehkui 3.8.3+ is installed and functioning correctly
+- **DEP-2**: NeoForge 21.1.214+ provides stable event bus and networking APIs
+- **DEP-3**: Server administrators have file system access for configuration
+- **ASSUME-1**: Players have default keybinding availability (SPACE key)
+- **ASSUME-2**: Server tick rate is standard (20 TPS)
 
 ---
 
-### 3.2 Flattening State Management
+## 3. External Interface Requirements
 
-#### 3.2.1 Description
+### 3.1 User Interfaces
+**UI-1**: The system shall provide a keybinding configuration in Minecraft's Options > Controls menu.
+- **UI-1.1**: Default binding shall be SPACE key
+- **UI-1.2**: Keybinding label shall read "Reform from Flattened State"
+- **UI-1.3**: Keybinding shall support rebinding to any valid key
 
-The system maintains flattened state through entity attachments that persist across game sessions. State includes flattening status, timing, cause, direction, and frozen pose data.
+**UI-2**: The system shall display visual feedback during flattening.
+- **UI-2.1**: Shall spawn 25 POOF particles at player location
+- **UI-2.2**: TBD: Particle spawn pattern (sphere/cloud distribution)
 
-#### 3.2.2 Functional Requirements
+**UI-3**: The system shall play audio feedback during flattening.
+- **UI-3.1**: TBD: Sound source (custom sound file vs vanilla sound effect)
+- **UI-3.2**: Sound volume shall respect player's sound settings
 
-**FR-3.2.1** The system shall store flattened state using NeoForge AttachmentType registered with key `toonflattening:flattened_state`.
+### 3.2 Software Interfaces
+**SI-1**: Pehkui Integration
+- **SI-1.1**: Shall use Pehkui's ScaleType API for width, height, and model scale modifications
+- **SI-1.2**: Shall maintain scale data persistence through Pehkui's data synchronization
+- **SI-1.3**: Shall query Pehkui version at runtime and fail gracefully if incompatible
 
-**FR-3.2.2** The flattened state attachment shall be configured with copyOnDeath enabled.
+**SI-2**: NeoForge Event Bus
+- **SI-2.1**: Shall register event handlers on MOD event bus for lifecycle events
+- **SI-2.2**: Shall register event handlers on FORGE event bus for entity collision
+- **SI-2.3**: Shall post custom events to FORGE event bus for third-party consumption
 
-**FR-3.2.3** The system shall serialize attachment data using FlattenedStateAttachment.CODEC.
+**SI-3**: Minecraft Networking
+- **SI-3.1**: Shall synchronize flattened state using NeoForge's networking API
+- **SI-3.2**: Shall handle client-side prediction for reform animation
+- **SI-3.3**: Shall validate server authority for state transitions
 
-**FR-3.2.4** When tryFlattenPlayer is invoked for an already-flattened player (isFlattened = true), the system shall return false without applying effects (first-wins logic).
+### 3.3 Communications Interfaces
+**CI-1**: Client-Server Synchronization
+- **CI-1.1**: Shall transmit flatten state changes from server to all tracking clients
+- **CI-1.2**: Shall transmit reform requests from client to server
+- **CI-1.3**: Shall synchronize spread multiplier as floating-point value (4 bytes)
 
-**FR-3.2.5** When tryFlattenPlayer is invoked for a spectator player, the system shall return false without applying effects.
+---
 
-**FR-3.2.6** The system shall capture FrozenPoseData at the moment of flattening containing:
-- yBodyRot: body Y rotation
-- yHeadRot: head Y rotation
-- xRot: head pitch
-- walkAnimPos: walk animation position
-- walkAnimSpeed: walk animation speed
-- attackAnim: attack animation progress
-- swingTime: arm swing timing
-- swinging: arm swing active state
-- crouching: crouch state
+## 4. System Features
 
-**FR-3.2.7** Upon successful flattening, the system shall update the player's attachment to:
-- isFlattened: true
-- flattenTime: current game time in ticks
-- causeId: the trigger's ResourceLocation
-- direction: the flatten direction
-- frozenPose: captured FrozenPoseData
+### 4.1 Anvil Collision Trigger
 
-#### 3.2.3 State Transition Diagram
+#### 4.1.1 Description
+The system detects when an anvil entity collides with a player entity and initiates the flattening transformation.
+
+#### 4.1.2 Functional Requirements
+
+**FR-ANVIL.1** [P0]: The system shall detect when a falling anvil entity intersects a player's bounding box.
+
+**FR-ANVIL.2** [P0]: The system shall exclude spectator mode players from anvil collision detection.
+
+**FR-ANVIL.3** [P0]: The system shall apply flattening transformation to creative mode players without applying damage.
+
+**FR-ANVIL.4** [P0]: The system shall apply flattening transformation to survival/adventure mode players and apply damage per FR-ANVIL.5.
+
+**FR-ANVIL.5** [P0]: The system shall apply 4.0 hearts of damage (8.0 damage points) to non-creative players upon flattening.
+- **FR-ANVIL.5.1**: Damage amount shall be configurable per CFG-ANVIL.1
+
+**FR-ANVIL.6** [P1]: The system shall consume the anvil collision event to prevent vanilla damage mechanics from applying.
+
+### 4.2 State Management
+
+#### 4.2.1 Description
+The system manages flattened state persistence across game sessions and player lifecycle events.
+
+#### 4.2.2 Functional Requirements
+
+**FR-STATE.1** [P0]: The system shall persist flattened state when a player logs out.
+
+**FR-STATE.2** [P0]: The system shall restore flattened state when a player logs back in.
+- **FR-STATE.2.1**: Restoration shall include scale values (height, width, model)
+- **FR-STATE.2.2**: Restoration shall include spread multiplier value
+- **FR-STATE.2.3**: Restoration shall include frozen pose data
+
+**FR-STATE.3** [P0]: The system shall reset flattened state to normal when a player respawns after death.
+
+**FR-STATE.4** [P1]: The system shall synchronize flattened state to all clients tracking the player.
+
+**FR-STATE.5** [P1]: The system shall store state using Minecraft's persistent entity data (NBT).
+
+### 4.3 Re-Flatten Stacking
+
+#### 4.3.1 Description
+When a flattened player is struck by another anvil, the system incrementally increases horizontal spread without resetting the flattened state.
+
+#### 4.3.2 Functional Requirements
+
+**FR-REFL.1** [P0]: The system shall detect anvil collision on already-flattened players.
+
+**FR-REFL.2** [P0]: The system shall increase width scale by the configured spread increment (default: 0.8).
+- **FR-REFL.2.1**: Spread increment shall be configurable per CFG-SPREAD.1
+
+**FR-REFL.3** [P0]: The system shall enforce maximum spread limit (default: 6.0x width).
+- **FR-REFL.3.1**: Maximum spread shall be configurable per CFG-SPREAD.2
+
+**FR-REFL.4** [P0]: The system shall apply damage per FR-ANVIL.5 on each re-flatten event.
+
+**FR-REFL.5** [P1]: The system shall reset the fallback timer to initial duration on re-flatten per FR-REFORM.9.2.
+
+**FR-REFL.6** [P1]: The system shall play visual and audio feedback per FR-VFX.1 and FR-VFX.2 on re-flatten.
+
+### 4.4 Movement and Interaction Restrictions
+
+#### 4.4.1 Description
+The system blocks specific player actions while in flattened state to simulate cartoon physics.
+
+#### 4.4.2 Functional Requirements
+
+**FR-MOVE.1** [P0]: The system shall set player movement velocity to zero on each tick while flattened.
+
+**FR-MOVE.2** [P0]: The system shall cancel all item use actions (right-click, left-click) while flattened.
+
+**FR-MOVE.3** [P0]: The system shall allow chat message sending while flattened.
+
+**FR-MOVE.4** [P0]: The system shall allow command execution while flattened.
+
+**FR-MOVE.5** [P1]: The system shall freeze player pose at the moment of anvil impact.
+- **FR-MOVE.5.1**: Frozen pose shall persist until reformation completes
+
+**FR-MOVE.6** [P2]: The system shall prevent inventory changes while flattened.
+
+**FR-MOVE.7** [P1]: The system shall disable the player's shadow rendering while flattened.
+- **FR-MOVE.7.1**: Shadow shall be restored upon reformation completion
+
+### 4.5 Reformation Mechanism
+
+#### 4.5.1 Description
+Players trigger reformation via keybinding, initiating an animated transition back to normal scale. Reformation is blocked while an anvil block rests above the player or when vertical clearance is insufficient (< 75% of frozen pose hitbox height). A configurable fallback timer bypasses anvil-blocking after timeout, allowing the player to reform via keybind.
+
+#### 4.5.2 Functional Requirements
+
+**FR-REFORM.1** [P0]: The system shall provide a keybinding (default: SPACE) to trigger reformation.
+
+**FR-REFORM.2** [P0]: The system shall ignore reformation keybinding input when player is not flattened.
+
+**FR-REFORM.8** [P0]: The system shall block reformation while a placed anvil block occupies any block position intersecting the player's bounding box.
+- **FR-REFORM.8.1**: Detection shall check for BlockTags.ANVIL within player AABB
+- **FR-REFORM.8.2**: Keybinding input shall be silently ignored while blocked
+- **FR-REFORM.8.3**: API reform() calls shall return false while blocked
+- **FR-REFORM.8.4**: Anvil-blocking shall be enabled/disabled per CFG-REFORM.2
+
+**FR-REFORM.10** [P0]: The system shall block reformation when vertical clearance is insufficient.
+- **FR-REFORM.10.1**: Minimum clearance shall be 0.75 × player's current pose hitbox height
+- **FR-REFORM.10.2**: Pose hitbox height shall be determined by frozen pose state (standing, sneaking, swimming, sleeping)
+- **FR-REFORM.10.3**: Clearance shall be measured from floor surface to lowest obstruction above player
+- **FR-REFORM.10.4**: Anvil blocks (BlockTags.ANVIL) shall be treated as ceiling for clearance calculation
+- **FR-REFORM.10.5**: Keybinding input shall be silently ignored while insufficient clearance
+- **FR-REFORM.10.6**: API reform() calls shall return false while insufficient clearance
+
+**FR-REFORM.9** [P0]: The system shall disable anvil-blocking after a fallback timeout (default: 5 minutes), allowing player to reform via keybind.
+- **FR-REFORM.9.1**: Fallback timer shall start when player enters flattened state
+- **FR-REFORM.9.2**: Fallback timer shall reset on re-flatten events
+- **FR-REFORM.9.3**: Upon timeout expiry, anvil-blocking (FR-REFORM.8) shall be bypassed for that player
+- **FR-REFORM.9.4**: Player shall remain flattened until pressing reform keybind after timeout
+- **FR-REFORM.9.5**: Fallback timeout duration shall be configurable per CFG-REFORM.3
+- **FR-REFORM.9.6**: When CFG-REFORM.3 = 0, fallback timer shall be disabled (anvil blocks indefinitely)
+
+**FR-REFORM.3** [P0]: The system shall initiate reformation animation over configurable duration (default: 5 ticks).
+- **FR-REFORM.3.1**: Animation duration shall be configurable per CFG-REFORM.1
+
+**FR-REFORM.4** [P0]: The system shall interpolate scale values linearly from flattened to normal over animation duration.
+
+**FR-REFORM.5** [P0]: The system shall restore normal movement and interaction capabilities upon animation completion.
+
+**FR-REFORM.6** [P0]: The system shall reset spread multiplier to 0.0 upon reformation completion.
+
+**FR-REFORM.7** [P1]: The system shall unfreeze player pose upon reformation completion.
+
+### 4.6 Visual and Audio Feedback
+
+#### 4.6.1 Description
+The system provides particle and sound effects to communicate flattening events.
+
+#### 4.6.2 Functional Requirements
+
+**FR-VFX.1** [P1]: The system shall spawn 25 POOF particles at player location upon flattening.
+- **FR-VFX.1.1**: TBD: Particle count configurability
+- **FR-VFX.1.2**: Particles shall use Minecraft's ParticleTypes.POOF
+
+**FR-VFX.2** [P1]: The system shall play a sound effect at player location upon flattening.
+- **FR-VFX.2.1**: TBD: Sound source identification (custom vs vanilla)
+- **FR-VFX.2.2**: Sound category shall be PLAYERS
+
+**FR-VFX.3** [P2]: TBD: Visual feedback for reformation event (particles/sound)
+
+---
+
+## 5. API Specification
+
+### 5.1 Public Methods
+
+**API-METHOD.1** [P0]: The system shall expose a public method `flatten(ServerPlayer player, float damage)`.
+- **API-METHOD.1.1**: Method shall trigger flattening state on specified player
+- **API-METHOD.1.2**: Method shall apply specified damage amount
+- **API-METHOD.1.3**: Method shall return boolean indicating success
+
+**API-METHOD.2** [P0]: The system shall expose a public method `reform(ServerPlayer player)`.
+- **API-METHOD.2.1**: Method shall initiate reformation animation
+- **API-METHOD.2.2**: Method shall return boolean indicating success (false if not flattened)
+
+**API-METHOD.3** [P0]: The system shall expose a public method `isFlattened(Player player)`.
+- **API-METHOD.3.1**: Method shall return boolean indicating current flattened state
+
+**API-METHOD.4** [P1]: The system shall expose a public method `getSpreadMultiplier(Player player)`.
+- **API-METHOD.4.1**: Method shall return float value representing current horizontal spread
+- **API-METHOD.4.2**: Method shall return 0.0 for non-flattened players
+
+**API-METHOD.5** [P1]: The system shall expose a public method `setSpreadMultiplier(ServerPlayer player, float spread)`.
+- **API-METHOD.5.1**: Method shall clamp spread to configured maximum per CFG-SPREAD.2
+
+**API-METHOD.6** [P1]: The system shall expose a public method `isReformBlocked(Player player)`.
+- **API-METHOD.6.1**: Method shall return true if anvil block detected above player per FR-REFORM.8
+- **API-METHOD.6.2**: Method shall return true if insufficient vertical clearance per FR-REFORM.10
+- **API-METHOD.6.3**: Method shall return false for non-flattened players
+- **API-METHOD.6.4**: Method shall return false if anvil-blocking is disabled (CFG-REFORM.2 = false), but clearance check still applies
+
+**API-METHOD.7** [P2]: The system shall expose a public method `getRemainingFallbackTicks(Player player)`.
+- **API-METHOD.7.1**: Method shall return remaining ticks until anvil-blocking bypass is enabled
+- **API-METHOD.7.2**: Method shall return -1 if fallback timer is disabled (CFG-REFORM.3 = 0)
+- **API-METHOD.7.3**: Method shall return 0 if fallback timeout has already expired
+
+### 5.2 Event System
+
+**API-EVENT.1** [P0]: The system shall post a cancellable `PreFlattenEvent` before applying flattening transformation.
+- **API-EVENT.1.1**: Event shall extend NeoForge's Event class
+- **API-EVENT.1.2**: Event shall expose player, damage, and source (anvil entity)
+- **API-EVENT.1.3**: Cancellation shall prevent flattening and damage
+
+**API-EVENT.2** [P0]: The system shall post a `PostFlattenEvent` after applying flattening transformation.
+- **API-EVENT.2.1**: Event shall extend NeoForge's Event class
+- **API-EVENT.2.2**: Event shall expose player, applied damage, and spread multiplier
+
+**API-EVENT.3** [P1]: The system shall post a cancellable `PreReformEvent` before initiating reformation.
+- **API-EVENT.3.1**: Event shall extend NeoForge's Event class
+- **API-EVENT.3.2**: Event shall expose player
+- **API-EVENT.3.3**: Cancellation shall prevent reformation
+
+**API-EVENT.4** [P1]: The system shall post a `PostReformEvent` after reformation completes.
+- **API-EVENT.4.1**: Event shall extend NeoForge's Event class
+- **API-EVENT.4.2**: Event shall expose player
+
+### 5.3 Extension Points
+
+**API-EXT.1** [P2]: The system shall provide an interface `IFlattenTrigger` for custom flatten triggers.
+- **API-EXT.1.1**: Interface shall define method `shouldTriggerFlatten(Player player)`
+- **API-EXT.1.2**: System shall query registered triggers on entity tick
+
+**API-EXT.2** [P2]: The system shall provide a registration method `registerFlattenTrigger(IFlattenTrigger trigger)`.
+
+---
+
+## 6. Nonfunctional Requirements
+
+### 6.1 Performance Requirements
+
+**NFR-PERF.1** [P0]: The system shall process flattened player tick logic with mean execution time ≤ 0.1 milliseconds per player.
+- **Scale**: Tick processing time per flattened player
+- **Meter**: Server profiler (Spark/timings)
+- **Must**: ≤ 0.1 ms mean
+- **Plan**: 0.05 ms mean
+- **Wish**: ≤ 0.02 ms mean
+- **TBD**: Reference hardware specification
+
+**NFR-PERF.2** [P1]: The system shall complete reformation animation without client frame drops below 60 FPS on reference hardware.
+- **TBD**: Reference hardware specification (GPU, CPU)
+
+**NFR-PERF.3** [P1]: The system shall handle 100 simultaneously flattened players with server TPS ≥ 19.5.
+
+### 6.2 Reliability Requirements
+
+**NFR-REL.1** [P0]: The system shall persist flattened state with 100% reliability across server restart.
+
+**NFR-REL.2** [P0]: The system shall prevent state corruption if Pehkui fails to apply scale changes.
+- **Plan**: Rollback to pre-flatten state on failure
+
+**NFR-REL.3** [P1]: The system shall log error messages for all API misuse (invalid player, null parameters).
+
+### 6.3 Compatibility Requirements
+
+**NFR-COMPAT.1** [P0]: The system shall operate without errors on NeoForge 21.1.214 through 21.1.x minor versions.
+
+**NFR-COMPAT.2** [P0]: The system shall operate without errors with Pehkui 3.8.3 through 3.8.x minor versions.
+
+**NFR-COMPAT.3** [P1]: The system shall not conflict with mods modifying player movement (e.g., speed mods, flight mods).
+
+**NFR-COMPAT.4** [P1]: The system shall respect other mods' cancellation of damage events.
+
+### 6.4 Configurability Requirements
+
+**NFR-CFG.1** [P0]: The system shall reload all configuration values within 5 seconds of TOML file modification without server restart.
+
+**NFR-CFG.2** [P1]: The system shall validate configuration values and log warnings for out-of-range values.
+
+**NFR-CFG.3** [P1]: The system shall apply default values if configuration file is missing or corrupted.
+
+---
+
+## 7. Configuration Requirements
+
+**CFG-ANVIL.1** [P0]: The system shall provide configuration property `damage_amount`.
+- **Type**: Float
+- **Range**: 0.0 to 20.0
+- **Default**: 4.0
+- **Unit**: Hearts (2.0 damage points per heart)
+
+**CFG-SCALE.1** [P0]: The system shall provide configuration property `height_scale`.
+- **Type**: Float
+- **Range**: 0.01 to 1.0
+- **Default**: 0.05
+- **Unit**: Multiplier (1.0 = normal height)
+
+**CFG-SCALE.2** [P0]: The system shall provide configuration property `width_scale`.
+- **Type**: Float
+- **Range**: 1.0 to 6.0
+- **Default**: 1.8
+- **Unit**: Multiplier (1.0 = normal width)
+
+**CFG-SPREAD.1** [P0]: The system shall provide configuration property `spread_increment`.
+- **Type**: Float
+- **Range**: 0.1 to 2.0
+- **Default**: 0.8
+- **Unit**: Width multiplier added per re-flatten
+
+**CFG-SPREAD.2** [P0]: The system shall provide configuration property `max_spread_limit`.
+- **Type**: Float
+- **Range**: 1.0 to 6.0
+- **Default**: 6.0
+- **Unit**: Maximum width multiplier
+
+**CFG-REFORM.1** [P0]: The system shall provide configuration property `reformation_ticks`.
+- **Type**: Integer
+- **Range**: 1 to 100
+- **Default**: 5
+- **Unit**: Game ticks (20 ticks = 1 second)
+
+**CFG-REFORM.2** [P0]: The system shall provide configuration property `anvil_blocking_enabled`.
+- **Type**: Boolean
+- **Default**: true
+- **Description**: When true, reformation is blocked while anvil block rests above player
+
+**CFG-REFORM.3** [P0]: The system shall provide configuration property `fallback_timeout_seconds`.
+- **Type**: Integer
+- **Range**: 0 to 3600
+- **Default**: 300
+- **Unit**: Seconds (0 = disabled, anvil blocks indefinitely)
+- **Description**: Time until anvil-blocking is bypassed; player must still press keybind to reform
+
+---
+
+## Appendix A: Glossary
+
+| Term | Definition |
+|------|------------|
+| Flattening | Transformation applied to player reducing height to 5% and expanding width to 180% |
+| Re-Flatten | Subsequent anvil collision on already-flattened player, increasing horizontal spread |
+| Spread Multiplier | Accumulated horizontal scale increase from re-flatten events |
+| Reformation | Player-initiated animation returning entity to normal scale |
+| Anvil Blocking | State where reformation is prevented due to placed anvil block above player |
+| Clearance Check | Validation that sufficient vertical space (75% of frozen pose height) exists between floor and lowest obstruction (including anvils) |
+| Fallback Timer | Configurable timeout after which anvil-blocking is bypassed, allowing keybind reformation |
+| Pehkui | Third-party mod providing entity scaling API |
+| NeoForge | Minecraft mod loader and API framework |
+| POOF Particle | Vanilla Minecraft particle type (white smoke cloud) |
+| Hot-Reload | Configuration update without server restart |
+| Frozen Pose | Player animation state captured at moment of anvil impact |
+
+---
+
+## Appendix B: State Diagrams
+
+### B.1 Flattened State Lifecycle
 
 ```
-       ┌─────────────┐
-       │   Normal    │
-       │(isFlattened │
-       │   = false)  │
-       └──────┬──────┘
-              │ Anvil collision
-              │ (valid conditions)
-              ▼
-       ┌─────────────┐
-       │  Flattened  │
-       │(isFlattened │
-       │   = true)   │
-       └──────┬──────┘
-              │ Reform key pressed
-              │ (server validates)
-              ▼
-       ┌─────────────┐
-       │   Normal    │
-       └─────────────┘
+[Normal] --anvil collision--> [Flattening] --apply scales--> [Flattened]
+   ^                                                              |
+   |                                                   keybinding |
+   |                                                              v
+   |                                                   [Reform Check]
+   |                                                    /    |     \
+   |                                       anvil above /     |      \ clearance ok
+   |                                                  v      v       \
+   |                                            [Blocked] [Low       v
+   |                                                 |    Clearance] [Reforming]
+   |                               fallback expires  |        |          |
+   |                                                 v        |          |
+   |                                         [Bypass Enabled] |          |
+   |                                                 |        |          |
+   |                                          keybinding      |          |
+   |                                                 v        |          |
+   |                                          [Clearance Check]          |
+   |                                                 |                   |
+   +<---------------reformation complete-------------+-------------------+
+                                      ^
+                                      |
+                              re-flatten (anvil collision, resets timer)
+                                      |
+                                      +------[Flattened]
 ```
 
----
+### B.2 State Transitions with Events
 
-### 3.3 Visual Scaling System
-
-#### 3.3.1 Description
-
-The system applies dimensional transformations to flattened players using the Pehkui scaling API. Flattening compresses height while expanding width to create a cartoon "squashed" appearance.
-
-#### 3.3.2 Functional Requirements
-
-**FR-3.3.1** Upon flattening, the system shall apply height scale via ScaleTypes.HEIGHT.getScaleData(player).setTargetScale().
-
-**FR-3.3.2** Upon flattening, the system shall apply width scale via ScaleTypes.WIDTH.getScaleData(player).setTargetScale().
-
-**FR-3.3.3** The system shall calculate animation duration in ticks using the formula:
 ```
-ticks = PLAYER_HEIGHT / impactVelocity
-```
-where PLAYER_HEIGHT = 1.8 blocks.
-
-**FR-3.3.4** The calculated animation ticks shall be clamped to range [1, 20].
-
-**FR-3.3.5** When impact velocity is less than 0.01, the system shall use a default animation duration of 10 ticks.
-
-**FR-3.3.6** The system shall set Pehkui scale tick delay to the calculated animation ticks for smooth interpolation.
-
-**FR-3.3.7** Upon reformation, the system shall reset height scale to 1.0.
-
-**FR-3.3.8** Upon reformation, the system shall reset width scale to 1.0.
-
-**FR-3.3.9** Reformation animation shall use reformationTicks from configuration for the scale tick delay.
-
-#### 3.3.3 Animation Tick Calculation Table
-
-| Velocity Range | Calculated Ticks | Applied Ticks |
-|----------------|------------------|---------------|
-| < 0.01 | N/A (default) | 10 |
-| 0.09 | 20.0 | 20 |
-| 0.18 | 10.0 | 10 |
-| 0.36 | 5.0 | 5 |
-| 0.90 | 2.0 | 2 |
-| 1.80+ | 1.0 | 1 |
-
----
-
-### 3.4 Movement Restriction
-
-#### 3.4.1 Description
-
-Flattened players are immobilized and cannot perform movement actions until reformation.
-
-#### 3.4.2 Functional Requirements
-
-**FR-3.4.1** On each server-side entity tick for a flattened player, the system shall set delta movement to Vec3.ZERO.
-
-**FR-3.4.2** On each server-side entity tick for a flattened player, the system shall set onGround to true.
-
-**FR-3.4.3** On each server-side entity tick for a flattened player, the system shall set sprinting to false.
-
-**FR-3.4.4** On each server-side entity tick for a flattened player, the system shall set swimming to false.
-
-**FR-3.4.5** If a flattened player is riding an entity, the system shall invoke stopRiding().
-
-**FR-3.4.6** If a flattened player is elytra-flying, the system shall invoke stopFallFlying().
-
-**FR-3.4.7** On client-side MovementInputUpdateEvent for the local flattened player, the system shall set all Input fields to zero/false:
-- leftImpulse: 0.0f
-- forwardImpulse: 0.0f
-- up: false
-- down: false
-- left: false
-- right: false
-- jumping: false
-- shiftKeyDown: false
-
----
-
-### 3.5 Pose Freezing
-
-#### 3.5.1 Description
-
-Flattened players have their visual pose frozen at the moment of impact. The local player retains camera control while their third-person model remains static.
-
-#### 3.5.2 Functional Requirements
-
-**FR-3.5.1** During PlayerRenderer.render() HEAD injection for a flattened player with non-null frozenPose, the system shall override:
-- yBodyRot and yBodyRotO to frozenPose.yBodyRot
-- yHeadRot and yHeadRotO to frozenPose.yHeadRot
-
-**FR-3.5.2** For the local player, the system shall store original xRot and xRotO values before render.
-
-**FR-3.5.3** During render, the system shall set player xRot and xRotO to frozenPose.xRot.
-
-**FR-3.5.4** For the local player, the system shall restore original xRot and xRotO at PlayerRenderer.render() RETURN injection.
-
-**FR-3.5.5** The system shall override walk animation state:
-- walkAnimation.position: frozenPose.walkAnimPos (via accessor)
-- walkAnimation.speed: frozenPose.walkAnimSpeed
-
-**FR-3.5.6** The system shall override attack animation:
-- attackAnim: frozenPose.attackAnim
-- oAttackAnim: frozenPose.attackAnim
-
-**FR-3.5.7** The system shall override swing state:
-- swingTime: frozenPose.swingTime
-- swinging: frozenPose.swinging
-
-**FR-3.5.8** The system shall override crouch state via setShiftKeyDown(frozenPose.crouching).
-
----
-
-### 3.6 Squash Visual Effect
-
-#### 3.6.1 Description
-
-A particle burst effect provides visual feedback when a player is flattened.
-
-#### 3.6.2 Functional Requirements
-
-**FR-3.6.1** Upon receiving TriggerSquashAnimationPayload, the client shall invoke SquashAnimationRenderer.playSquashEffect.
-
-**FR-3.6.2** The system shall spawn 25 POOF particles at the player's position.
-
-**FR-3.6.3** Particles shall spawn at Y offset of +1.0 block from player position.
-
-**FR-3.6.4** Particles shall be distributed in a circular pattern using angles calculated as (2 * PI * i) / 25 for i in [0, 24].
-
-**FR-3.6.5** Particle velocity shall be:
-- vx: cos(angle) * 0.3
-- vy: 0.1
-- vz: sin(angle) * 0.3
-
----
-
-### 3.7 Sound Effect
-
-#### 3.7.1 Description
-
-An audible sound plays when a player is flattened.
-
-#### 3.7.2 Functional Requirements
-
-**FR-3.7.1** Upon flattening, the system shall play sound event `toonflattening:flatten` at the player's position.
-
-**FR-3.7.2** The sound shall play with SoundSource.PLAYERS category.
-
-**FR-3.7.3** The sound shall play with volume 1.0 and pitch 1.0.
-
-**FR-3.7.4** The sound shall have subtitle key `subtitles.toonflattening.flatten`.
-
----
-
-### 3.8 Reformation System
-
-#### 3.8.1 Description
-
-Players escape the flattened state by pressing a configurable key, which triggers a server-validated reformation process.
-
-#### 3.8.2 Functional Requirements
-
-**FR-3.8.1** The client shall register a KeyMapping with:
-- name: `key.toonflattening.reform`
-- default key: GLFW.GLFW_KEY_SPACE
-- category: `key.categories.toonflattening`
-
-**FR-3.8.2** On each client tick, the system shall check for reform key consumption via consumeClick().
-
-**FR-3.8.3** When the reform key is consumed and the local player is flattened, the client shall send RequestReformPayload to the server.
-
-**FR-3.8.4** Upon receiving RequestReformPayload, the server shall validate the player's flattened state.
-
-**FR-3.8.5** If the player is not flattened, the server shall ignore the reform request.
-
-**FR-3.8.6** Upon valid reform request, the server shall set the player's attachment to FlattenedStateAttachment.DEFAULT.
-
-**FR-3.8.7** Upon valid reform request, the server shall reset Pehkui scale with delay using reformationTicks config value.
-
-**FR-3.8.8** Upon valid reform request, the server shall sync the non-flattened state to all tracking clients.
-
----
-
-### 3.9 Session Persistence
-
-#### 3.9.1 Description
-
-Flattened state persists across player login/logout and respawn events.
-
-#### 3.9.2 Functional Requirements
-
-**FR-3.9.1** On PlayerLoggedInEvent, if the player's persisted state has isFlattened = true:
-- The system shall restore Pehkui scale using trigger config values
-- The system shall sync flattened state to the client
-
-**FR-3.9.2** On PlayerLoggedInEvent, if the player's persisted state has isFlattened = false:
-- The system shall reset Pehkui scale to 1.0
-- The system shall sync non-flattened state to the client
-
-**FR-3.9.3** On PlayerRespawnEvent:
-- The system shall reset attachment to DEFAULT
-- The system shall reset Pehkui scale to 1.0
-- The system shall sync non-flattened state to clients
-
-**FR-3.9.4** On ServerStartingEvent, the system shall reset all connected players to DEFAULT state.
-
----
-
-### 3.10 Network Synchronization
-
-#### 3.10.1 Description
-
-Flattened state and visual effects are synchronized between server and clients via custom payloads.
-
-#### 3.10.2 Functional Requirements
-
-**FR-3.10.1** The system shall register three payload types with registrar version "1":
-- SyncFlattenStatePayload (playToClient)
-- TriggerSquashAnimationPayload (playToClient)
-- RequestReformPayload (playToServer)
-
-**FR-3.10.2** SyncFlattenStatePayload shall contain:
-- playerId: int (VAR_INT encoded)
-- isFlattened: boolean
-- flattenTime: long (VAR_LONG encoded)
-- causeId: Optional<ResourceLocation>
-- direction: Optional<FlattenDirection>
-- frozenPose: Optional<FrozenPoseData>
-
-**FR-3.10.3** SyncFlattenStatePayload shall be sent via PacketDistributor.sendToPlayersTrackingEntityAndSelf.
-
-**FR-3.10.4** TriggerSquashAnimationPayload shall contain playerId as VAR_INT.
-
-**FR-3.10.5** RequestReformPayload shall be an empty unit payload.
-
-**FR-3.10.6** Upon receiving SyncFlattenStatePayload, the client shall update the target player's attachment.
-
----
-
-## 4. Data Requirements
-
-### 4.1 Logical Data Model
-
-```mermaid
-erDiagram
-    Player ||--o| FlattenedStateAttachment : "has"
-    FlattenedStateAttachment ||--o| FrozenPoseData : "contains"
-    FlattenedStateAttachment ||--o| FlattenDirection : "references"
-    FlattenedStateAttachment ||--o| ResourceLocation : "causedBy"
-
-    FlattenContext ||--|| FlattenDirection : "has"
-    FlattenContext ||--o| Entity : "sourceEntity"
-    FlattenContext ||--|| ResourceLocation : "triggerId"
-
-    TriggerConfigSpec ||--|| FlattenCause : "configures"
-    TriggerDefaults ||--|| FlattenCause : "defaultsFor"
-```
-
-### 4.2 Data Dictionary
-
-#### 4.2.1 FlattenedStateAttachment
-
-| Field | Type | Constraints | Description |
-|-------|------|-------------|-------------|
-| isFlattened | boolean | Required | Whether player is in flattened state |
-| flattenTime | long | Required, >= 0 | Game tick when flattening occurred |
-| causeId | ResourceLocation | Nullable | Trigger identifier (e.g., toonflattening:anvil) |
-| direction | FlattenDirection | Nullable | Direction of flattening force |
-| frozenPose | FrozenPoseData | Nullable | Captured pose at flatten moment |
-
-**Default Value:** `FlattenedStateAttachment(false, 0L, null, null, null)`
-
-#### 4.2.2 FrozenPoseData
-
-| Field | Type | Constraints | Description |
-|-------|------|-------------|-------------|
-| yBodyRot | float | Required | Body Y rotation in degrees |
-| yHeadRot | float | Required | Head Y rotation in degrees |
-| xRot | float | Required | Head pitch in degrees |
-| walkAnimPos | float | Required, >= 0 | Walk animation position |
-| walkAnimSpeed | float | Required, >= 0 | Walk animation speed |
-| attackAnim | float | Required, [0.0, 1.0] | Attack animation progress |
-| swingTime | int | Required, >= 0 | Arm swing tick counter |
-| swinging | boolean | Required | Arm swing active state |
-| crouching | boolean | Required | Crouch state |
-
-#### 4.2.3 FlattenContext
-
-| Field | Type | Constraints | Description |
-|-------|------|-------------|-------------|
-| triggerId | ResourceLocation | Required, non-null | Unique trigger identifier |
-| impactVelocity | double | Required, >= 0 | Velocity at impact in blocks/tick |
-| direction | FlattenDirection | Required, non-null | Direction of flattening force |
-| sourceEntity | Entity | Nullable | Entity that caused the flattening |
-
-#### 4.2.4 FlattenDirection
-
-| Value | Serialized Name |
-|-------|-----------------|
-| DOWN | "down" |
-| UP | "up" |
-| NORTH | "north" |
-| SOUTH | "south" |
-| EAST | "east" |
-| WEST | "west" |
-
-#### 4.2.5 FlattenCause
-
-| Value | Description |
-|-------|-------------|
-| ANVIL | Falling anvil trigger |
-
-#### 4.2.6 TriggerConfigSpec
-
-| Field | Type | Range | Default (ANVIL) |
-|-------|------|-------|-----------------|
-| enabled | boolean | true/false | true |
-| damage | double | [0.0, 20.0] | 4.0 |
-| heightScale | double | [0.01, 1.0] | 0.05 |
-| widthScale | double | [1.0, 6.0] | 1.8 |
-
-#### 4.2.7 Global Configuration
-
-| Field | Type | Range | Default |
-|-------|------|-------|---------|
-| reformationTicks | int | [1, 100] | 5 |
-
----
-
-## 5. External Interface Requirements
-
-### 5.1 User Interfaces
-
-#### 5.1.1 Keybind Interface
-
-| Keybind | Default | Category | Action |
-|---------|---------|----------|--------|
-| Reform from Flattened | SPACE | Toon Flattening | Request reformation |
-
-#### 5.1.2 Visual Feedback
-
-| Feedback Type | Description |
-|---------------|-------------|
-| Player Scaling | Height compressed to 5%, width expanded to 180% |
-| Particle Effect | 25 POOF particles in circular burst |
-| Pose Freeze | Player model static in last pose before impact |
-
-### 5.2 Hardware Interfaces
-
-Not applicable. The mod operates entirely within Minecraft's software abstraction layer.
-
-### 5.3 Software Interfaces
-
-#### 5.3.1 Pehkui Integration
-
-| Interface | Method | Parameters | Description |
-|-----------|--------|------------|-------------|
-| ScaleTypes.HEIGHT | getScaleData(Entity) | Entity | Retrieves height scale data |
-| ScaleTypes.WIDTH | getScaleData(Entity) | Entity | Retrieves width scale data |
-| ScaleData | setTargetScale(float) | Scale value | Sets target scale |
-| ScaleData | setScaleTickDelay(int) | Tick count | Sets animation duration |
-
-#### 5.3.2 NeoForge APIs
-
-| API | Usage |
-|-----|-------|
-| AttachmentType | Persistent entity data storage |
-| ModConfigSpec | Server-side configuration |
-| CustomPacketPayload | Network communication |
-| EventBusSubscriber | Event handling |
-| Mixin | Bytecode modification |
-
-#### 5.3.3 Minecraft APIs
-
-| API | Usage |
-|-----|-------|
-| FallingBlockEntity | Anvil detection |
-| BlockTags.ANVIL | Anvil block identification |
-| Player | Target entity for flattening |
-| SoundEvent | Audio feedback |
-| ParticleTypes.POOF | Visual feedback |
-| KeyMapping | Input handling |
-
-### 5.4 Communications Interfaces
-
-#### 5.4.1 Network Payloads
-
-| Payload | Direction | Type ID |
-|---------|-----------|---------|
-| SyncFlattenStatePayload | Server -> Client | toonflattening:sync_flatten_state |
-| TriggerSquashAnimationPayload | Server -> Client | toonflattening:trigger_squash_animation |
-| RequestReformPayload | Client -> Server | toonflattening:request_reform |
-
----
-
-## 6. Quality Attributes
-
-### 6.1 Performance
-
-| ID | Attribute | Specification |
-|----|-----------|---------------|
-| PERF-1 | Tick Processing | PlayerMovementHandler shall process each flattened player in O(1) time per tick |
-| PERF-2 | Mixin Priority | PlayerRendererMixin operates at priority 1500 to allow other mods lower priority |
-| PERF-3 | Network Efficiency | Payloads use VAR_INT/VAR_LONG encoding for compact wire format |
-| PERF-4 | Particle Count | Squash effect limited to 25 particles per flattening event |
-
-### 6.2 Reliability
-
-| ID | Attribute | Specification |
-|----|-----------|---------------|
-| REL-1 | State Persistence | Flattened state survives player disconnect/reconnect via attachment serialization |
-| REL-2 | First-Wins Logic | Concurrent flattening attempts are rejected for already-flattened players |
-| REL-3 | Server Authority | Reformation requests validated server-side; clients cannot force state changes |
-| REL-4 | Death Reset | Flattened state resets on respawn (RespawnHandler) |
-| REL-5 | Server Start | All player states reset on server start to ensure clean state |
-
-### 6.3 Security
-
-| ID | Attribute | Specification |
-|----|-----------|---------------|
-| SEC-1 | Server Validation | RequestReformPayload handler validates isFlattened before processing |
-| SEC-2 | Creative Mode | Damage bypassed for players with invulnerable abilities |
-| SEC-3 | Spectator Mode | Spectators explicitly excluded from flattening |
-
-### 6.4 Compatibility
-
-| ID | Attribute | Specification |
-|----|-----------|---------------|
-| COMP-1 | Mod Dependency | Requires Pehkui 3.8+ for scaling functionality |
-| COMP-2 | Minecraft Version | Targets Minecraft 1.21.1 (version range: [1.21]) |
-| COMP-3 | NeoForge Version | Requires NeoForge 21.1.214+ |
-| COMP-4 | Java Version | Requires Java 21 runtime |
-| COMP-5 | Mixin Compatibility | Uses JAVA_21 compatibility level, priority 1500 for rendering mixin |
-
-### 6.5 Configurability
-
-| ID | Attribute | Specification |
-|----|-----------|---------------|
-| CONF-1 | Configuration Type | SERVER config (toonflattening-server.toml) |
-| CONF-2 | Hot-Reload | Trigger configurations support hot-reloading without restart |
-| CONF-3 | Per-Trigger Settings | Each FlattenCause has independent enabled, damage, height/width scale |
-| CONF-4 | Reformation Timing | Global reformationTicks controls reformation animation speed |
-
----
-
-## Appendix A: Configuration File Structure
-
-```toml
-[flattening]
-    # Animation duration for reformation in ticks (20 = 1 second)
-    # Range: 1 ~ 100
-    reformationTicks = 5
-
-[triggers]
-    [triggers.anvil]
-        # Enable ANVIL trigger
-        enabled = true
-        # Damage dealt by ANVIL
-        # Range: 0.0 ~ 20.0
-        damage = 4.0
-        # Height scale for ANVIL
-        # Range: 0.01 ~ 1.0
-        heightScale = 0.05
-        # Width scale for ANVIL
-        # Range: 1.0 ~ 6.0
-        widthScale = 1.8
+                    PreFlattenEvent (cancellable)
+                             |
+                             v
+[Normal] -----------> [Transition Check] --------> [Flattened]
+                             |                          |
+                        cancelled                  PostFlattenEvent
+                             |                          |
+                             v                          v
+                         [Normal]                  [Active State]
+                                                         |
+                                                    PreReformEvent
+                                                         |
+                                                    [Reforming]
+                                                         |
+                                                    PostReformEvent
+                                                         |
+                                                         v
+                                                     [Normal]
 ```
 
 ---
 
-## Appendix B: Unresolved Questions
+## Appendix C: TBD List
 
-1. Future triggers (wall collision, piston, etc.) - architecture ready but not implemented?
-2. FlattenDirection values UP/NORTH/SOUTH/EAST/WEST - intended use cases?
-3. Trigger config hot-reload - tested under production conditions?
-4. copyOnDeath behavior - should death reset state instead of preserving?
-5. Multi-trigger collision same tick - desired behavior?
-6. Pehkui version compatibility ceiling - tested with versions > 3.8.3?
+| ID | Description | Priority | Target Resolution |
+|----|-------------|----------|-------------------|
+| TBD-1 | Sound source specification (custom sound file vs vanilla sound effect) | P1 | v0.5.0 |
+| TBD-2 | Particle configurability (count, pattern) | P2 | v0.6.0 |
+| TBD-3 | Reference hardware specification for performance testing | P1 | v0.5.0 |
+| TBD-4 | Particle spawn pattern (sphere/cloud/random distribution) | P2 | v0.6.0 |
+| TBD-5 | Visual/audio feedback for reformation event | P2 | v0.6.0 |
+
+---
