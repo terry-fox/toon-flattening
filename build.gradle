@@ -1,7 +1,7 @@
 plugins {
     id 'java-library'
     id 'maven-publish'
-    id 'net.neoforged.moddev' version '2.0.124'
+    id 'net.neoforged.moddev' version '2.0.134'
     id 'idea'
 }
 
@@ -19,14 +19,6 @@ group = mod_group_id
 
 repositories {
     // Add here additional repositories if required by some of the dependencies below.
-    maven {
-        name = "JitPack"
-        url = "https://jitpack.io"
-    }
-    maven {
-        name = "Modrinth"
-        url = "https://api.modrinth.com/maven"
-    }
 }
 
 base {
@@ -120,12 +112,6 @@ configurations {
 }
 
 dependencies {
-    // Pehkui for entity scaling
-    implementation "com.github.Virtuoel:Pehkui:${pehkui_version}"
-
-    // Freecam for debugging (local runtime only)
-    localRuntime "maven.modrinth:freecam:1.3.0+mc1.21.1-neoforge"
-
     // Example optional mod dependency with JEI
     // The JEI API is declared for compile time use, while the full JEI artifact is used at runtime
     // compileOnly "mezz.jei:jei-${mc_version}-common-api:${jei_version}"
@@ -184,7 +170,7 @@ publishing {
     }
     repositories {
         maven {
-            url "file://${project.projectDir}/repo"
+            url = "file://${project.projectDir}/repo"
         }
     }
 }
