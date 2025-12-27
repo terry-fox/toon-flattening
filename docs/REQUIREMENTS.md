@@ -29,12 +29,17 @@
 - [x] Players in spectator mode shall not be flattenable
 - [x] A player's model shall freeze in the middle of its current state when it is hit
 - [x] No animations except for lighting and particle effects (eg from enchanted armor) shall occur while a player is flattened
-- [ ] When an anvil is dropped on a player while they are flattened, the player shall continue to gradually spread up to a maximum limit
-- [ ] The width of the player immediately after the first anvil impact shall be determined by the existing horizontal spread setting in the server files
-- [ ] The maximum spread limit shall be configurable in the server config files
-- [ ] The spreading effect begins when a falling anvil strikes a player who is already in the flattened state, or when an anvil lands on top of a stack of anvils flattening the player
-- [ ] When spreading, the player shall not suffer additional immediate deformation. Instead, the player shall begin a gradual spreading process.
-- [ ] The player's width when spreading shall smoothly increase over time, moving from their current size toward the maximum spread limit
+- When an anvil is dropped on a player while they are flattened, the player shall continue to gradually spread up to a maximum limit
+- The width of the player immediately after the first anvil impact shall be determined by the existing horizontal spread setting in the server files
+- The maximum spread limit shall be configurable in the server config files
+- The spreading effect begins when a falling anvil strikes a player who is already in the flattened state, or when an anvil lands on top of a stack of anvils flattening the player
+- When spreading, the player shall not suffer additional immediate deformation. Instead, the player shall begin a gradual spreading process.
+- The player's width when spreading shall smoothly increase over time, moving from their current size toward the maximum spread limit
+- The spreading shall behave as an interpolation (a smooth transition) rather than an instant change
+- As the player widens horizontally, their height shall remain constant at the flattened level; they should not get flatter or taller during the spread
+- As the player widens horizontally, their height shall remain constant at the flattened level; they should not get flatter or taller during the spread
+- Secondary impacts trigger the spreading animation but shall not inflict any additional health damage beyond the standard impact damage of the falling object
+- The spreading effect shall persist as long as the anvil remains; removing the anvil does not stop or reverse the visual "squish" state until the player recovers
 
 ## Version 0.5.0
 - [ ] There shall be a custom hammer powerup to allow players to squish other players and mobs
