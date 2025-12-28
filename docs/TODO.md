@@ -77,25 +77,25 @@ Sequential implementation tasks with acceptance criteria.
 
 ## Phase 4: Integration Module
 
-- [ ] Create `integration/IScalingProvider.java` interface
-- [ ] Create `integration/PehkuiScalingProvider.java`
-- [ ] Implement canHandle() with Pehkui check
-- [ ] Implement setScales() using ScaleTypes API
-- [ ] Create `integration/NoOpScalingProvider.java` fallback
-- [ ] Implement error logging (once per session)
-- [ ] Create `integration/ScalingProviderRegistry.java`
-- [ ] Implement priority-sorted provider list
-- [ ] Implement per-player provider cache
-- [ ] Implement `registerProvider()`
-- [ ] Implement `getProvider()`
-- [ ] Implement `invalidateCache()`
-- [ ] Create `integration/ScalingIntegration.java`
-- [ ] Register PehkuiScalingProvider (priority 100)
-- [ ] Register NoOpScalingProvider (priority MIN_VALUE)
-- [ ] Provider selection works correctly
-- [ ] Cache invalidates on disconnect
-- [ ] In-game: Player scales visually with Pehkui
-- [ ] `./gradlew build` succeeds
+- [x] Create `integration/IScalingProvider.java` interface
+- [x] Create `integration/PehkuiScalingProvider.java`
+- [x] Implement canHandle() with Pehkui check
+- [x] Implement setScales() using ScaleTypes API
+- [x] Create `integration/NoOpScalingProvider.java` fallback
+- [x] Implement error logging (once per session)
+- [x] Create `integration/ScalingProviderRegistry.java`
+- [x] Implement priority-sorted provider list
+- [x] Implement per-player provider cache
+- [x] Implement `registerProvider()`
+- [x] Implement `getProvider()`
+- [x] Implement `invalidateCache()`
+- [x] Create `integration/ScalingIntegration.java`
+- [x] Register PehkuiScalingProvider (priority 100)
+- [x] Register NoOpScalingProvider (priority MIN_VALUE)
+- [x] Provider selection works correctly
+- [x] Cache invalidates on disconnect
+- [x] In-game: Player scales visually with Pehkui
+- [x] `./gradlew build` succeeds
 
 ---
 
