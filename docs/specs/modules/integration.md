@@ -164,36 +164,6 @@ public class ScalingIntegration {
 | Custom Third-Party | 50-200 | Configurable by third-party mod |
 | NoOpScalingProvider | Integer.MIN_VALUE | Always fallback |
 
-## Testing Strategy
-
-### Unit Tests
-- **Provider Selection**:
-  - `testPehkuiProviderSelected()` - Pehkui loaded → PehkuiScalingProvider
-  - `testNoOpProviderFallback()` - Pehkui missing → NoOpScalingProvider
-  - `testCustomProviderPriority()` - Higher priority provider wins
-
-- **Pehkui Adapter**:
-  - `testScalesAppliedToPehkui()` - setScales() updates ScaleType.WIDTH/HEIGHT/MODEL_WIDTH
-  - `testPehkuiCanHandleValid()` - Player with scale data returns true
-  - `testPehkuiCanHandleInvalid()` - Player without scale data returns false
-
-- **NoOp Behavior**:
-  - `testNoOpLogsError()` - First call logs error message
-  - `testNoOpDoesNotApplyScales()` - setScales() no-op (no exception)
-
-### Integration Tests
-- **Cross-Module**:
-  - `testCoreUsesScalingProvider()` - core.updateCompression() → IScalingProvider.setScales()
-  - `testScalingProviderCached()` - Multiple calls for same player use cached provider
-
-- **Third-Party Extension**:
-  - `testCustomProviderRegistration()` - api.registerProvider() → provider used
-  - `testCustomProviderOverridesPehkui()` - Priority 200 custom provider selected over Pehkui
-
-- **Pehkui Integration** (requires Pehkui on classpath):
-  - `testPehkuiScalesApplied()` - End-to-end flatten → Pehkui scales updated
-  - `testPehkuiSynchronizesToClient()` - Scale changes visible to client
-
 ## Coupling Metrics
 
 - **Afferent Coupling (Ca)**: 2 (core, api)

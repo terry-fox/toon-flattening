@@ -194,42 +194,6 @@ Check fallback timer expired?               |
    Transition to Normal phase
 ```
 
-## Testing Strategy
-
-### Unit Tests
-- **Clearance Calculation**:
-  - `testSufficientClearanceStanding()` - 75% of 1.8 blocks clearance passes
-  - `testInsufficientClearance()` - 50% of pose height fails
-  - `testClearanceForSneakingPose()` - 75% of 1.5 blocks required
-  - `testClearanceForSwimmingPose()` - 75% of 0.6 blocks required
-
-- **Anvil Detection**:
-  - `testAnvilAboveDetected()` - Anvil in AABB returns true
-  - `testNoAnvilAbove()` - Empty space returns false
-  - `testAnvilBesidePlayerIgnored()` - Anvil outside AABB returns false
-
-- **Fallback Timer**:
-  - `testFallbackTimerInitialized()` - Config 300s → 6000 ticks
-  - `testFallbackTimerDisabled()` - Config 0 → -1 ticks
-  - `testFallbackTimerDecrement()` - Tick reduces by 1
-  - `testFallbackTimerExpiry()` - 0 ticks bypasses anvil-blocking
-
-- **Reform Validation**:
-  - `testReformBlockedWhenProgressiveFlattening()` - canReform() returns false
-  - `testReformBlockedByAnvil()` - canReform() returns false
-  - `testReformBlockedByClearance()` - canReform() returns false
-  - `testReformAllowedAfterFallback()` - canReform() returns true (timer expired)
-
-### Integration Tests
-- **Cross-Module**:
-  - `testKeybindTriggersReformation()` - SPACE press → core.beginReformation()
-  - `testReformationStartsAnimation()` - Recovering phase interpolates scales
-  - `testReformBlockedUntilAnvilRemoved()` - Anvil present → keybind no-op
-
-- **End-to-End**:
-  - `testFullReformCycleWithAnvil()` - FullyFlattened → remove anvil → SPACE → Recovering → Normal
-  - `testFallbackBypassesAnvil()` - Wait 5 minutes → SPACE → Recovering (anvil ignored)
-
 ## Coupling Metrics
 
 - **Afferent Coupling (Ca)**: 2 (infrastructure, api)

@@ -130,41 +130,6 @@ public class ScaleCalculator {
 }
 ```
 
-## Testing Strategy
-
-### Unit Tests
-- **Scale Calculation**:
-  - `testHeightScaleClampedToMinimum()` - Anvil at floor Y returns minScale (0.05)
-  - `testHeightScaleLinear()` - Anvil halfway returns 0.5 scale
-  - `testWidthScaleInverseHeight()` - Height 0.05 → width 1.475 (1.0 + 0.95/2)
-  - `testSpreadMultiplierApplied()` - Spread 0.8 adds to width/depth
-
-- **Phase Transitions**:
-  - `testNormalToProgressiveFlattening()` - beginCompression() transitions phase
-  - `testProgressiveFlatteningToFullyFlattened()` - updateCompression() at height 0.05 transitions
-  - `testProgressiveFlatteningToRecovering()` - lostContact() before 0.05 transitions
-  - `testFullyFlattenedToRecovering()` - beginReformation() transitions
-  - `testRecoveringToNormal()` - tick() completes animation
-  - `testRecoveringToProgressiveFlattening()` - anvil contact during Recovering restarts compression (NEW)
-
-- **Event Cancellation**:
-  - `testPreFlattenEventCancelled()` - Transition to FullyFlattened aborts
-  - `testPreReformEventCancelled()` - Transition to Recovering aborts
-
-### Integration Tests
-- **Multi-Phase Lifecycle**:
-  - `testFullFlattenCycle()` - Normal → Progressive → Fully → Recovering → Normal
-  - `testEarlyRecovery()` - Normal → Progressive → Recovering → Normal
-  - `testReflattenStacking()` - FullyFlattened + anvil contact (stack scenario) increases spread, no damage
-  - `testReflattenReplacement()` - FullyFlattened + anvil removed + new anvil (replacement) increases spread + damage (NEW)
-  - `testRecoveringReFlattened()` - Recovering + anvil contact → Progressive → Fully with spread preservation (NEW)
-  - `testAnvilStackSpread()` - Initial flatten with 3-anvil stack applies 3× spread immediately (NEW)
-
-- **Cross-Module**:
-  - `testDetectionTriggersStateTransition()` - Anvil contact → ProgressiveFlattening
-  - `testReformationTriggersStateTransition()` - Keybind → Recovering
-  - `testScalingProviderReceivesUpdates()` - State changes invoke IScalingProvider
-
 ## Coupling Metrics
 
 - **Afferent Coupling (Ca)**: 4 (detection, reformation, api, infrastructure)

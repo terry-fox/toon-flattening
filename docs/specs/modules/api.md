@@ -372,35 +372,6 @@ public boolean canPlayerMine(Player player) {
 }
 ```
 
-## Testing Strategy
-
-### Unit Tests
-- **Facade Methods**:
-  - `testGetPhaseReturnsCorrectPhase()` - API returns core state
-  - `testIsFlattenedOnlyTrueForFullyFlattened()` - isFlattened() phase check
-  - `testGetCurrentScalesReturnsSnapshot()` - Immutable Scales returned
-
-- **Thread Safety**:
-  - `testQueryMethodsThreadSafe()` - Call from background thread succeeds
-  - `testCommandMethodsThrowOnWrongThread()` - flatten() on render thread throws
-
-- **Event Cancellation**:
-  - `testPreFlattenEventCancelled()` - Cancelled event aborts flatten
-  - `testPreReformEventCancelled()` - Cancelled event aborts reform
-
-### Integration Tests
-- **Cross-Module**:
-  - `testAPIFlattenDelegatesToCore()` - API.flatten() → core.beginCompression()
-  - `testAPIReformDelegatesToCore()` - API.reform() → core.beginReformation()
-
-- **Event Flow**:
-  - `testPreFlattenEventFiredBeforeStateChange()` - Event fires before transition
-  - `testPostFlattenEventFiredAfterStateChange()` - Event fires after transition
-
-- **Third-Party Extension**:
-  - `testCustomTriggerRegistered()` - API.registerFlattenTrigger() adds to registry
-  - `testCustomProviderRegistered()` - API.registerScalingProvider() adds to registry
-
 ## Coupling Metrics
 
 - **Afferent Coupling (Ca)**: 1 (third-party mods - external)

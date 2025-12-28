@@ -336,37 +336,6 @@ Validation: Check ranges, log warnings for invalid values
 Notify modules of config change (optional event)
 ```
 
-## Testing Strategy
-
-### Unit Tests
-- **Serialization**:
-  - `testFlattenStateSerializesToNBT()` - All fields written correctly
-  - `testFlattenStateDeserializesFromNBT()` - All fields read correctly
-  - `testAnvilReferenceSerialization()` - Entity UUID and BlockPos handled
-
-- **Configuration**:
-  - `testConfigDefaultValues()` - All defaults match SRS
-  - `testConfigRangeValidation()` - Out-of-range values clamped
-  - `testConfigHotReload()` - File modification triggers reload
-
-- **Network Packets**:
-  - `testSyncStatePacketEncoding()` - FlattenState → bytes
-  - `testSyncStatePacketDecoding()` - Bytes → FlattenState
-  - `testReformRequestPacket()` - Client → server request
-
-### Integration Tests
-- **Persistence**:
-  - `testStatePersistedAcrossLogout()` - Logout → login restores FullyFlattened
-  - `testStateResetOnRespawn()` - Death → respawn resets to Normal
-
-- **Networking**:
-  - `testStateChangeSyncsToClient()` - Server transition → client receives packet
-  - `testReformKeybindSendsPacket()` - Client keybind → server receives request
-
-- **Cross-Module**:
-  - `testTickOrchestratorCallsModules()` - Tick event → detection, core, reformation ticked
-  - `testEffectsPlayedOnTransition()` - FullyFlattened transition → particles/sound
-
 ## Coupling Metrics
 
 - **Afferent Coupling (Ca)**: 1 (core - for effect triggering)

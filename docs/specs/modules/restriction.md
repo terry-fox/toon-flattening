@@ -144,40 +144,6 @@ public class PlayerRendererMixin {
 | FullyFlattened | **Blocked** | **Blocked** | **Frozen** | **Hidden** | **Disabled** |
 | Recovering | **Allowed** | **Allowed** | Dynamic | Rendered | Allowed |
 
-## Testing Strategy
-
-### Unit Tests
-- **Phase Filtering**:
-  - `testMovementAllowedDuringProgressiveFlattening()` - Velocity not zeroed
-  - `testMovementBlockedDuringFullyFlattened()` - Velocity set to zero
-  - `testMovementAllowedDuringRecovering()` - Velocity not zeroed
-
-- **Interaction Blocking**:
-  - `testRightClickCancelledWhenFullyFlattened()` - Event cancelled
-  - `testLeftClickCancelledWhenFullyFlattened()` - Event cancelled
-  - `testInteractionAllowedWhenProgressiveFlattening()` - Event not cancelled
-  - `testEatingBlockedWhenFullyFlattened()` - Food consumption cancelled
-  - `testShieldBlockingCancelledWhenFullyFlattened()` - Shield use cancelled
-
-- **Creative Mode**:
-  - `testCreativeFlyingDisabledWhenFullyFlattened()` - Flying ability set to false
-  - `testCreativeFlyingRestoredWhenNormal()` - Flying ability restored
-  - `testGamemodeSwitchPersistsState()` - Flattened state maintained
-
-- **Pose Freezing**:
-  - `testPoseCapturedAtFullyFlattened()` - Sneaking pose → frozen as sneaking
-  - `testPoseReleasedAtNormal()` - Frozen pose cleared
-  - `testSwimmingPoseFrozen()` - Swimming pose persists during FullyFlattened
-
-### Integration Tests
-- **Cross-Module**:
-  - `testMovementBlockedAfterFlattenTransition()` - core.FullyFlattened → velocity zeroed next tick
-  - `testMovementRestoredAfterReformation()` - core.Normal → velocity allowed
-
-- **Event Ordering**:
-  - `testFlightModBypassesRestrictionDuringProgressive()` - Flight mod at HIGH priority moves player
-  - `testRestrictionOverridesVanillaMovement()` - Vanilla movement at LOW priority blocked
-
 ## Coupling Metrics
 
 - **Afferent Coupling (Ca)**: 1 (infrastructure via event bus)
