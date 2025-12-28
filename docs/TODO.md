@@ -22,36 +22,36 @@ Sequential implementation tasks with acceptance criteria.
 
 ## Phase 2: Core Module
 
-- [ ] Create `core/FlattenPhase.java` enum (NORMAL, PROGRESSIVE_FLATTENING, FULLY_FLATTENED, RECOVERING)
-- [ ] Add Codec to FlattenPhase for serialization
-- [ ] Create `core/FlattenState.java` record with all fields per spec
-- [ ] Implement `FlattenState.normal()` factory method
-- [ ] Implement `FlattenState.withPhase()` copy method
-- [ ] Implement `FlattenState.withScales()` copy method
-- [ ] Create `core/ScaleCalculator.java` utility class
-- [ ] Implement `ScaleCalculator.calculateHeightScale()`
-- [ ] Implement `ScaleCalculator.calculateWidthScale()` (inverse relationship)
-- [ ] Implement `ScaleCalculator.interpolateRecovery()`
-- [ ] Implement `ScaleCalculator.applySpread()`
-- [ ] Implement `ScaleCalculator.calculateSpread()`
-- [ ] Implement `ScaleCalculator.calculateStackDamage()`
-- [ ] Create `core/FlattenStateManager.java` singleton
-- [ ] Implement state storage Map<UUID, FlattenState>
-- [ ] Implement `beginCompression()`
-- [ ] Implement `updateCompression()`
-- [ ] Implement `lostContact()`
-- [ ] Implement `applyReflatten()`
-- [ ] Implement `beginReformation()`
-- [ ] Implement `tick()`
-- [ ] Implement `getState()` and `getPhase()` queries
-- [ ] Implement `setSpreadMultiplier()`
-- [ ] Implement `restoreState()`
-- [ ] Implement `reset()`
-- [ ] FlattenPhase has 4 values
-- [ ] FlattenState.normal() returns correct defaults
-- [ ] ScaleCalculator tests pass (height/width/interpolation)
-- [ ] FlattenStateManager state machine transitions correctly
-- [ ] `./gradlew build` succeeds
+- [x] Create `core/FlattenPhase.java` enum (NORMAL, PROGRESSIVE_FLATTENING, FULLY_FLATTENED, RECOVERING)
+- [x] Add Codec to FlattenPhase for serialization
+- [x] Create `core/FlattenState.java` record with all fields per spec
+- [x] Implement `FlattenState.normal()` factory method
+- [x] Implement `FlattenState.withPhase()` copy method
+- [x] Implement `FlattenState.withScales()` copy method
+- [x] Create `core/ScaleCalculator.java` utility class
+- [x] Implement `ScaleCalculator.calculateHeightScale()`
+- [x] Implement `ScaleCalculator.calculateWidthScale()` (inverse relationship)
+- [x] Implement `ScaleCalculator.interpolateRecovery()`
+- [x] Implement `ScaleCalculator.applySpread()`
+- [x] Implement `ScaleCalculator.calculateSpread()`
+- [x] Implement `ScaleCalculator.calculateStackDamage()`
+- [x] Create `core/FlattenStateManager.java` singleton
+- [x] Implement state storage Map<UUID, FlattenState>
+- [x] Implement `beginCompression()`
+- [x] Implement `updateCompression()`
+- [x] Implement `lostContact()`
+- [x] Implement `applyReflatten()`
+- [x] Implement `beginReformation()`
+- [x] Implement `tick()`
+- [x] Implement `getState()` and `getPhase()` queries
+- [x] Implement `setSpreadMultiplier()`
+- [x] Implement `restoreState()`
+- [x] Implement `reset()`
+- [x] FlattenPhase has 4 values
+- [x] FlattenState.normal() returns correct defaults
+- [x] ScaleCalculator tests pass (height/width/interpolation)
+- [x] FlattenStateManager state machine transitions correctly
+- [x] `./gradlew build` succeeds
 
 ---
 
