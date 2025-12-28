@@ -1,14 +1,18 @@
 package com.terryfox.toonflattening;
 
 import com.terryfox.toonflattening.core.FlattenStateManager;
+import com.terryfox.toonflattening.detection.AnvilDamageCanceller;
 import com.terryfox.toonflattening.infrastructure.ConfigSpec;
 import com.terryfox.toonflattening.infrastructure.PlayerDataAttachment;
 import com.terryfox.toonflattening.infrastructure.SoundRegistry;
+import com.terryfox.toonflattening.infrastructure.TickOrchestrator;
+import com.terryfox.toonflattening.integration.ScalingIntegration;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.config.ModConfig;
 import net.neoforged.fml.event.config.ModConfigEvent;
+import net.neoforged.neoforge.common.NeoForge;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,6 +30,13 @@ public class ToonFlattening {
         // Register DeferredRegisters
         PlayerDataAttachment.ATTACHMENT_TYPES.register(modEventBus);
         SoundRegistry.SOUNDS.register(modEventBus);
+
+        // Initialize integration layer
+        ScalingIntegration.initialize();
+
+        // Register FORGE event handlers
+        NeoForge.EVENT_BUS.register(new AnvilDamageCanceller());
+        NeoForge.EVENT_BUS.register(new TickOrchestrator());
 
         // Config injection listeners
         modEventBus.addListener(this::onConfigLoaded);

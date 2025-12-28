@@ -101,30 +101,30 @@ Sequential implementation tasks with acceptance criteria.
 
 ## Phase 5: Detection Module
 
-- [ ] Create `detection/IFlattenTrigger.java` interface
-- [ ] Add default methods for damage/position/count
-- [ ] Create `detection/TriggerRegistry.java`
-- [ ] Implement priority-sorted trigger list
-- [ ] Implement `registerTrigger()`
-- [ ] Implement `getActiveTrigger()`
-- [ ] Create `detection/AnvilContactDetector.java`
-- [ ] Implement `tick()` main entry point
-- [ ] Implement `detectFallingAnvil()` - entity scan
-- [ ] Implement `detectPlacedAnvil()` - block scan
-- [ ] Implement `countAnvilStack()` - max 5 blocks
-- [ ] Implement `calculateFloorY()` - downward raycast
-- [ ] Implement `handleAnvilContact()`
-- [ ] Implement `handleNoContact()`
-- [ ] Create `detection/AnvilDamageCanceller.java`
-- [ ] Implement LivingIncomingDamageEvent handler (priority NORMAL)
-- [ ] Register on FORGE bus
-- [ ] Falling anvils detected correctly
-- [ ] Placed anvils detected correctly
-- [ ] Anvil stacks counted correctly (max 5)
-- [ ] Floor raycast works correctly
-- [ ] Vanilla anvil damage cancelled during PROGRESSIVE_FLATTENING
-- [ ] In-game: Anvil drop triggers beginCompression
-- [ ] `./gradlew build` succeeds
+- [x] Create `detection/IFlattenTrigger.java` interface
+- [x] Add default methods for damage/position/count
+- [x] Create `detection/TriggerRegistry.java`
+- [x] Implement priority-sorted trigger list
+- [x] Implement `registerTrigger()`
+- [x] Implement `getActiveTrigger()`
+- [x] Create `detection/AnvilContactDetector.java`
+- [x] Implement `tick()` main entry point
+- [x] Implement `detectFallingAnvil()` - entity scan
+- [x] Implement `detectPlacedAnvil()` - block scan
+- [x] Implement `countAnvilStack()` - max 5 blocks
+- [x] Implement `calculateFloorY()` - downward raycast
+- [x] Implement `handleAnvilContact()`
+- [x] Implement `handleNoContact()`
+- [x] Create `detection/AnvilDamageCanceller.java`
+- [x] Implement LivingIncomingDamageEvent handler (priority NORMAL)
+- [x] Register on FORGE bus
+- [x] Falling anvils detected correctly
+- [x] Placed anvils detected correctly
+- [x] Anvil stacks counted correctly (max 5)
+- [x] Floor raycast works correctly
+- [x] Vanilla anvil damage cancelled during PROGRESSIVE_FLATTENING
+- [x] In-game: Anvil drop triggers beginCompression
+- [x] `./gradlew build` succeeds
 
 ---
 
