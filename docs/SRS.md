@@ -1,8 +1,6 @@
 # Software Requirements Specification
 ## Toon Flattening
 
----
-
 ## 1. Introduction
 
 ### 1.1 Purpose
@@ -23,7 +21,7 @@ This Software Requirements Specification (SRS) defines functional, nonfunctional
 - **Project Stakeholders**: Feature scope and acceptance criteria
 
 ### 1.4 Product Scope
-Toon Flattening implements cartoon-style progressive flattening mechanics. When an anvil contacts a player from above (either falling entity or placed block), the player is progressively compressed based on the distance between the anvil and the floor. Once fully compressed (5% height), the player is locked in flattened state with blocked movement until reformation. If the anvil is removed before full compression, the player recovers automatically. The system supports re-flatten stacking, persists across sessions, and resets on respawn.
+Toon Flattening implements cartoon-style flattening mechanics. When an anvil contacts a player from above (either falling entity or placed block), the player is progressively compressed based on the distance between the anvil and the floor. Once fully compressed (5% height), the player is locked in flattened state with blocked movement until reformation. If the anvil is removed before full compression, the player recovers automatically. The system supports re-flattening for both re-placed anvils and anvil stacks, persistent state across sessions, and resets on respawn.
 
 ### 1.5 References
 - ISO/IEC/IEEE 29148:2018 – Systems and software engineering — Life cycle processes — Requirements engineering
@@ -97,10 +95,10 @@ The mod exposes public APIs and events for third-party integration.
 
 **UI-2**: The system shall display visual feedback during flattening.
 - **UI-2.1**: Shall spawn 25 POOF particles at player location
-- **UI-2.2**: TBD: Particle spawn pattern (sphere/cloud distribution)
+- **UI-2.2**: Particles shall use random cloud spread (0.5, 0.5, 0.5)
 
 **UI-3**: The system shall play audio feedback during flattening.
-- **UI-3.1**: TBD: Sound source (custom sound file vs vanilla sound effect)
+- **UI-3.1**: Shall use custom sound file `assets/toonflattening/sounds/flatten.ogg`
 - **UI-3.2**: Sound volume shall respect player's sound settings
 
 ### 3.2 Software Interfaces
@@ -197,11 +195,15 @@ The system progressively compresses the player based on the physical distance be
 - **FR-PROG.8.2**: Duration shall use reformation_ticks configuration
 - **FR-PROG.8.3**: System shall transition to Normal when animation completes
 
-**FR-PROG.9** [P1]: The system shall continue progressive compression if a new anvil contacts during ProgressiveFlattening phase.
-- **FR-PROG.9.1**: System shall not restart compression; shall continue with current anvil
+**FR-PROG.9** [P1]: The system shall allow player movement during ProgressiveFlattening phase.
+- **FR-PROG.9.1**: Compression shall track player's current bounding box per-tick
+- **FR-PROG.9.2**: System shall not restart compression when player moves
 
-**FR-PROG.10** [P1]: The system shall enable/disable progressive flattening via configuration.
-- **FR-PROG.10.1**: When disabled, instant flattening behavior shall apply (legacy mode)
+**FR-PROG.10** [P1]: The system shall clamp height scale to minimum (0.05) immediately if anvil moves faster than tick rate.
+- **FR-PROG.10.1**: Fast-moving anvils bypass progressive compression
+
+**FR-PROG.11** [P1]: The system shall enable/disable progressive flattening via configuration.
+- **FR-PROG.11.1**: When disabled, instant flattening behavior shall apply (legacy mode)
 
 ### 4.3 State Management
 
@@ -235,25 +237,40 @@ The system manages flattening phase and scale data persistence across game sessi
 ### 4.4 Re-Flatten Stacking
 
 #### 4.4.1 Description
-When a fully flattened player is contacted by another anvil, the system incrementally increases horizontal spread.
+When a flattened or recovering player is contacted by another anvil, the system calculates horizontal spread based on the number of anvils in the stack. Two scenarios trigger re-flatten: (1) stacking additional anvils on top of an existing anvil flattening the player, or (2) replacing the anvil by removing it and dropping a new anvil before the player reaches Normal phase.
 
 #### 4.4.2 Functional Requirements
 
-**FR-REFL.1** [P0]: The system shall detect anvil contact on players in FullyFlattened phase only.
-- **FR-REFL.1.1**: Re-flatten shall not apply during ProgressiveFlattening or Recovering phases
+**FR-REFL.1** [P0]: The system shall detect anvil contact on players in FullyFlattened or Recovering phases.
+- **FR-REFL.1.1**: Re-flatten shall not apply during Normal phase
+- **FR-REFL.1.2**: Re-flatten during Recovering phase shall restart progressive compression from current scale
 
-**FR-REFL.2** [P0]: The system shall increase width and depth scales by the configured spread increment (default: 0.8).
-- **FR-REFL.2.1**: Spread increment shall be configurable per CFG-SPREAD.1
-- **FR-REFL.2.2**: Spread shall be added to both width and depth scales equally
+**FR-REFL.2** [P0]: The system shall calculate width and depth spread based on anvil count in the contacting stack.
+- **FR-REFL.2.1**: Spread added = (anvil_count × spread_increment)
+- **FR-REFL.2.2**: Spread increment shall be configurable per CFG-SPREAD.1
+- **FR-REFL.2.3**: Anvil count determined by number of vertically stacked anvil blocks above player
+- **FR-REFL.2.4**: Spread shall be added to both width and depth scales equally
 
 **FR-REFL.3** [P0]: The system shall enforce maximum spread limit (default: 6.0x width).
 - **FR-REFL.3.1**: Maximum spread shall be configurable per CFG-SPREAD.2
 
-**FR-REFL.4** [P0]: The system shall apply damage per FR-PROG.6 on each re-flatten event.
+**FR-REFL.4** [P0]: The system shall apply damage based on re-flatten scenario.
+- **FR-REFL.4.1**: Stacking scenario (anvil contact present when new anvil lands): no damage
+- **FR-REFL.4.2**: Replacement scenario (no anvil contact when new anvil lands): base_damage + (anvil_count - 1) × stack_damage_per_anvil
+- **FR-REFL.4.3**: Initial flatten with N-anvil stack: base_damage + (N - 1) × stack_damage_per_anvil
+- **FR-REFL.4.4**: Stack damage per anvil shall be configurable per CFG-REFL.3
+- **FR-REFL.4.5**: Creative mode players shall not receive damage
 
 **FR-REFL.5** [P1]: The system shall reset the fallback timer to initial duration on re-flatten.
 
-**FR-REFL.6** [P1]: The system shall play visual and audio feedback per FR-VFX.1 and FR-VFX.2 on re-flatten.
+**FR-REFL.6** [P0]: The system shall enforce a cooldown period between re-flatten events (default: 1 second).
+- **FR-REFL.6.1**: Cooldown duration configurable per CFG-REFL.1
+- **FR-REFL.6.2**: Spread calculation occurs once per cooldown period until max_spread_limit reached
+
+**FR-REFL.7** [P0]: The system shall transition Recovering phase to ProgressiveFlattening when anvil contact occurs.
+- **FR-REFL.7.1**: Progressive compression shall start from player's current scale values
+- **FR-REFL.7.2**: Existing spread multiplier shall carry forward
+- **FR-REFL.7.3**: Upon reaching FullyFlattened, new anvil spread and damage shall apply per FR-REFL.2 and FR-REFL.4
 
 ### 4.5 Movement and Interaction Restrictions
 
@@ -265,8 +282,11 @@ The system blocks specific player actions while in FullyFlattened phase to simul
 **FR-MOVE.1** [P0]: The system shall set player movement velocity to zero on each tick while in FullyFlattened phase only.
 - **FR-MOVE.1.1**: Movement shall be allowed during ProgressiveFlattening phase
 - **FR-MOVE.1.2**: Movement shall be allowed during Recovering phase
+- **FR-MOVE.1.3**: System shall block external entity pushing while in FullyFlattened phase
 
 **FR-MOVE.2** [P0]: The system shall cancel all item use actions (right-click, left-click) while in FullyFlattened phase only.
+- **FR-MOVE.2.1**: Blocked interactions include eating, drinking, shield blocking, and attacking
+- **FR-MOVE.2.2**: System shall cancel all PlayerInteractEvent types
 
 **FR-MOVE.3** [P0]: The system shall allow chat message sending while in FullyFlattened phase.
 
@@ -280,6 +300,14 @@ The system blocks specific player actions while in FullyFlattened phase to simul
 
 **FR-MOVE.7** [P1]: The system shall disable the player's shadow rendering while in FullyFlattened phase only.
 - **FR-MOVE.7.1**: Shadow shall be visible during ProgressiveFlattening and Recovering phases
+
+**FR-MOVE.8** [P0]: The system shall disable creative flying while in FullyFlattened phase.
+- **FR-MOVE.8.1**: Player shall be forced to ground state
+- **FR-MOVE.8.2**: Creative flight shall be re-enabled upon transition to Normal phase
+
+**FR-MOVE.9** [P0]: The system shall persist flattened state on gamemode switch.
+- **FR-MOVE.9.1**: Switching to creative mode shall not clear flattened state
+- **FR-MOVE.9.2**: Flattened state restrictions shall continue to apply in creative mode
 
 ### 4.6 Reformation Mechanism
 
@@ -336,16 +364,16 @@ The system provides particle and sound effects when transitioning to FullyFlatte
 #### 4.7.2 Functional Requirements
 
 **FR-VFX.1** [P1]: The system shall spawn 25 POOF particles at player location upon transition to FullyFlattened phase.
-- **FR-VFX.1.1**: TBD: Particle count configurability
-- **FR-VFX.1.2**: Particles shall use Minecraft's ParticleTypes.POOF
+- **FR-VFX.1.1**: Particles shall use Minecraft's ParticleTypes.POOF
+- **FR-VFX.1.2**: Particles shall spread randomly (0.5, 0.5, 0.5)
 - **FR-VFX.1.3**: Particles shall not spawn during ProgressiveFlattening
 
 **FR-VFX.2** [P1]: The system shall play a sound effect at player location upon transition to FullyFlattened phase.
-- **FR-VFX.2.1**: TBD: Sound source identification (custom vs vanilla)
+- **FR-VFX.2.1**: Sound shall use custom file `assets/toonflattening/sounds/flatten.ogg`
 - **FR-VFX.2.2**: Sound category shall be PLAYERS
 - **FR-VFX.2.3**: Sound shall not play during ProgressiveFlattening
 
-**FR-VFX.3** [P2]: TBD: Visual feedback for reformation event (particles/sound)
+**FR-VFX.3** [P2]: The system shall not display visual or audio effects during reformation animation.
 
 ---
 
@@ -460,6 +488,12 @@ The system provides particle and sound effects when transitioning to FullyFlatte
 
 **NFR-COMPAT.4** [P1]: The system shall respect other mods' cancellation of damage events.
 
+**NFR-COMPAT.5** [P0]: The system shall respect Pehkui-modified player bounding boxes for anvil detection.
+- **Plan**: Use vanilla Entity.getBoundingBox() to automatically handle pre-scaled players
+
+**NFR-COMPAT.6** [P0]: The system shall overwrite Pehkui scales every tick during flattening phases.
+- **Plan**: Toon Flattening takes priority over other Pehkui scale modifications
+
 ### 6.4 Configurability Requirements
 
 **NFR-CFG.1** [P0]: The system shall reload all configuration values within 5 seconds of TOML file modification without server restart.
@@ -520,6 +554,20 @@ The system provides particle and sound effects when transitioning to FullyFlatte
 - **Unit**: Seconds (0 = disabled, anvil blocks indefinitely)
 - **Description**: Time until anvil-blocking is bypassed; player must still press keybind to reform
 
+**CFG-REFL.1** [P0]: The system shall provide configuration property `reflatten_cooldown_ticks`.
+- **Type**: Integer
+- **Range**: 1 to 100
+- **Default**: 20
+- **Unit**: Game ticks (20 ticks = 1 second)
+- **Description**: Cooldown period between re-flatten events
+
+**CFG-REFL.3** [P0]: The system shall provide configuration property `stack_damage_per_anvil`.
+- **Type**: Float
+- **Range**: 0.0 to 10.0
+- **Default**: 1.0
+- **Unit**: Hearts (2.0 damage points per heart)
+- **Description**: Additional damage per anvil beyond the first in a stack
+
 ---
 
 ## Appendix A: Glossary
@@ -535,8 +583,10 @@ The system provides particle and sound effects when transitioning to FullyFlatte
 | Anvil Contact | Per-tick detection of anvil (falling entity or placed block) above player |
 | Height Scale | Calculated as (anvil bottom Y - floor Y) / original hitbox height |
 | Width/Depth Scale | Calculated as 1.0 + (1.0 - height scale) / 2 |
-| Re-Flatten | Subsequent anvil contact on FullyFlattened player, increasing spread |
-| Spread Multiplier | Accumulated horizontal scale increase from re-flatten events |
+| Re-Flatten | Subsequent anvil contact on FullyFlattened or Recovering player; spread calculated by anvil stack count |
+| Spread Multiplier | Accumulated horizontal scale increase based on total anvils encountered |
+| Stacking Scenario | Additional anvil dropped on existing anvil currently flattening player; adds spread, no damage |
+| Replacement Scenario | Anvil removed and new anvil dropped before player reaches Normal phase; adds spread and damage |
 | Reformation | Player-initiated transition from FullyFlattened to Recovering phase |
 | Recovery Animation | Automatic scale interpolation to normal when anvil removed before full flatten |
 | Anvil Blocking | State where reformation is prevented due to placed anvil block above player |
@@ -566,20 +616,23 @@ The system provides particle and sound effects when transitioning to FullyFlatte
     |                   anvil lost |           | height <= 0.05
     |                   before 0.05|           |
     |                              v           v
-    |                       +------------+  +----------------+
-    |                       | Recovering |  | FullyFlattened |
-    |                       +------------+  +----------------+
-    |                              |               |
-    |           animation complete |               | keybind + no block
-    |                              |               |
-    |                              v               v
-    |                           [Normal]    +------------+
-    |                              |        | Recovering |
-    |                              |        +------------+
-    +<-----------------------------+               |
-    ^                                              |
-    +<---------------------------------------------+
-                    animation complete
+    |           anvil contact +------------+  +----------------+
+    |           <-------------| Recovering |  | FullyFlattened |
+    |           |             +------------+  +----------------+
+    |           v                    |               |
+    |    +----------------------+    |               | keybind + no block
+    |    | ProgressiveFlattening|    |               |
+    |    +----------------------+    |               v
+    |           |                    |        +------------+
+    |           | height <= 0.05     |        | Recovering |
+    |           v                    |        +------------+
+    |    +----------------+          |               |
+    |    | FullyFlattened |          |               |
+    |    +----------------+          |               |
+    |           |                    |               |
+    |           | animation complete | animation     |
+    |           v                    v   complete    v
+    +<------[Normal]<----------------+<--------------+
 ```
 
 ### B.2 Phase Transitions with Events
@@ -632,15 +685,37 @@ The system provides particle and sound effects when transitioning to FullyFlatte
 ### B.3 Re-Flatten Flow
 
 ```
-+----------------+      anvil contact      +----------------+
-| FullyFlattened | ----------------------> | FullyFlattened |
-+----------------+   (spread < max)        +----------------+
-        |                                          |
-        |  - Apply damage                          |
-        |  - Increment spread                      |
-        |  - Reset fallback timer                  |
-        |  - Play effects                          |
-        +------------------------------------------+
+                     anvil contact detected
+                              |
+                 +------------+------------+
+                 |                         |
+          no prior contact         prior contact exists
+          (replacement)              (stacking)
+                 |                         |
+                 v                         v
+      +----------------------+    +----------------+
+      | ProgressiveFlattening|    | FullyFlattened |
+      | (from current scale) |    +----------------+
+      +----------------------+             |
+                 |                         |
+       height <= 0.05                     |
+                 |                         |
+                 v                         |
+      +----------------+                   |
+      | FullyFlattened |                   |
+      +----------------+                   |
+                 |                         |
+   - Spread += anvil_count × increment    |
+   - Damage = base + (count-1) × stack    |
+   - Reset fallback timer                 |
+   - Play effects                         |
+                 |                         |
+                 +-------------------------+
+                              |
+                              v
+                      +----------------+
+                      | FullyFlattened |
+                      +----------------+
 ```
 
 ---
@@ -649,10 +724,6 @@ The system provides particle and sound effects when transitioning to FullyFlatte
 
 | ID | Description | Priority | Target Resolution |
 |----|-------------|----------|-------------------|
-| TBD-1 | Sound source specification (custom sound file vs vanilla sound effect) | P1 | v0.5.0 |
-| TBD-2 | Particle configurability (count, pattern) | P2 | v0.6.0 |
 | TBD-3 | Reference hardware specification for performance testing | P1 | v0.5.0 |
-| TBD-4 | Particle spawn pattern (sphere/cloud/random distribution) | P2 | v0.6.0 |
-| TBD-5 | Visual/audio feedback for reformation event | P2 | v0.6.0 |
 
 ---
