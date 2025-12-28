@@ -18,7 +18,11 @@ version = mod_version
 group = mod_group_id
 
 repositories {
-    // Add here additional repositories if required by some of the dependencies below.
+    // JitPack for Pehkui dependency
+    maven {
+        name = "JitPack"
+        url = "https://jitpack.io"
+    }
 }
 
 base {
@@ -112,6 +116,9 @@ configurations {
 }
 
 dependencies {
+    // Pehkui for entity scaling (hard dependency)
+    implementation "com.github.Virtuoel:Pehkui:${pehkui_version}"
+
     // Test dependencies
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.10.1'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.10.1'

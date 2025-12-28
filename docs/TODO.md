@@ -1,4 +1,4 @@
-# TODO - Toon Flattening Implementation
+# TODO - Toon Flattening Implementation Plan
 
 Sequential implementation tasks with acceptance criteria.
 
@@ -6,17 +6,17 @@ Sequential implementation tasks with acceptance criteria.
 
 ## Phase 1: Project Foundation
 
-- [ ] Add Pehkui 3.8.3 dependency to build.gradle (CurseMaven/JitPack)
-- [ ] Add Pehkui dependency declaration to mods.toml
-- [ ] Create package: `com.terryfox.toonflattening.core`
-- [ ] Create package: `com.terryfox.toonflattening.detection`
-- [ ] Create package: `com.terryfox.toonflattening.restriction`
-- [ ] Create package: `com.terryfox.toonflattening.reformation`
-- [ ] Create package: `com.terryfox.toonflattening.integration`
-- [ ] Create package: `com.terryfox.toonflattening.api`
-- [ ] Create package: `com.terryfox.toonflattening.infrastructure`
-- [ ] `./gradlew build` succeeds
-- [ ] `./gradlew runClient` launches with Pehkui loaded
+- [x] Add Pehkui 3.8.3 dependency to build.gradle (CurseMaven/JitPack)
+- [x] Add Pehkui dependency declaration to mods.toml
+- [x] Create package: `com.terryfox.toonflattening.core`
+- [x] Create package: `com.terryfox.toonflattening.detection`
+- [x] Create package: `com.terryfox.toonflattening.restriction`
+- [x] Create package: `com.terryfox.toonflattening.reformation`
+- [x] Create package: `com.terryfox.toonflattening.integration`
+- [x] Create package: `com.terryfox.toonflattening.api`
+- [x] Create package: `com.terryfox.toonflattening.infrastructure`
+- [x] `./gradlew build` succeeds
+- [x] `./gradlew runClient` launches with Pehkui loaded
 
 ---
 
