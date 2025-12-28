@@ -57,21 +57,21 @@ Sequential implementation tasks with acceptance criteria.
 
 ## Phase 3: Infrastructure (Config + Persistence)
 
-- [ ] Create `infrastructure/ConfigSpec.java`
-- [ ] Add all config values per spec with correct defaults
-- [ ] Register ConfigSpec in mod constructor
-- [ ] Create `infrastructure/PlayerDataAttachment.java`
-- [ ] Implement FLATTEN_STATE_CODEC with RecordCodecBuilder
-- [ ] Register AttachmentType with DeferredRegister
-- [ ] Configure copyOnDeath() for respawn persistence
-- [ ] Create `infrastructure/SoundRegistry.java`
-- [ ] Register FLATTEN_SOUND SoundEvent
-- [ ] Create `resources/assets/toonflattening/sounds.json`
-- [ ] Config file generates on first run
-- [ ] Config values load correctly
-- [ ] PlayerDataAttachment serializes/deserializes correctly
-- [ ] sounds.json is valid and references flatten.ogg
-- [ ] `./gradlew build` succeeds
+- [x] Create `infrastructure/ConfigSpec.java`
+- [x] Add all config values per spec with correct defaults
+- [x] Register ConfigSpec in mod constructor
+- [x] Create `infrastructure/PlayerDataAttachment.java`
+- [x] Implement FLATTEN_STATE_CODEC with RecordCodecBuilder
+- [x] Register AttachmentType with DeferredRegister
+- [x] Configure copyOnDeath() for respawn persistence
+- [x] Create `infrastructure/SoundRegistry.java`
+- [x] Register FLATTEN_SOUND SoundEvent
+- [x] Create `resources/assets/toonflattening/sounds.json`
+- [x] Config file generates on first run
+- [x] Config values load correctly
+- [x] PlayerDataAttachment serializes/deserializes correctly
+- [x] sounds.json is valid and references flatten.ogg
+- [x] `./gradlew build` succeeds
 
 ---
 

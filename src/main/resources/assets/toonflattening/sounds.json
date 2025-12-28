@@ -1,0 +1,8 @@
+{
+  "flatten": {
+    "sounds": [
+      "toonflattening:flatten"
+    ],
+    "subtitle": "toonflattening.sound.flatten"
+  }
+}
