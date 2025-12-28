@@ -101,7 +101,7 @@ public class ClearanceCalculator {
     private static float getPoseHeight(Pose pose) {
         return switch (pose) {
             case STANDING -> 1.8f;
-            case SNEAKING -> 1.5f;
+            case CROUCHING -> 1.5f;
             case SWIMMING, FALL_FLYING -> 0.6f;
             case SLEEPING -> 0.2f;
             default -> 1.8f;

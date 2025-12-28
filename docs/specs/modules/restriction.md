@@ -33,7 +33,7 @@ None (reads FlattenPhase from core module)
 ```java
 public class MovementRestriction {
     @SubscribeEvent(priority = EventPriority.LOWEST)
-    public void onLivingUpdate(LivingEvent.LivingTickEvent event) {
+    public void onEntityTick(EntityTickEvent.Post event) {
         if (event.getEntity() instanceof Player player) {
             FlattenPhase phase = FlattenStateManager.getPhase(player);
             if (phase == FlattenPhase.FULLY_FLATTENED) {
@@ -48,13 +48,21 @@ public class MovementRestriction {
             }
         }
     }
+}
+```
 
-    @SubscribeEvent(priority = EventPriority.LOWEST)
-    public void onEntityPush(LivingEntityPushEvent event) {
-        if (event.getEntity() instanceof Player player) {
+### EntityPushMixin (Mixin)
+```java
+@Mixin(Entity.class)
+public abstract class EntityPushMixin {
+    @Inject(method = "push(Lnet/minecraft/world/entity/Entity;)V",
+            at = @At("HEAD"), cancellable = true)
+    private void onPush(Entity pusher, CallbackInfo ci) {
+        Entity self = (Entity) (Object) this;
+        if (self instanceof Player player) {
             FlattenPhase phase = FlattenStateManager.getPhase(player);
             if (phase == FlattenPhase.FULLY_FLATTENED) {
-                event.setCanceled(true); // Block external entity pushing
+                ci.cancel(); // Block push while flattened
             }
         }
     }

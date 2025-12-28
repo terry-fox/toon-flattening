@@ -26,9 +26,10 @@
 - **api** → `ScalingProviderRegistry.registerProvider(IScalingProvider, int priority)`
 
 ### Outgoing (Efferent Coupling)
-- **Pehkui** → `ScaleType.WIDTH.getScaleData(player).setScale(value)`
-- **Pehkui** → `ScaleType.HEIGHT.getScaleData(player).setScale(value)`
-- **Pehkui** → `ScaleType.MODEL_WIDTH.getScaleData(player).setScale(value)` (depth)
+- **Pehkui** → `ScaleTypes.WIDTH.getScaleData(player).setScale(value)`
+- **Pehkui** → `ScaleTypes.HEIGHT.getScaleData(player).setScale(value)`
+- **Pehkui** → `ScaleTypes.MODEL_WIDTH.getScaleData(player).setScale(value)` (visual)
+- **Pehkui** → `ScaleTypes.MODEL_HEIGHT.getScaleData(player).setScale(value)` (visual)
 
 ## Key Classes
 
@@ -48,19 +49,29 @@ public interface IScalingProvider {
 
 ### PehkuiScalingProvider (Adapter)
 ```java
+import virtuoel.pehkui.api.ScaleTypes;
+import virtuoel.pehkui.api.ScaleData;
+
 public class PehkuiScalingProvider implements IScalingProvider {
     @Override
     public boolean canHandle(ServerPlayer player) {
         // Check if Pehkui is loaded and player has scale data
         return ModList.get().isLoaded("pehkui")
-            && ScaleType.WIDTH.getScaleData(player) != null;
+            && ScaleTypes.WIDTH.getScaleData(player) != null;
     }
 
     @Override
     public void setScales(ServerPlayer player, float height, float width, float depth) {
-        ScaleType.HEIGHT.getScaleData(player).setScale(height);
-        ScaleType.WIDTH.getScaleData(player).setScale(width);
-        ScaleType.MODEL_WIDTH.getScaleData(player).setScale(depth);
+        // HEIGHT/WIDTH affect hitbox dimensions
+        ScaleData heightData = ScaleTypes.HEIGHT.getScaleData(player);
+        heightData.setScale(height);  // Instant change
+
+        ScaleData widthData = ScaleTypes.WIDTH.getScaleData(player);
+        widthData.setScale(width);
+
+        // MODEL scales for visual (optional, may sync with hitbox)
+        ScaleTypes.MODEL_HEIGHT.getScaleData(player).setScale(height);
+        ScaleTypes.MODEL_WIDTH.getScaleData(player).setScale(width);
 
         // Pehkui handles persistence and client synchronization
     }

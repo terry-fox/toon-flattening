@@ -95,9 +95,10 @@ public class TriggerRegistry {
 ```java
 public class AnvilDamageCanceller {
     @SubscribeEvent(priority = EventPriority.NORMAL)
-    public void onLivingHurt(LivingHurtEvent event) {
+    public void onLivingDamage(LivingIncomingDamageEvent event) {
         // Cancel if player is in ProgressiveFlattening phase
         // Damage applied only at FullyFlattened transition
+        // Use event.getSource(), event.getAmount(), event.setCanceled(true)
     }
 }
 ```

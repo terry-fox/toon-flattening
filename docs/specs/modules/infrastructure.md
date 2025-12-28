@@ -39,62 +39,49 @@
 ### PlayerDataAttachment (Persistence)
 ```java
 public class PlayerDataAttachment {
-    public static final AttachmentType<FlattenState> FLATTEN_STATE =
-        AttachmentType.<FlattenState>builder()
-            .serialize(PlayerDataAttachment::write)
-            .deserialize(PlayerDataAttachment::read)
-            .build();
+    // Codec for FlattenState serialization
+    public static final Codec<FlattenState> FLATTEN_STATE_CODEC = RecordCodecBuilder.create(instance ->
+        instance.group(
+            Codec.STRING.fieldOf("phase").forGetter(s -> s.phase().name()),
+            Codec.FLOAT.fieldOf("heightScale").forGetter(FlattenState::heightScale),
+            Codec.FLOAT.fieldOf("widthScale").forGetter(FlattenState::widthScale),
+            Codec.FLOAT.fieldOf("depthScale").forGetter(FlattenState::depthScale),
+            Codec.FLOAT.fieldOf("spreadMultiplier").forGetter(FlattenState::spreadMultiplier),
+            Codec.FLOAT.fieldOf("originalHitboxHeight").forGetter(FlattenState::originalHitboxHeight),
+            Codec.STRING.fieldOf("frozenPose").forGetter(s -> s.frozenPose().name()),
+            Codec.INT.fieldOf("recoveryTicksRemaining").forGetter(FlattenState::recoveryTicksRemaining),
+            Codec.INT.fieldOf("fallbackTicksRemaining").forGetter(FlattenState::fallbackTicksRemaining),
+            Codec.INT.fieldOf("reflattenCooldownTicks").forGetter(FlattenState::reflattenCooldownTicks),
+            Codec.INT.fieldOf("trackedAnvilCount").forGetter(FlattenState::trackedAnvilCount),
+            Codec.BOOL.fieldOf("hasContactingAnvil").forGetter(FlattenState::hasContactingAnvil),
+            UUIDUtil.CODEC.optionalFieldOf("anvilEntityUUID").forGetter(s -> Optional.ofNullable(s.anvilEntityUUID())),
+            BlockPos.CODEC.optionalFieldOf("anvilBlockPos").forGetter(s -> Optional.ofNullable(s.anvilBlockPos()))
+        ).apply(instance, PlayerDataAttachment::createState)
+    );
 
-    // Serialize FlattenState to NBT
-    private static void write(FlattenState state, CompoundTag tag) {
-        tag.putString("phase", state.phase().name());
-        tag.putFloat("heightScale", state.heightScale());
-        tag.putFloat("widthScale", state.widthScale());
-        tag.putFloat("depthScale", state.depthScale());
-        tag.putFloat("spreadMultiplier", state.spreadMultiplier());
-        tag.putFloat("originalHitboxHeight", state.originalHitboxHeight());
-        tag.putString("frozenPose", state.frozenPose().name());
-        tag.putInt("recoveryTicksRemaining", state.recoveryTicksRemaining());
-        tag.putInt("fallbackTicksRemaining", state.fallbackTicksRemaining());
-        tag.putInt("reflattenCooldownTicks", state.reflattenCooldownTicks());
-        tag.putInt("trackedAnvilCount", state.trackedAnvilCount()); // NEW
-        tag.putBoolean("hasContactingAnvil", state.hasContactingAnvil()); // NEW
+    public static final Supplier<AttachmentType<FlattenState>> FLATTEN_STATE =
+        ATTACHMENT_TYPES.register("flatten_state", () ->
+            AttachmentType.builder(() -> FlattenState.normal())
+                .serialize(FLATTEN_STATE_CODEC)
+                .copyOnDeath()
+                .build()
+        );
 
-        if (state.anvilEntityUUID() != null) {
-            tag.putUUID("anvilEntityUUID", state.anvilEntityUUID());
-        }
-        if (state.anvilBlockPos() != null) {
-            tag.putLong("anvilBlockPos", state.anvilBlockPos().asLong());
-        }
-    }
-
-    // Deserialize FlattenState from NBT
-    private static FlattenState read(CompoundTag tag) {
-        FlattenPhase phase = FlattenPhase.valueOf(tag.getString("phase"));
-        float heightScale = tag.getFloat("heightScale");
-        float widthScale = tag.getFloat("widthScale");
-        float depthScale = tag.getFloat("depthScale");
-        float spreadMultiplier = tag.getFloat("spreadMultiplier");
-        float originalHitboxHeight = tag.getFloat("originalHitboxHeight");
-        Pose frozenPose = Pose.valueOf(tag.getString("frozenPose"));
-        int recoveryTicksRemaining = tag.getInt("recoveryTicksRemaining");
-        int fallbackTicksRemaining = tag.getInt("fallbackTicksRemaining");
-        int reflattenCooldownTicks = tag.getInt("reflattenCooldownTicks");
-        int trackedAnvilCount = tag.getInt("trackedAnvilCount"); // NEW
-        boolean hasContactingAnvil = tag.getBoolean("hasContactingAnvil"); // NEW
-
-        UUID anvilEntityUUID = tag.contains("anvilEntityUUID")
-            ? tag.getUUID("anvilEntityUUID")
-            : null;
-        BlockPos anvilBlockPos = tag.contains("anvilBlockPos")
-            ? BlockPos.of(tag.getLong("anvilBlockPos"))
-            : null;
-
-        return new FlattenState(phase, heightScale, widthScale, depthScale,
-            spreadMultiplier, originalHitboxHeight, frozenPose,
-            recoveryTicksRemaining, fallbackTicksRemaining,
-            reflattenCooldownTicks, trackedAnvilCount, hasContactingAnvil,
-            anvilEntityUUID, anvilBlockPos);
+    // Helper method for Codec reconstruction
+    private static FlattenState createState(
+        String phase, float heightScale, float widthScale, float depthScale,
+        float spreadMultiplier, float originalHitboxHeight, String frozenPose,
+        int recoveryTicksRemaining, int fallbackTicksRemaining, int reflattenCooldownTicks,
+        int trackedAnvilCount, boolean hasContactingAnvil,
+        Optional<UUID> anvilEntityUUID, Optional<BlockPos> anvilBlockPos
+    ) {
+        return new FlattenState(
+            FlattenPhase.valueOf(phase), heightScale, widthScale, depthScale,
+            spreadMultiplier, originalHitboxHeight, Pose.valueOf(frozenPose),
+            recoveryTicksRemaining, fallbackTicksRemaining, reflattenCooldownTicks,
+            trackedAnvilCount, hasContactingAnvil,
+            anvilEntityUUID.orElse(null), anvilBlockPos.orElse(null)
+        );
     }
 }
 ```
@@ -102,9 +89,6 @@ public class PlayerDataAttachment {
 ### NetworkPackets
 ```java
 public class NetworkPackets {
-    public static final ResourceLocation SYNC_STATE_ID =
-        new ResourceLocation("toonflattening", "sync_state");
-
     // Packet: Server → Client (state sync)
     public record SyncStatePacket(
         UUID playerUUID,
@@ -114,28 +98,30 @@ public class NetworkPackets {
         float depthScale,
         int recoveryTicksRemaining
     ) implements CustomPacketPayload {
-        public static void encode(SyncStatePacket packet, FriendlyByteBuf buf) {
-            buf.writeUUID(packet.playerUUID);
-            buf.writeEnum(packet.phase);
-            buf.writeFloat(packet.heightScale);
-            buf.writeFloat(packet.widthScale);
-            buf.writeFloat(packet.depthScale);
-            buf.writeInt(packet.recoveryTicksRemaining);
-        }
 
-        public static SyncStatePacket decode(FriendlyByteBuf buf) {
-            return new SyncStatePacket(
-                buf.readUUID(),
-                buf.readEnum(FlattenPhase.class),
-                buf.readFloat(),
-                buf.readFloat(),
-                buf.readFloat(),
-                buf.readInt()
+        public static final CustomPacketPayload.Type<SyncStatePacket> TYPE =
+            new CustomPacketPayload.Type<>(
+                ResourceLocation.fromNamespaceAndPath("toonflattening", "sync_state")
             );
+
+        public static final StreamCodec<FriendlyByteBuf, SyncStatePacket> STREAM_CODEC =
+            StreamCodec.composite(
+                UUIDUtil.STREAM_CODEC, SyncStatePacket::playerUUID,
+                ByteBufCodecs.fromCodec(FlattenPhase.CODEC), SyncStatePacket::phase,
+                ByteBufCodecs.FLOAT, SyncStatePacket::heightScale,
+                ByteBufCodecs.FLOAT, SyncStatePacket::widthScale,
+                ByteBufCodecs.FLOAT, SyncStatePacket::depthScale,
+                ByteBufCodecs.INT, SyncStatePacket::recoveryTicksRemaining,
+                SyncStatePacket::new
+            );
+
+        @Override
+        public Type<? extends CustomPacketPayload> type() {
+            return TYPE;
         }
 
-        public static void handle(SyncStatePacket packet, PlayPayloadContext ctx) {
-            ctx.workHandler().execute(() -> {
+        public static void handle(SyncStatePacket packet, IPayloadContext ctx) {
+            ctx.enqueueWork(() -> {
                 // Update client-side state (for rendering)
                 Player player = Minecraft.getInstance().level.getPlayerByUUID(packet.playerUUID);
                 if (player != null) {
@@ -148,36 +134,53 @@ public class NetworkPackets {
 
     // Packet: Client → Server (reform request)
     public record ReformRequestPacket() implements CustomPacketPayload {
-        public static void handle(ReformRequestPacket packet, PlayPayloadContext ctx) {
-            ctx.workHandler().execute(() -> {
-                ServerPlayer player = (ServerPlayer) ctx.player().orElse(null);
-                if (player != null) {
-                    ReformationHandler.onKeyPress(player);
-                }
+
+        public static final CustomPacketPayload.Type<ReformRequestPacket> TYPE =
+            new CustomPacketPayload.Type<>(
+                ResourceLocation.fromNamespaceAndPath("toonflattening", "reform_request")
+            );
+
+        public static final StreamCodec<FriendlyByteBuf, ReformRequestPacket> STREAM_CODEC =
+            StreamCodec.unit(new ReformRequestPacket()); // Empty packet
+
+        @Override
+        public Type<? extends CustomPacketPayload> type() {
+            return TYPE;
+        }
+
+        public static void handle(ReformRequestPacket packet, IPayloadContext ctx) {
+            ctx.enqueueWork(() -> {
+                ServerPlayer player = (ServerPlayer) ctx.player();
+                ReformationHandler.onKeyPress(player);
             });
         }
     }
+
+    // Registration (in mod constructor):
+    // PayloadRegistrar registrar = event.registrar("toonflattening");
+    // registrar.playToClient(SyncStatePacket.TYPE, SyncStatePacket.STREAM_CODEC, SyncStatePacket::handle);
+    // registrar.playToServer(ReformRequestPacket.TYPE, ReformRequestPacket.STREAM_CODEC, ReformRequestPacket::handle);
 }
 ```
 
 ### ConfigSpec (TOML)
 ```java
 public class ConfigSpec {
-    public static final ForgeConfigSpec SPEC;
+    public static final ModConfigSpec SPEC;
 
-    public static final BooleanValue progressive_enabled;
-    public static final DoubleValue damage_amount;
-    public static final DoubleValue height_scale;
-    public static final DoubleValue spread_increment;
-    public static final DoubleValue max_spread_limit;
-    public static final IntValue reformation_ticks;
-    public static final BooleanValue anvil_blocking_enabled;
-    public static final IntValue fallback_timeout_seconds;
-    public static final IntValue reflatten_cooldown_ticks;
-    public static final DoubleValue stack_damage_per_anvil; // NEW: Replaces reflatten_damage_threshold
+    public static final ModConfigSpec.BooleanValue progressive_enabled;
+    public static final ModConfigSpec.DoubleValue damage_amount;
+    public static final ModConfigSpec.DoubleValue height_scale;
+    public static final ModConfigSpec.DoubleValue spread_increment;
+    public static final ModConfigSpec.DoubleValue max_spread_limit;
+    public static final ModConfigSpec.IntValue reformation_ticks;
+    public static final ModConfigSpec.BooleanValue anvil_blocking_enabled;
+    public static final ModConfigSpec.IntValue fallback_timeout_seconds;
+    public static final ModConfigSpec.IntValue reflatten_cooldown_ticks;
+    public static final ModConfigSpec.DoubleValue stack_damage_per_anvil;
 
     static {
-        ForgeConfigSpec.Builder builder = new ForgeConfigSpec.Builder();
+        ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
 
         builder.comment("Progressive Flattening Settings").push("flattening");
         progressive_enabled = builder
@@ -270,12 +273,12 @@ public class EffectHandler {
 ```java
 public class TickOrchestrator {
     @SubscribeEvent
-    public void onPlayerTick(TickEvent.PlayerTickEvent event) {
-        if (event.phase != TickEvent.Phase.END || !(event.player instanceof ServerPlayer serverPlayer)) {
+    public void onPlayerTick(PlayerTickEvent.Post event) {
+        if (!(event.getEntity() instanceof ServerPlayer serverPlayer)) {
             return;
         }
 
-        // Orchestrate per-tick processing
+        // Orchestrate per-tick processing (runs after player tick work)
         AnvilContactDetector.tick(serverPlayer);
         FlattenStateManager.tick(serverPlayer);
         ReformationHandler.tick(serverPlayer);
