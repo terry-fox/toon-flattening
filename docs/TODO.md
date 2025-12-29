@@ -22,3 +22,9 @@
   1. No damage, SFX, particles on second hit
   1. Apply spread
   1. Repeat for further anvils, further applying spread until max spread hit
+
+* [x] Prevent the player from being pushed
+
+* [x] Prevent the player from breaking the anvil that is squashing them
+
+* [x] Prevent accidental suffocation in walls
