@@ -70,6 +70,11 @@ public class PlayerRendererMixin {
     @Inject(method = "render(Lnet/minecraft/client/player/AbstractClientPlayer;FFLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;I)V", at = @At("RETURN"))
     private void onRenderPost(AbstractClientPlayer player, float entityYaw, float partialTicks, PoseStack poseStack, MultiBufferSource buffer, int packedLight, CallbackInfo ci,
                               @Share("xRot") LocalFloatRef originalXRot, @Share("xRotO") LocalFloatRef originalXRotO) {
+        FlattenedStateAttachment state = player.getData(ToonFlattening.FLATTENED_STATE.get());
+        if (!state.isFlattened() || state.frozenPose() == null) {
+            return;
+        }
+
         // Restore original xRot for camera after render
         if (player == Minecraft.getInstance().player) {
             player.setXRot(originalXRot.get());
