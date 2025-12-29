@@ -57,7 +57,22 @@ public class NetworkHandler {
             // Check if anvil pinning is enabled and player is pinned
             if (ToonFlatteningConfig.CONFIG.anvilPinningEnabled.get() &&
                 AnvilPinningHelper.isPlayerPinnedByAnvil(serverPlayer)) {
-                return;
+
+                int timeoutSeconds = ToonFlatteningConfig.CONFIG.anvilPinningTimeoutSeconds.get();
+
+                // If timeout is 0, infinite pinning - deny reform
+                if (timeoutSeconds == 0) {
+                    return;
+                }
+
+                // Calculate elapsed time since flattening
+                long currentGameTime = serverPlayer.level().getGameTime();
+                long elapsedSeconds = (currentGameTime - state.flattenTime()) / 20;
+
+                // If timeout hasn't elapsed, deny reform
+                if (elapsedSeconds < timeoutSeconds) {
+                    return;
+                }
             }
 
             FlattenStateManager.resetPlayer(serverPlayer);

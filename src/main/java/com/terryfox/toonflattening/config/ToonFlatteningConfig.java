@@ -12,6 +12,7 @@ public class ToonFlatteningConfig {
     public final ModConfigSpec.DoubleValue widthScale;
     public final ModConfigSpec.IntValue reformationTicks;
     public final ModConfigSpec.BooleanValue anvilPinningEnabled;
+    public final ModConfigSpec.IntValue anvilPinningTimeoutSeconds;
 
     private ToonFlatteningConfig(ModConfigSpec.Builder builder) {
         builder.comment("Toon Flattening Server Configuration")
@@ -39,6 +40,10 @@ public class ToonFlatteningConfig {
         anvilPinningEnabled = builder
             .comment("Whether anvils can pin flattened players, preventing them from reforming")
             .define("anvilPinningEnabled", true);
+
+        anvilPinningTimeoutSeconds = builder
+            .comment("Time in seconds before pinned players can reform (0 = infinite, requires manual anvil removal)")
+            .defineInRange("anvilPinningTimeoutSeconds", 300, 0, 3600);
 
         builder.pop();
     }
