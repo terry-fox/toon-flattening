@@ -5,6 +5,7 @@ import com.terryfox.toonflattening.attachment.FlattenedStateAttachment;
 import com.terryfox.toonflattening.config.ToonFlatteningConfig;
 import com.terryfox.toonflattening.integration.PehkuiIntegration;
 import com.terryfox.toonflattening.core.FlattenStateManager;
+import com.terryfox.toonflattening.core.AnvilPinningHelper;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -50,6 +51,12 @@ public class NetworkHandler {
 
             FlattenedStateAttachment state = serverPlayer.getData(ToonFlattening.FLATTENED_STATE.get());
             if (!state.isFlattened()) {
+                return;
+            }
+
+            // Check if anvil pinning is enabled and player is pinned
+            if (ToonFlatteningConfig.CONFIG.anvilPinningEnabled.get() &&
+                AnvilPinningHelper.isPlayerPinnedByAnvil(serverPlayer)) {
                 return;
             }
 

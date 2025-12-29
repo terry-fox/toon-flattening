@@ -11,6 +11,7 @@ public class ToonFlatteningConfig {
     public final ModConfigSpec.DoubleValue heightScale;
     public final ModConfigSpec.DoubleValue widthScale;
     public final ModConfigSpec.IntValue reformationTicks;
+    public final ModConfigSpec.BooleanValue anvilPinningEnabled;
 
     private ToonFlatteningConfig(ModConfigSpec.Builder builder) {
         builder.comment("Toon Flattening Server Configuration")
@@ -34,6 +35,10 @@ public class ToonFlatteningConfig {
         reformationTicks = builder
             .comment("Animation duration for reformation in ticks (20 = 1 second)")
             .defineInRange("reformationTicks", 5, 1, 100);
+
+        anvilPinningEnabled = builder
+            .comment("Whether anvils can pin flattened players, preventing them from reforming")
+            .define("anvilPinningEnabled", true);
 
         builder.pop();
     }
