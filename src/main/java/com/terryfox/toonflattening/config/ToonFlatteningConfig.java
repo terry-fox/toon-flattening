@@ -9,7 +9,6 @@ public class ToonFlatteningConfig {
 
     public final ModConfigSpec.DoubleValue flattenDamage;
     public final ModConfigSpec.DoubleValue heightScale;
-    public final ModConfigSpec.DoubleValue widthScale;
     public final ModConfigSpec.IntValue reformationTicks;
     public final ModConfigSpec.BooleanValue anvilPinningEnabled;
     public final ModConfigSpec.IntValue anvilPinningTimeoutSeconds;
@@ -30,11 +29,6 @@ public class ToonFlatteningConfig {
             .translation("config.toonflattening.height_scale")
             .defineInRange("heightScale", 0.05, 0.01, 1.0);
 
-        widthScale = builder
-            .comment("Width multiplier when flattened (default 1.8 = 1.8x width)")
-            .translation("config.toonflattening.width_scale")
-            .defineInRange("widthScale", 1.8, 1.0, 6.0);
-
         reformationTicks = builder
             .comment("Animation duration for reformation in ticks (20 = 1 second)")
             .defineInRange("reformationTicks", 5, 1, 100);
@@ -48,7 +42,7 @@ public class ToonFlatteningConfig {
             .defineInRange("anvilPinningTimeoutSeconds", 300, 0, 3600);
 
         spreadMultiplier = builder
-            .comment("Width increase per additional anvil hit (default 0.8)")
+            .comment("Width added per anvil hit (width = 1.0 + spreadMultiplier × hitCount, default 0.8)")
             .translation("config.toonflattening.spread_multiplier")
             .defineInRange("spreadMultiplier", 0.8, 0.0, 2.0);
 
