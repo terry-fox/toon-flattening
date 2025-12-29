@@ -12,7 +12,7 @@
   1. Play second-hit SFX
   1. Suppress particle effects on second hit
 
-* [ ] Anvil spread case 2:
+* [x] Anvil spread case 2:
   1. Detect anvil–player collision
   1. Apply damage to player
   1. Flatten player
