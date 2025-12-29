@@ -1,6 +1,6 @@
-## TODO for v0.6.0
+## TODO for v0.6
 
-* [ ] Anvil spread case 1:
+* [x] Anvil spread case 1:
   1. Detect anvil–player collision
   1. Apply damage to player
   1. Flatten player

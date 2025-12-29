@@ -7,6 +7,7 @@
     "accessor.WalkAnimationStateAccessor"
   ],
   "client": [
+    "client.EntityRenderDispatcherMixin",
     "client.PlayerRendererMixin"
   ],
   "injectors": {
