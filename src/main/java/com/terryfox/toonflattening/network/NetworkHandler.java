@@ -2,6 +2,7 @@ package com.terryfox.toonflattening.network;
 
 import com.terryfox.toonflattening.ToonFlattening;
 import com.terryfox.toonflattening.attachment.FlattenedStateAttachment;
+import com.terryfox.toonflattening.attachment.FrozenPoseData;
 import com.terryfox.toonflattening.config.ToonFlatteningConfig;
 import com.terryfox.toonflattening.integration.PehkuiIntegration;
 import com.terryfox.toonflattening.core.FlattenStateManager;
@@ -81,10 +82,10 @@ public class NetworkHandler {
         });
     }
 
-    public static void syncFlattenState(ServerPlayer player, boolean isFlattened, long flattenTime) {
+    public static void syncFlattenState(ServerPlayer player, boolean isFlattened, long flattenTime, FrozenPoseData frozenPose) {
         PacketDistributor.sendToPlayersTrackingEntityAndSelf(
             player,
-            new SyncFlattenStatePayload(player.getId(), isFlattened, flattenTime)
+            new SyncFlattenStatePayload(player.getId(), isFlattened, flattenTime, java.util.Optional.ofNullable(frozenPose))
         );
     }
 

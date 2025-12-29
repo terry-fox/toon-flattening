@@ -1,0 +1,15 @@
+{
+  "required": true,
+  "package": "com.terryfox.toonflattening.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "minVersion": "0.8",
+  "mixins": [
+    "accessor.WalkAnimationStateAccessor"
+  ],
+  "client": [
+    "client.PlayerRendererMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

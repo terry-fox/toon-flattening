@@ -15,6 +15,6 @@ public class FlattenStateManager {
 
         PehkuiIntegration.resetPlayerScale(player);
 
-        NetworkHandler.syncFlattenState(player, false, 0L);
+        NetworkHandler.syncFlattenState(player, false, 0L, null);
     }
 }

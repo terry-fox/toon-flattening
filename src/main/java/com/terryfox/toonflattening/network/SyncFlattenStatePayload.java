@@ -2,6 +2,7 @@ package com.terryfox.toonflattening.network;
 
 import com.terryfox.toonflattening.ToonFlattening;
 import com.terryfox.toonflattening.attachment.FlattenedStateAttachment;
+import com.terryfox.toonflattening.attachment.FrozenPoseData;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.FriendlyByteBuf;
@@ -12,7 +13,9 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 
-public record SyncFlattenStatePayload(int playerId, boolean isFlattened, long flattenTime) implements CustomPacketPayload {
+import java.util.Optional;
+
+public record SyncFlattenStatePayload(int playerId, boolean isFlattened, long flattenTime, Optional<FrozenPoseData> frozenPose) implements CustomPacketPayload {
     public static final Type<SyncFlattenStatePayload> TYPE =
         new Type<>(ResourceLocation.fromNamespaceAndPath(ToonFlattening.MODID, "sync_flatten_state"));
 
@@ -24,6 +27,8 @@ public record SyncFlattenStatePayload(int playerId, boolean isFlattened, long fl
             SyncFlattenStatePayload::isFlattened,
             ByteBufCodecs.VAR_LONG,
             SyncFlattenStatePayload::flattenTime,
+            ByteBufCodecs.optional(ByteBufCodecs.fromCodec(FrozenPoseData.CODEC)),
+            SyncFlattenStatePayload::frozenPose,
             SyncFlattenStatePayload::new
         );
 
@@ -44,7 +49,7 @@ public record SyncFlattenStatePayload(int playerId, boolean isFlattened, long fl
             }
             player.setData(
                 ToonFlattening.FLATTENED_STATE.get(),
-                new FlattenedStateAttachment(payload.isFlattened(), payload.flattenTime())
+                new FlattenedStateAttachment(payload.isFlattened(), payload.flattenTime(), payload.frozenPose().orElse(null))
             );
         });
     }

@@ -2,6 +2,7 @@ package com.terryfox.toonflattening.event;
 
 import com.terryfox.toonflattening.ToonFlattening;
 import com.terryfox.toonflattening.attachment.FlattenedStateAttachment;
+import com.terryfox.toonflattening.attachment.FrozenPoseData;
 import com.terryfox.toonflattening.config.ToonFlatteningConfig;
 import com.terryfox.toonflattening.integration.PehkuiIntegration;
 import com.terryfox.toonflattening.network.NetworkHandler;
@@ -46,9 +47,10 @@ public class FlatteningHandler {
         }
 
         long flattenTime = player.level().getGameTime();
+        FrozenPoseData pose = FrozenPoseData.capture(player);
         player.setData(
             ToonFlattening.FLATTENED_STATE.get(),
-            new FlattenedStateAttachment(true, flattenTime)
+            new FlattenedStateAttachment(true, flattenTime, pose)
         );
 
         int animationTicks = calculateFlatteningAnimationTicks(anvilVelocity);
@@ -59,7 +61,7 @@ public class FlatteningHandler {
 
         // Sync to clients
         if (player instanceof ServerPlayer serverPlayer) {
-            NetworkHandler.syncFlattenState(serverPlayer, true, flattenTime);
+            NetworkHandler.syncFlattenState(serverPlayer, true, flattenTime, pose);
 
             // Send particles immediately (animation happens via Pehkui scale interpolation)
             NetworkHandler.sendSquashAnimation(serverPlayer);
