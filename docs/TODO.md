@@ -130,24 +130,24 @@ Sequential implementation tasks with acceptance criteria.
 
 ## Phase 6: Reformation Module
 
-- [ ] Create `reformation/ClearanceCalculator.java`
-- [ ] Implement `hasAnvilAbove()` - AABB scan
-- [ ] Implement `hasSufficientClearance()` - ceiling raycast
-- [ ] Implement `getPoseHeight()` - pose lookup table
-- [ ] Create `reformation/FallbackTimer.java`
-- [ ] Implement `initializeTimer()` - config to ticks
-- [ ] Implement `resetTimer()`
-- [ ] Implement `tick()` decrement
-- [ ] Create `reformation/ReformationHandler.java`
-- [ ] Implement `onKeyPress()`
-- [ ] Implement `canReform()` validation
-- [ ] Implement `tick()` timer management
-- [ ] Clearance checks work correctly
-- [ ] Fallback timer initializes/decrements correctly
-- [ ] canReform() validates all conditions
-- [ ] In-game: SPACE starts recovery when clear
-- [ ] In-game: SPACE blocked when anvil above
-- [ ] `./gradlew build` succeeds
+- [x] Create `reformation/ClearanceCalculator.java`
+- [x] Implement `hasAnvilAbove()` - AABB scan
+- [x] Implement `hasSufficientClearance()` - ceiling raycast
+- [x] Implement `getPoseHeight()` - pose lookup table
+- [x] Create `reformation/FallbackTimer.java`
+- [x] Implement `initializeTimer()` - config to ticks
+- [x] Implement `resetTimer()`
+- [x] Implement `tick()` decrement
+- [x] Create `reformation/ReformationHandler.java`
+- [x] Implement `onKeyPress()`
+- [x] Implement `canReform()` validation
+- [x] Implement `tick()` timer management
+- [x] Clearance checks work correctly
+- [x] Fallback timer initializes/decrements correctly
+- [x] canReform() validates all conditions
+- [x] In-game: SPACE starts recovery when clear
+- [x] In-game: SPACE blocked when anvil above
+- [x] `./gradlew build` succeeds
 
 ---
 
