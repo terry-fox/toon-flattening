@@ -13,6 +13,8 @@ public class ToonFlatteningConfig {
     public final ModConfigSpec.IntValue reformationTicks;
     public final ModConfigSpec.BooleanValue anvilPinningEnabled;
     public final ModConfigSpec.IntValue anvilPinningTimeoutSeconds;
+    public final ModConfigSpec.DoubleValue spreadMultiplier;
+    public final ModConfigSpec.DoubleValue maxSpreadWidth;
 
     private ToonFlatteningConfig(ModConfigSpec.Builder builder) {
         builder.comment("Toon Flattening Server Configuration")
@@ -44,6 +46,16 @@ public class ToonFlatteningConfig {
         anvilPinningTimeoutSeconds = builder
             .comment("Time in seconds before pinned players can reform (0 = infinite, requires manual anvil removal)")
             .defineInRange("anvilPinningTimeoutSeconds", 300, 0, 3600);
+
+        spreadMultiplier = builder
+            .comment("Width increase per additional anvil hit (default 0.8)")
+            .translation("config.toonflattening.spread_multiplier")
+            .defineInRange("spreadMultiplier", 0.8, 0.0, 2.0);
+
+        maxSpreadWidth = builder
+            .comment("Maximum width multiplier from spread accumulation (default 6.0)")
+            .translation("config.toonflattening.max_spread_width")
+            .defineInRange("maxSpreadWidth", 6.0, 2.0, 20.0);
 
         builder.pop();
     }

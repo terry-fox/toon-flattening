@@ -20,20 +20,23 @@ public class LoginHandler {
         FlattenedStateAttachment state = serverPlayer.getData(ToonFlattening.FLATTENED_STATE.get());
 
         if (state.isFlattened()) {
+            // Handle backwards compatibility: if spreadLevel is 0, treat as 1
+            int spreadLevel = state.spreadLevel() == 0 ? 1 : state.spreadLevel();
+
             // Restore flattened scale
-            PehkuiIntegration.setPlayerScale(serverPlayer, ScaleDimensions.fromConfig());
+            PehkuiIntegration.setPlayerScale(serverPlayer, ScaleDimensions.fromConfig(spreadLevel));
 
             // Sync flattened state to client
-            NetworkHandler.syncFlattenState(serverPlayer, true, state.flattenTime(), state.frozenPose());
+            NetworkHandler.syncFlattenState(serverPlayer, true, state.flattenTime(), state.frozenPose(), spreadLevel);
 
-            ToonFlattening.LOGGER.debug("Restored flattened state for {} on login",
-                serverPlayer.getName().getString());
+            ToonFlattening.LOGGER.debug("Restored flattened state for {} on login (spread level: {})",
+                serverPlayer.getName().getString(), spreadLevel);
         } else {
             // Ensure scale is reset if not flattened
             PehkuiIntegration.resetPlayerScale(serverPlayer);
 
             // Sync non-flattened state to client
-            NetworkHandler.syncFlattenState(serverPlayer, false, 0L, null);
+            NetworkHandler.syncFlattenState(serverPlayer, false, 0L, null, 0);
 
             ToonFlattening.LOGGER.debug("Synced non-flattened state for {} on login",
                 serverPlayer.getName().getString());

@@ -32,26 +32,41 @@ public class FlatteningStateController {
     public static void flatten(ServerPlayer player, double damage, double anvilVelocity) {
         FlattenedStateAttachment currentState = player.getData(ToonFlattening.FLATTENED_STATE.get());
 
-        if (currentState.isFlattened()) {
-            return;
-        }
-
         if (player.isSpectator()) {
             return;
         }
 
-        long flattenTime = player.level().getGameTime();
-        FrozenPoseData pose = FrozenPoseData.capture(player);
+        long flattenTime;
+        FrozenPoseData pose;
+        int spreadLevel;
+        boolean sendSquashAnimation;
+
+        if (currentState.isFlattened()) {
+            // Already flattened - accumulate spread
+            spreadLevel = currentState.spreadLevel() + 1;
+            flattenTime = currentState.flattenTime();
+            pose = currentState.frozenPose();
+            sendSquashAnimation = false;
+        } else {
+            // First flatten
+            spreadLevel = 1;
+            flattenTime = player.level().getGameTime();
+            pose = FrozenPoseData.capture(player);
+            sendSquashAnimation = true;
+        }
+
         player.setData(
             ToonFlattening.FLATTENED_STATE.get(),
-            new FlattenedStateAttachment(true, flattenTime, pose)
+            new FlattenedStateAttachment(true, flattenTime, pose, spreadLevel)
         );
 
         int animationTicks = calculateFlatteningAnimationTicks(anvilVelocity);
-        PehkuiIntegration.setPlayerScaleWithDelay(player, ScaleDimensions.fromConfig(), animationTicks);
+        PehkuiIntegration.setPlayerScaleWithDelay(player, ScaleDimensions.fromConfig(spreadLevel), animationTicks);
 
         syncToClient(player);
-        NetworkHandler.sendSquashAnimation(player);
+        if (sendSquashAnimation) {
+            NetworkHandler.sendSquashAnimation(player);
+        }
 
         player.hurt(player.damageSources().generic(), (float) damage);
 
@@ -66,7 +81,7 @@ public class FlatteningStateController {
             1.0f
         );
 
-        ToonFlattening.LOGGER.info("Player {} flattened", player.getName().getString());
+        ToonFlattening.LOGGER.info("Player {} flattened (spread level: {})", player.getName().getString(), spreadLevel);
     }
 
     public static boolean tryReform(ServerPlayer player) {
@@ -113,6 +128,6 @@ public class FlatteningStateController {
 
     public static void syncToClient(ServerPlayer player) {
         FlattenedStateAttachment state = player.getData(ToonFlattening.FLATTENED_STATE.get());
-        NetworkHandler.syncFlattenState(player, state.isFlattened(), state.flattenTime(), state.frozenPose());
+        NetworkHandler.syncFlattenState(player, state.isFlattened(), state.flattenTime(), state.frozenPose(), state.spreadLevel());
     }
 }

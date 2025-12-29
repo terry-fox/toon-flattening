@@ -35,10 +35,10 @@ public class NetworkHandler {
         );
     }
 
-    public static void syncFlattenState(ServerPlayer player, boolean isFlattened, long flattenTime, FrozenPoseData frozenPose) {
+    public static void syncFlattenState(ServerPlayer player, boolean isFlattened, long flattenTime, FrozenPoseData frozenPose, int spreadLevel) {
         PacketDistributor.sendToPlayersTrackingEntityAndSelf(
             player,
-            new SyncFlattenStatePayload(player.getId(), isFlattened, flattenTime, java.util.Optional.ofNullable(frozenPose))
+            new SyncFlattenStatePayload(player.getId(), isFlattened, flattenTime, java.util.Optional.ofNullable(frozenPose), spreadLevel)
         );
     }
 
