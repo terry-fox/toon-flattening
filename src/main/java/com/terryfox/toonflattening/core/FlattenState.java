@@ -26,6 +26,9 @@ import java.util.UUID;
  * @param hasContactingAnvil True if anvil currently detected above player
  * @param anvilEntityUUID UUID of contacting falling anvil entity, null if none (SRS FR-STATE.1.5)
  * @param anvilBlockPos Position of contacting anvil block, null if none (SRS FR-STATE.1.5)
+ * @param trackedAnvilVelocityY Anvil's Y velocity when transition was set (for velocity-based animations)
+ * @param trackedAnvilY Anvil's Y position when compression began (for transition calculations)
+ * @param trackedFloorY Floor Y position when compression began (for transition calculations)
  */
 public record FlattenState(
         FlattenPhase phase,
@@ -41,7 +44,10 @@ public record FlattenState(
         int trackedAnvilCount,
         boolean hasContactingAnvil,
         @Nullable UUID anvilEntityUUID,
-        @Nullable BlockPos anvilBlockPos
+        @Nullable BlockPos anvilBlockPos,
+        double trackedAnvilVelocityY,
+        double trackedAnvilY,
+        double trackedFloorY
 ) {
     /**
      * Factory: Default unflatted state.
@@ -65,7 +71,10 @@ public record FlattenState(
                 0,
                 false,
                 null,
-                null
+                null,
+                0.0,
+                0.0,
+                0.0
         );
     }
 
@@ -90,7 +99,10 @@ public record FlattenState(
                 this.trackedAnvilCount,
                 this.hasContactingAnvil,
                 this.anvilEntityUUID,
-                this.anvilBlockPos
+                this.anvilBlockPos,
+                this.trackedAnvilVelocityY,
+                this.trackedAnvilY,
+                this.trackedFloorY
         );
     }
 
@@ -117,7 +129,10 @@ public record FlattenState(
                 this.trackedAnvilCount,
                 this.hasContactingAnvil,
                 this.anvilEntityUUID,
-                this.anvilBlockPos
+                this.anvilBlockPos,
+                this.trackedAnvilVelocityY,
+                this.trackedAnvilY,
+                this.trackedFloorY
         );
     }
 
@@ -142,7 +157,10 @@ public record FlattenState(
                 this.trackedAnvilCount,
                 this.hasContactingAnvil,
                 this.anvilEntityUUID,
-                this.anvilBlockPos
+                this.anvilBlockPos,
+                this.trackedAnvilVelocityY,
+                this.trackedAnvilY,
+                this.trackedFloorY
         );
     }
 
@@ -167,7 +185,10 @@ public record FlattenState(
                 this.trackedAnvilCount,
                 this.hasContactingAnvil,
                 this.anvilEntityUUID,
-                this.anvilBlockPos
+                this.anvilBlockPos,
+                this.trackedAnvilVelocityY,
+                this.trackedAnvilY,
+                this.trackedFloorY
         );
     }
 
@@ -192,7 +213,10 @@ public record FlattenState(
                 this.trackedAnvilCount,
                 this.hasContactingAnvil,
                 this.anvilEntityUUID,
-                this.anvilBlockPos
+                this.anvilBlockPos,
+                this.trackedAnvilVelocityY,
+                this.trackedAnvilY,
+                this.trackedFloorY
         );
     }
 
@@ -217,7 +241,10 @@ public record FlattenState(
                 this.trackedAnvilCount,
                 this.hasContactingAnvil,
                 this.anvilEntityUUID,
-                this.anvilBlockPos
+                this.anvilBlockPos,
+                this.trackedAnvilVelocityY,
+                this.trackedAnvilY,
+                this.trackedFloorY
         );
     }
 
@@ -242,7 +269,10 @@ public record FlattenState(
                 this.trackedAnvilCount,
                 this.hasContactingAnvil,
                 this.anvilEntityUUID,
-                this.anvilBlockPos
+                this.anvilBlockPos,
+                this.trackedAnvilVelocityY,
+                this.trackedAnvilY,
+                this.trackedFloorY
         );
     }
 
@@ -267,7 +297,10 @@ public record FlattenState(
                 this.trackedAnvilCount,
                 this.hasContactingAnvil,
                 this.anvilEntityUUID,
-                this.anvilBlockPos
+                this.anvilBlockPos,
+                this.trackedAnvilVelocityY,
+                this.trackedAnvilY,
+                this.trackedFloorY
         );
     }
 
@@ -292,7 +325,10 @@ public record FlattenState(
                 newCount,
                 this.hasContactingAnvil,
                 this.anvilEntityUUID,
-                this.anvilBlockPos
+                this.anvilBlockPos,
+                this.trackedAnvilVelocityY,
+                this.trackedAnvilY,
+                this.trackedFloorY
         );
     }
 
@@ -317,7 +353,10 @@ public record FlattenState(
                 this.trackedAnvilCount,
                 newHasContact,
                 this.anvilEntityUUID,
-                this.anvilBlockPos
+                this.anvilBlockPos,
+                this.trackedAnvilVelocityY,
+                this.trackedAnvilY,
+                this.trackedFloorY
         );
     }
 
@@ -342,7 +381,10 @@ public record FlattenState(
                 this.trackedAnvilCount,
                 this.hasContactingAnvil,
                 newUUID,
-                this.anvilBlockPos
+                this.anvilBlockPos,
+                this.trackedAnvilVelocityY,
+                this.trackedAnvilY,
+                this.trackedFloorY
         );
     }
 
@@ -367,7 +409,94 @@ public record FlattenState(
                 this.trackedAnvilCount,
                 this.hasContactingAnvil,
                 this.anvilEntityUUID,
-                newPos
+                newPos,
+                this.trackedAnvilVelocityY,
+                this.trackedAnvilY,
+                this.trackedFloorY
+        );
+    }
+
+    /**
+     * Immutable copy with tracked anvil velocity change.
+     *
+     * @param newVelocity New tracked anvil Y velocity
+     * @return New state instance with updated velocity
+     */
+    public FlattenState withTrackedAnvilVelocityY(double newVelocity) {
+        return new FlattenState(
+                this.phase,
+                this.heightScale,
+                this.widthScale,
+                this.depthScale,
+                this.spreadMultiplier,
+                this.originalHitboxHeight,
+                this.frozenPose,
+                this.recoveryTicksRemaining,
+                this.fallbackTicksRemaining,
+                this.reflattenCooldownTicks,
+                this.trackedAnvilCount,
+                this.hasContactingAnvil,
+                this.anvilEntityUUID,
+                this.anvilBlockPos,
+                newVelocity,
+                this.trackedAnvilY,
+                this.trackedFloorY
+        );
+    }
+
+    /**
+     * Immutable copy with tracked anvil Y position change.
+     *
+     * @param newAnvilY New tracked anvil Y position
+     * @return New state instance with updated position
+     */
+    public FlattenState withTrackedAnvilY(double newAnvilY) {
+        return new FlattenState(
+                this.phase,
+                this.heightScale,
+                this.widthScale,
+                this.depthScale,
+                this.spreadMultiplier,
+                this.originalHitboxHeight,
+                this.frozenPose,
+                this.recoveryTicksRemaining,
+                this.fallbackTicksRemaining,
+                this.reflattenCooldownTicks,
+                this.trackedAnvilCount,
+                this.hasContactingAnvil,
+                this.anvilEntityUUID,
+                this.anvilBlockPos,
+                this.trackedAnvilVelocityY,
+                newAnvilY,
+                this.trackedFloorY
+        );
+    }
+
+    /**
+     * Immutable copy with tracked floor Y position change.
+     *
+     * @param newFloorY New tracked floor Y position
+     * @return New state instance with updated position
+     */
+    public FlattenState withTrackedFloorY(double newFloorY) {
+        return new FlattenState(
+                this.phase,
+                this.heightScale,
+                this.widthScale,
+                this.depthScale,
+                this.spreadMultiplier,
+                this.originalHitboxHeight,
+                this.frozenPose,
+                this.recoveryTicksRemaining,
+                this.fallbackTicksRemaining,
+                this.reflattenCooldownTicks,
+                this.trackedAnvilCount,
+                this.hasContactingAnvil,
+                this.anvilEntityUUID,
+                this.anvilBlockPos,
+                this.trackedAnvilVelocityY,
+                this.trackedAnvilY,
+                newFloorY
         );
     }
 }

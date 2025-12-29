@@ -33,7 +33,7 @@ public final class AnvilContactDetector {
 
     // Detection constants
     private static final double HORIZONTAL_INFLATE = 1.0;
-    private static final double VERTICAL_INFLATE = 5.0;
+    private static final double VERTICAL_INFLATE = 1.5;
     private static final int MAX_STACK_HEIGHT = 5;
     private static final int MAX_FLOOR_RAYCAST = 10;
     private static final double PLACED_ANVIL_OFFSET = 0.1;
@@ -90,7 +90,8 @@ public final class AnvilContactDetector {
             double anvilY = fallingAnvil.getBoundingBox().minY;
             double floorY = calculateFloorY(player);
             int anvilCount = 1; // Falling anvils don't stack
-            return new AnvilContact(anvilY, floorY, anvilCount, ContactType.FALLING_ENTITY);
+            double velocityY = fallingAnvil.getDeltaMovement().y;
+            return new AnvilContact(anvilY, floorY, anvilCount, ContactType.FALLING_ENTITY, velocityY);
         }
 
         // Check placed anvils
@@ -99,7 +100,8 @@ public final class AnvilContactDetector {
             double anvilY = placedAnvil.getY();
             double floorY = calculateFloorY(player);
             int anvilCount = countAnvilStack(player.serverLevel(), placedAnvil);
-            return new AnvilContact(anvilY, floorY, anvilCount, ContactType.PLACED_BLOCK);
+            // Placed anvils have no velocity
+            return new AnvilContact(anvilY, floorY, anvilCount, ContactType.PLACED_BLOCK, 0.0);
         }
 
         return null;
@@ -222,12 +224,12 @@ public final class AnvilContactDetector {
         switch (state.phase()) {
             case NORMAL:
                 // Normal → ProgressiveFlattening
-                manager.beginCompression(player, contact.anvilY, contact.floorY, contact.anvilCount);
+                manager.beginCompression(player, contact.anvilY, contact.floorY, contact.anvilCount, contact.velocityY);
                 break;
 
             case PROGRESSIVE_FLATTENING:
                 // Update compression
-                manager.updateCompression(player, contact.anvilY, contact.floorY, contact.anvilCount);
+                manager.updateCompression(player, contact.anvilY, contact.floorY, contact.anvilCount, contact.velocityY);
                 break;
 
             case FULLY_FLATTENED:
@@ -272,18 +274,18 @@ public final class AnvilContactDetector {
             // For now, treat as standard anvil with position = player position
             double playerY = player.getBoundingBox().minY;
             double floorY = calculateFloorY(player);
-            manager.beginCompression(player, playerY, floorY, trigger.getAnvilCount());
+            manager.beginCompression(player, playerY, floorY, trigger.getAnvilCount(), 0.0);
         } else {
             // Standard progressive flatten with custom position
             double floorY = calculateFloorY(player);
-            manager.beginCompression(player, anvilPos.getY(), floorY, trigger.getAnvilCount());
+            manager.beginCompression(player, anvilPos.getY(), floorY, trigger.getAnvilCount(), 0.0);
         }
     }
 
     /**
      * Internal record for anvil contact information.
      */
-    private record AnvilContact(double anvilY, double floorY, int anvilCount, ContactType type) {
+    private record AnvilContact(double anvilY, double floorY, int anvilCount, ContactType type, double velocityY) {
     }
 
     /**

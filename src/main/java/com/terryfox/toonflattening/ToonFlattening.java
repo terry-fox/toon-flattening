@@ -3,6 +3,7 @@ package com.terryfox.toonflattening;
 import com.terryfox.toonflattening.core.FlattenStateManager;
 import com.terryfox.toonflattening.detection.AnvilDamageCanceller;
 import com.terryfox.toonflattening.infrastructure.ConfigSpec;
+import com.terryfox.toonflattening.infrastructure.NetworkPackets;
 import com.terryfox.toonflattening.infrastructure.PlayerDataAttachment;
 import com.terryfox.toonflattening.infrastructure.SoundRegistry;
 import com.terryfox.toonflattening.infrastructure.TickOrchestrator;
@@ -13,6 +14,8 @@ import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.config.ModConfig;
 import net.neoforged.fml.event.config.ModConfigEvent;
 import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
+import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,6 +44,9 @@ public class ToonFlattening {
         // Config injection listeners
         modEventBus.addListener(this::onConfigLoaded);
         modEventBus.addListener(this::onConfigReloaded);
+
+        // Network packet registration
+        modEventBus.addListener(this::onRegisterPayloads);
     }
 
     private void onConfigLoaded(ModConfigEvent.Loading event) {
@@ -49,6 +55,11 @@ public class ToonFlattening {
 
     private void onConfigReloaded(ModConfigEvent.Reloading event) {
         injectConfigIntoStateManager();
+    }
+
+    private void onRegisterPayloads(RegisterPayloadHandlersEvent event) {
+        PayloadRegistrar registrar = event.registrar("1");
+        NetworkPackets.register(registrar);
     }
 
     /**

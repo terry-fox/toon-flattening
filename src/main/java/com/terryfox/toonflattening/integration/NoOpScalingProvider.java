@@ -18,7 +18,7 @@ public class NoOpScalingProvider implements IScalingProvider {
     }
 
     @Override
-    public void setScales(ServerPlayer player, float height, float width, float depth) {
+    public void setScales(ServerPlayer player, float height, float width, float depth, int transitionTicks) {
         if (!warningLogged) {
             LOGGER.error("No scaling provider available! Pehkui is required for visual flattening.");
             LOGGER.error("Player {} will experience broken flattening (state changes but no visual scaling).",

@@ -23,6 +23,10 @@ repositories {
         name = "JitPack"
         url = "https://jitpack.io"
     }
+    maven {
+        name = "Modrinth"
+        url = "https://api.modrinth.com/maven"
+    }
 }
 
 base {
@@ -118,6 +122,9 @@ configurations {
 dependencies {
     // Pehkui for entity scaling (hard dependency)
     implementation "com.github.Virtuoel:Pehkui:${pehkui_version}"
+
+    // Freecam for debugging (local runtime only)
+    localRuntime "maven.modrinth:freecam:1.3.0+mc1.21.1-neoforge"
 
     // Test dependencies
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.10.1'

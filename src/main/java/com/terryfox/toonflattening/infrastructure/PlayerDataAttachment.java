@@ -28,7 +28,8 @@ public final class PlayerDataAttachment {
     /**
      * Codec for serializing FlattenState to NBT.
      * <p>
-     * Encodes all 14 fields. UUID and BlockPos use Optional for nullable fields.
+     * Encodes all 17 fields. UUID and BlockPos use Optional for nullable fields.
+     * Velocity tracking fields combined as list to stay within 16-field limit.
      */
     public static final Codec<FlattenState> FLATTEN_STATE_CODEC =
             RecordCodecBuilder.create(instance ->
@@ -46,7 +47,9 @@ public final class PlayerDataAttachment {
                             Codec.INT.fieldOf("trackedAnvilCount").forGetter(FlattenState::trackedAnvilCount),
                             Codec.BOOL.fieldOf("hasContactingAnvil").forGetter(FlattenState::hasContactingAnvil),
                             UUIDUtil.CODEC.optionalFieldOf("anvilEntityUUID").forGetter(s -> Optional.ofNullable(s.anvilEntityUUID())),
-                            BlockPos.CODEC.optionalFieldOf("anvilBlockPos").forGetter(s -> Optional.ofNullable(s.anvilBlockPos()))
+                            BlockPos.CODEC.optionalFieldOf("anvilBlockPos").forGetter(s -> Optional.ofNullable(s.anvilBlockPos())),
+                            Codec.DOUBLE.listOf().optionalFieldOf("velocityTracking", java.util.List.of(0.0, 0.0, 0.0))
+                                    .forGetter(s -> java.util.List.of(s.trackedAnvilVelocityY(), s.trackedAnvilY(), s.trackedFloorY()))
                     ).apply(instance, PlayerDataAttachment::reconstructState)
             );
 
@@ -76,14 +79,16 @@ public final class PlayerDataAttachment {
             float spreadMultiplier, float originalHitboxHeight, String frozenPose,
             int recoveryTicksRemaining, int fallbackTicksRemaining, int reflattenCooldownTicks,
             int trackedAnvilCount, boolean hasContactingAnvil,
-            Optional<UUID> anvilEntityUUID, Optional<BlockPos> anvilBlockPos
+            Optional<UUID> anvilEntityUUID, Optional<BlockPos> anvilBlockPos,
+            java.util.List<Double> velocityTracking
     ) {
         return new FlattenState(
                 FlattenPhase.valueOf(phase), heightScale, widthScale, depthScale,
                 spreadMultiplier, originalHitboxHeight, Pose.valueOf(frozenPose),
                 recoveryTicksRemaining, fallbackTicksRemaining, reflattenCooldownTicks,
                 trackedAnvilCount, hasContactingAnvil,
-                anvilEntityUUID.orElse(null), anvilBlockPos.orElse(null)
+                anvilEntityUUID.orElse(null), anvilBlockPos.orElse(null),
+                velocityTracking.get(0), velocityTracking.get(1), velocityTracking.get(2)
         );
     }
 

@@ -19,17 +19,40 @@ public class PehkuiScalingProvider implements IScalingProvider {
     }
 
     @Override
-    public void setScales(ServerPlayer player, float height, float width, float depth) {
+    public void setScales(ServerPlayer player, float height, float width, float depth, int transitionTicks) {
         // HEIGHT/WIDTH affect actual hitbox dimensions
         ScaleData heightData = ScaleTypes.HEIGHT.getScaleData(player);
-        heightData.setScale(height);
+        if (transitionTicks > 0) {
+            heightData.setScaleTickDelay(transitionTicks);
+            heightData.setTargetScale(height);
+        } else {
+            heightData.setScale(height);
+        }
 
         ScaleData widthData = ScaleTypes.WIDTH.getScaleData(player);
-        widthData.setScale(width);
+        if (transitionTicks > 0) {
+            widthData.setScaleTickDelay(transitionTicks);
+            widthData.setTargetScale(width);
+        } else {
+            widthData.setScale(width);
+        }
 
         // MODEL scales affect visual rendering (syncs with hitbox for consistency)
-        ScaleTypes.MODEL_HEIGHT.getScaleData(player).setScale(height);
-        ScaleTypes.MODEL_WIDTH.getScaleData(player).setScale(width);
+        ScaleData modelHeightData = ScaleTypes.MODEL_HEIGHT.getScaleData(player);
+        if (transitionTicks > 0) {
+            modelHeightData.setScaleTickDelay(transitionTicks);
+            modelHeightData.setTargetScale(height);
+        } else {
+            modelHeightData.setScale(height);
+        }
+
+        ScaleData modelWidthData = ScaleTypes.MODEL_WIDTH.getScaleData(player);
+        if (transitionTicks > 0) {
+            modelWidthData.setScaleTickDelay(transitionTicks);
+            modelWidthData.setTargetScale(width);
+        } else {
+            modelWidthData.setScale(width);
+        }
 
         // Note: Pehkui handles persistence and client synchronization automatically
     }

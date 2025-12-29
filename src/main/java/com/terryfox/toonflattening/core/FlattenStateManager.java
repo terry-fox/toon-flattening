@@ -113,8 +113,9 @@ public final class FlattenStateManager {
      * @param anvilY Anvil bottom Y coordinate
      * @param floorY Floor surface Y coordinate
      * @param anvilCount Number of anvils in stack
+     * @param velocityY Anvil Y velocity (negative = falling)
      */
-    public void beginCompression(ServerPlayer player, double anvilY, double floorY, int anvilCount) {
+    public void beginCompression(ServerPlayer player, double anvilY, double floorY, int anvilCount, double velocityY) {
         FlattenState current = getState(player);
         if (current.phase() != FlattenPhase.NORMAL) {
             return; // Already compressing
@@ -129,7 +130,10 @@ public final class FlattenStateManager {
                 .withOriginalHitboxHeight(originalHeight)
                 .withScales(heightScale, widthScale, widthScale)
                 .withTrackedAnvilCount(anvilCount)
-                .withHasContactingAnvil(true);
+                .withHasContactingAnvil(true)
+                .withTrackedAnvilVelocityY(velocityY)
+                .withTrackedAnvilY(anvilY)
+                .withTrackedFloorY(floorY);
 
         states.put(player.getUUID(), newState);
 
@@ -148,8 +152,9 @@ public final class FlattenStateManager {
      * @param anvilY Anvil bottom Y coordinate
      * @param floorY Floor surface Y coordinate
      * @param anvilCount Number of anvils in stack
+     * @param velocityY Anvil Y velocity (negative = falling)
      */
-    public void updateCompression(ServerPlayer player, double anvilY, double floorY, int anvilCount) {
+    public void updateCompression(ServerPlayer player, double anvilY, double floorY, int anvilCount, double velocityY) {
         FlattenState current = getState(player);
         if (current.phase() != FlattenPhase.PROGRESSIVE_FLATTENING) {
             return;
@@ -158,10 +163,19 @@ public final class FlattenStateManager {
         float heightScale = ScaleCalculator.calculateHeightScale(anvilY, floorY, current.originalHitboxHeight(), minHeightScale);
         float widthScale = ScaleCalculator.calculateWidthScale(heightScale);
 
+        // Check if velocity changed significantly (>20%)
+        boolean velocityChanged = false;
+        if (current.trackedAnvilVelocityY() != 0.0) {
+            double velocityChange = Math.abs(velocityY - current.trackedAnvilVelocityY());
+            double velocityChangePercent = velocityChange / Math.abs(current.trackedAnvilVelocityY());
+            velocityChanged = velocityChangePercent > 0.2;
+        }
+
         FlattenState newState = current
                 .withScales(heightScale, widthScale, widthScale)
                 .withTrackedAnvilCount(anvilCount)
-                .withHasContactingAnvil(true);
+                .withHasContactingAnvil(true)
+                .withTrackedAnvilVelocityY(velocityChanged ? velocityY : current.trackedAnvilVelocityY());
 
         states.put(player.getUUID(), newState);
 
@@ -347,19 +361,8 @@ public final class FlattenStateManager {
                 states.put(player.getUUID(), newState);
                 LOGGER.debug("Player {} completed recovery animation", player.getName().getString());
             } else {
-                // Interpolate scales
-                int totalTicks = reformationTicks;
-                int remainingTicks = current.recoveryTicksRemaining();
-                float progress = 1.0f - ((float) remainingTicks / totalTicks);
-
-                float newHeight = ScaleCalculator.interpolateRecovery(current.heightScale(), 1.0f, progress);
-                float newWidth = ScaleCalculator.interpolateRecovery(current.widthScale(), 1.0f, progress);
-                float newDepth = ScaleCalculator.interpolateRecovery(current.depthScale(), 1.0f, progress);
-
-                FlattenState newState = current
-                        .withScales(newHeight, newWidth, newDepth)
-                        .withRecoveryTicksRemaining(remainingTicks - 1);
-
+                // Decrement recovery ticks (Pehkui handles interpolation)
+                FlattenState newState = current.withRecoveryTicksRemaining(current.recoveryTicksRemaining() - 1);
                 states.put(player.getUUID(), newState);
             }
         }
@@ -420,5 +423,25 @@ public final class FlattenStateManager {
      */
     public void clearState(Player player) {
         states.remove(player.getUUID());
+    }
+
+    // ==================== Helper Methods ====================
+
+    /**
+     * Estimate fall duration in ticks based on anvil velocity and distance to floor.
+     *
+     * @param anvilY Anvil bottom Y coordinate
+     * @param floorY Floor surface Y coordinate
+     * @param velocityY Anvil Y velocity (negative = falling)
+     * @return Estimated ticks to reach floor (clamped to 1-100)
+     */
+    public static int estimateFallTicks(double anvilY, double floorY, double velocityY) {
+        if (velocityY >= 0) {
+            // Anvil moving up or stationary - use default
+            return 20; // 1 second fallback
+        }
+        double distance = anvilY - floorY;
+        int ticks = (int) Math.ceil(distance / Math.abs(velocityY));
+        return Math.max(1, Math.min(ticks, 100));
     }
 }

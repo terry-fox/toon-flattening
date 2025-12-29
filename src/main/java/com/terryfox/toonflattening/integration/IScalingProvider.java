@@ -22,8 +22,9 @@ public interface IScalingProvider {
      * @param height Height scale multiplier (1.0 = normal)
      * @param width Width scale multiplier (1.0 = normal)
      * @param depth Depth scale multiplier (1.0 = normal)
+     * @param transitionTicks Number of ticks for smooth transition (0 = instant)
      */
-    void setScales(ServerPlayer player, float height, float width, float depth);
+    void setScales(ServerPlayer player, float height, float width, float depth, int transitionTicks);
 
     /**
      * Get the provider's name for logging purposes.
