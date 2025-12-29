@@ -11,3 +11,14 @@
   1. Apply damage equal to first hit
   1. Play second-hit SFX
   1. Suppress particle effects on second hit
+
+* [ ] Anvil spread case 2:
+  1. Detect anvil–player collision
+  1. Apply damage to player
+  1. Flatten player
+  1. Trigger flattening particle effects
+  1. Play hit SFX
+  1. Second anvil dropped on top of first anvil
+  1. No damage, SFX, particles on second hit
+  1. Apply spread
+  1. Repeat for further anvils, further applying spread until max spread hit

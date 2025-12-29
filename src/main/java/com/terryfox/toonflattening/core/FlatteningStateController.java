@@ -153,6 +153,52 @@ public class FlatteningStateController {
         syncToClient(player);
     }
 
+    public static void silentSpread(ServerPlayer player) {
+        FlattenedStateAttachment currentState = player.getData(ToonFlattening.FLATTENED_STATE.get());
+
+        // Validate player is already flattened
+        if (!currentState.isFlattened()) {
+            return;
+        }
+
+        // Calculate new spread level
+        int newSpreadLevel = currentState.spreadLevel() + 1;
+
+        // Check if max spread reached via config
+        ScaleDimensions proposedDimensions = ScaleDimensions.fromConfig(newSpreadLevel);
+        double maxSpreadWidth = ToonFlatteningConfig.CONFIG.maxSpreadWidth.get();
+
+        if (proposedDimensions.width() >= maxSpreadWidth) {
+            ToonFlattening.LOGGER.info("Player {} already at max spread (width: {})",
+                player.getName().getString(), proposedDimensions.width());
+            return;
+        }
+
+        // Update attachment with new spread level (preserve flattenTime and frozenPose)
+        player.setData(
+            ToonFlattening.FLATTENED_STATE.get(),
+            new FlattenedStateAttachment(
+                true,
+                currentState.flattenTime(),
+                currentState.frozenPose(),
+                newSpreadLevel
+            )
+        );
+
+        // Apply new scale with delay
+        PehkuiIntegration.setPlayerScaleWithDelay(
+            player,
+            ScaleDimensions.fromConfig(newSpreadLevel),
+            5 // ~5 tick delay
+        );
+
+        // Sync to client
+        syncToClient(player);
+
+        ToonFlattening.LOGGER.info("Player {} silently spread (new spread level: {}, width: {})",
+            player.getName().getString(), newSpreadLevel, proposedDimensions.width());
+    }
+
     public static void syncToClient(ServerPlayer player) {
         NetworkHandler.syncFlattenState(player);
     }
