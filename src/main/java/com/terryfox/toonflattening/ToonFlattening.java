@@ -9,6 +9,7 @@ import com.terryfox.toonflattening.event.FlatteningHandler;
 import com.terryfox.toonflattening.event.LoginHandler;
 import com.terryfox.toonflattening.event.PlayerMovementHandler;
 import com.terryfox.toonflattening.event.RespawnHandler;
+import com.terryfox.toonflattening.core.FlattenStateManager;
 
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
@@ -85,9 +86,7 @@ public class ToonFlattening {
         LOGGER.info("Height scale: {}", ToonFlatteningConfig.CONFIG.heightScale.get());
 
         // Reset all players to ensure clean state on server start
-        event.getServer().getPlayerList().getPlayers().forEach(player -> {
-            player.setData(FLATTENED_STATE.get(), FlattenedStateAttachment.DEFAULT);
-        });
+        event.getServer().getPlayerList().getPlayers().forEach(FlattenStateManager::resetPlayer);
     }
 
     @EventBusSubscriber(modid = ToonFlattening.MODID, value = Dist.CLIENT)

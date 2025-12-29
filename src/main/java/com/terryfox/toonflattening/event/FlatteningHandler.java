@@ -34,7 +34,7 @@ public class FlatteningHandler {
         return Math.max(MIN_TICKS, Math.min(MAX_TICKS, (int) Math.round(calculatedTicks)));
     }
 
-    public static void flattenPlayer(Player player, double damage, FlattenCause cause, double anvilVelocity) {
+    public static void flattenPlayer(Player player, double damage, double anvilVelocity) {
         FlattenedStateAttachment currentState = player.getData(ToonFlattening.FLATTENED_STATE.get());
 
         if (currentState.isFlattened()) {
@@ -95,7 +95,7 @@ public class FlatteningHandler {
 
                 double velocity = Math.abs(fallingBlock.getDeltaMovement().y);
                 double flattenDamage = ToonFlatteningConfig.CONFIG.flattenDamage.get();
-                flattenPlayer(player, flattenDamage, FlattenCause.ANVIL, velocity);
+                flattenPlayer(player, flattenDamage, velocity);
                 event.setAmount((float) flattenDamage);
             }
         }
