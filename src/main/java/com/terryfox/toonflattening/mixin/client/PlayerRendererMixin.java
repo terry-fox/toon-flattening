@@ -1,5 +1,7 @@
 package com.terryfox.toonflattening.mixin.client;
 
+import com.llamalad7.mixinextras.sugar.Share;
+import com.llamalad7.mixinextras.sugar.ref.LocalFloatRef;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.terryfox.toonflattening.ToonFlattening;
 import com.terryfox.toonflattening.attachment.FlattenedStateAttachment;
@@ -21,13 +23,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(value = PlayerRenderer.class, priority = 1500)
 public class PlayerRendererMixin {
 
-    // Store original xRot to restore after render (for camera)
-    private static float originalXRot;
-    private static float originalXRotO;
-    private static boolean needsRestore = false;
-
     @Inject(method = "render(Lnet/minecraft/client/player/AbstractClientPlayer;FFLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;I)V", at = @At("HEAD"))
-    private void onRender(AbstractClientPlayer player, float entityYaw, float partialTicks, PoseStack poseStack, MultiBufferSource buffer, int packedLight, CallbackInfo ci) {
+    private void onRender(AbstractClientPlayer player, float entityYaw, float partialTicks, PoseStack poseStack, MultiBufferSource buffer, int packedLight, CallbackInfo ci,
+                          @Share("xRot") LocalFloatRef originalXRot, @Share("xRotO") LocalFloatRef originalXRotO) {
         FlattenedStateAttachment state = player.getData(ToonFlattening.FLATTENED_STATE.get());
         if (!state.isFlattened() || state.frozenPose() == null) {
             return;
@@ -47,9 +45,8 @@ public class PlayerRendererMixin {
         // Freeze pitch (xRot) for head visual
         // Store original for camera, will be restored in POST
         if (isLocalPlayer) {
-            originalXRot = player.getXRot();
-            originalXRotO = player.xRotO;
-            needsRestore = true;
+            originalXRot.set(player.getXRot());
+            originalXRotO.set(player.xRotO);
         }
         player.setXRot(pose.xRot());
         player.xRotO = pose.xRot();
@@ -71,12 +68,12 @@ public class PlayerRendererMixin {
     }
 
     @Inject(method = "render(Lnet/minecraft/client/player/AbstractClientPlayer;FFLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;I)V", at = @At("RETURN"))
-    private void onRenderPost(AbstractClientPlayer player, float entityYaw, float partialTicks, PoseStack poseStack, MultiBufferSource buffer, int packedLight, CallbackInfo ci) {
+    private void onRenderPost(AbstractClientPlayer player, float entityYaw, float partialTicks, PoseStack poseStack, MultiBufferSource buffer, int packedLight, CallbackInfo ci,
+                              @Share("xRot") LocalFloatRef originalXRot, @Share("xRotO") LocalFloatRef originalXRotO) {
         // Restore original xRot for camera after render
-        if (needsRestore && player == Minecraft.getInstance().player) {
-            player.setXRot(originalXRot);
-            player.xRotO = originalXRotO;
-            needsRestore = false;
+        if (player == Minecraft.getInstance().player) {
+            player.setXRot(originalXRot.get());
+            player.xRotO = originalXRotO.get();
         }
     }
 }

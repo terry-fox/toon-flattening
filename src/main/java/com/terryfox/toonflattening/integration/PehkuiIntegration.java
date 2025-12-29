@@ -1,27 +1,28 @@
 package com.terryfox.toonflattening.integration;
 
+import com.terryfox.toonflattening.core.ScaleDimensions;
 import net.minecraft.world.entity.player.Player;
 import virtuoel.pehkui.api.ScaleTypes;
 
 public class PehkuiIntegration {
-    public static void setPlayerScale(Player player, float heightScale, float widthScale) {
-        ScaleTypes.HEIGHT.getScaleData(player).setTargetScale(heightScale);
-        ScaleTypes.WIDTH.getScaleData(player).setTargetScale(widthScale);
+    public static void setPlayerScale(Player player, ScaleDimensions scale) {
+        ScaleTypes.HEIGHT.getScaleData(player).setTargetScale(scale.height());
+        ScaleTypes.WIDTH.getScaleData(player).setTargetScale(scale.width());
     }
 
     public static void resetPlayerScale(Player player) {
-        setPlayerScale(player, 1.0f, 1.0f);
+        setPlayerScale(player, ScaleDimensions.NORMAL);
     }
 
-    public static void setPlayerScaleWithDelay(Player player, float heightScale, float widthScale, int tickDelay) {
+    public static void setPlayerScaleWithDelay(Player player, ScaleDimensions scale, int tickDelay) {
         ScaleTypes.HEIGHT.getScaleData(player).setScaleTickDelay(tickDelay);
-        ScaleTypes.HEIGHT.getScaleData(player).setTargetScale(heightScale);
+        ScaleTypes.HEIGHT.getScaleData(player).setTargetScale(scale.height());
 
         ScaleTypes.WIDTH.getScaleData(player).setScaleTickDelay(tickDelay);
-        ScaleTypes.WIDTH.getScaleData(player).setTargetScale(widthScale);
+        ScaleTypes.WIDTH.getScaleData(player).setTargetScale(scale.width());
     }
 
     public static void resetPlayerScaleWithDelay(Player player, int tickDelay) {
-        setPlayerScaleWithDelay(player, 1.0f, 1.0f, tickDelay);
+        setPlayerScaleWithDelay(player, ScaleDimensions.NORMAL, tickDelay);
     }
 }
