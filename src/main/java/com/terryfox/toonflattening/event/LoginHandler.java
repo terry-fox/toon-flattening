@@ -26,20 +26,17 @@ public class LoginHandler {
             // Restore flattened scale
             PehkuiIntegration.setPlayerScale(serverPlayer, ScaleDimensions.fromConfig(spreadLevel));
 
-            // Sync flattened state to client
-            NetworkHandler.syncFlattenState(serverPlayer, true, state.flattenTime(), state.frozenPose(), spreadLevel);
-
             ToonFlattening.LOGGER.debug("Restored flattened state for {} on login (spread level: {})",
                 serverPlayer.getName().getString(), spreadLevel);
         } else {
             // Ensure scale is reset if not flattened
             PehkuiIntegration.resetPlayerScale(serverPlayer);
 
-            // Sync non-flattened state to client
-            NetworkHandler.syncFlattenState(serverPlayer, false, 0L, null, 0);
-
             ToonFlattening.LOGGER.debug("Synced non-flattened state for {} on login",
                 serverPlayer.getName().getString());
         }
+
+        // Sync state to client
+        NetworkHandler.syncFlattenState(serverPlayer);
     }
 }

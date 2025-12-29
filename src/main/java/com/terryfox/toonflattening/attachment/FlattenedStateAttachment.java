@@ -2,6 +2,7 @@ package com.terryfox.toonflattening.attachment;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import com.terryfox.toonflattening.network.SyncFlattenStatePayload;
 
 import java.util.Optional;
 
@@ -19,4 +20,8 @@ public record FlattenedStateAttachment(boolean isFlattened, long flattenTime, Fr
         ).apply(instance, (isFlattened, flattenTime, frozenPose, spreadLevel) ->
             new FlattenedStateAttachment(isFlattened, flattenTime, frozenPose.orElse(null), spreadLevel))
     );
+
+    public SyncFlattenStatePayload toSyncPayload(int playerId) {
+        return new SyncFlattenStatePayload(playerId, isFlattened, flattenTime, Optional.ofNullable(frozenPose), spreadLevel);
+    }
 }

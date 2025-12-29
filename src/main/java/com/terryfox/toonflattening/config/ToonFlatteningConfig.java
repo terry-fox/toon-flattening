@@ -42,7 +42,7 @@ public class ToonFlatteningConfig {
             .defineInRange("anvilPinningTimeoutSeconds", 300, 0, 3600);
 
         spreadMultiplier = builder
-            .comment("Width added per anvil hit (width = 1.0 + spreadMultiplier × hitCount, default 0.8)")
+            .comment("Width added per anvil hit (default 0.8)")
             .translation("config.toonflattening.spread_multiplier")
             .defineInRange("spreadMultiplier", 0.8, 0.0, 2.0);
 

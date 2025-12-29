@@ -30,11 +30,25 @@ public class FlatteningStateController {
     }
 
     public static void flatten(ServerPlayer player, double damage, double anvilVelocity) {
-        FlattenedStateAttachment currentState = player.getData(ToonFlattening.FLATTENED_STATE.get());
-
-        if (player.isSpectator()) {
+        if (!canFlatten(player)) {
             return;
         }
+
+        FlattenState state = calculateFlattenState(player, anvilVelocity);
+        persistFlattenState(player, state);
+        applyPhysicalEffects(player, state);
+        broadcastFlattenEvent(player, state);
+        applyDamageAndSound(player, damage);
+
+        ToonFlattening.LOGGER.info("Player {} flattened (spread level: {})", player.getName().getString(), state.spreadLevel());
+    }
+
+    private static boolean canFlatten(ServerPlayer player) {
+        return !player.isSpectator();
+    }
+
+    private static FlattenState calculateFlattenState(ServerPlayer player, double anvilVelocity) {
+        FlattenedStateAttachment currentState = player.getData(ToonFlattening.FLATTENED_STATE.get());
 
         long flattenTime;
         FrozenPoseData pose;
@@ -55,19 +69,34 @@ public class FlatteningStateController {
             sendSquashAnimation = true;
         }
 
+        int animationTicks = calculateFlatteningAnimationTicks(anvilVelocity);
+
+        return new FlattenState(spreadLevel, flattenTime, pose, animationTicks, sendSquashAnimation);
+    }
+
+    private static void persistFlattenState(ServerPlayer player, FlattenState state) {
         player.setData(
             ToonFlattening.FLATTENED_STATE.get(),
-            new FlattenedStateAttachment(true, flattenTime, pose, spreadLevel)
+            new FlattenedStateAttachment(true, state.flattenTime(), state.frozenPose(), state.spreadLevel())
         );
+    }
 
-        int animationTicks = calculateFlatteningAnimationTicks(anvilVelocity);
-        PehkuiIntegration.setPlayerScaleWithDelay(player, ScaleDimensions.fromConfig(spreadLevel), animationTicks);
+    private static void applyPhysicalEffects(ServerPlayer player, FlattenState state) {
+        PehkuiIntegration.setPlayerScaleWithDelay(
+            player,
+            ScaleDimensions.fromConfig(state.spreadLevel()),
+            state.animationTicks()
+        );
+    }
 
+    private static void broadcastFlattenEvent(ServerPlayer player, FlattenState state) {
         syncToClient(player);
-        if (sendSquashAnimation) {
+        if (state.sendSquashAnimation()) {
             NetworkHandler.sendSquashAnimation(player);
         }
+    }
 
+    private static void applyDamageAndSound(ServerPlayer player, double damage) {
         player.hurt(player.damageSources().generic(), (float) damage);
 
         player.level().playSound(
@@ -80,8 +109,6 @@ public class FlatteningStateController {
             1.0f,
             1.0f
         );
-
-        ToonFlattening.LOGGER.info("Player {} flattened (spread level: {})", player.getName().getString(), spreadLevel);
     }
 
     public static boolean tryReform(ServerPlayer player) {
@@ -127,7 +154,6 @@ public class FlatteningStateController {
     }
 
     public static void syncToClient(ServerPlayer player) {
-        FlattenedStateAttachment state = player.getData(ToonFlattening.FLATTENED_STATE.get());
-        NetworkHandler.syncFlattenState(player, state.isFlattened(), state.flattenTime(), state.frozenPose(), state.spreadLevel());
+        NetworkHandler.syncFlattenState(player);
     }
 }

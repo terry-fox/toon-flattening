@@ -1,7 +1,6 @@
 package com.terryfox.toonflattening.network;
 
 import com.terryfox.toonflattening.ToonFlattening;
-import com.terryfox.toonflattening.attachment.FrozenPoseData;
 import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -35,10 +34,11 @@ public class NetworkHandler {
         );
     }
 
-    public static void syncFlattenState(ServerPlayer player, boolean isFlattened, long flattenTime, FrozenPoseData frozenPose, int spreadLevel) {
+    public static void syncFlattenState(ServerPlayer player) {
+        var state = player.getData(ToonFlattening.FLATTENED_STATE.get());
         PacketDistributor.sendToPlayersTrackingEntityAndSelf(
             player,
-            new SyncFlattenStatePayload(player.getId(), isFlattened, flattenTime, java.util.Optional.ofNullable(frozenPose), spreadLevel)
+            state.toSyncPayload(player.getId())
         );
     }
 
