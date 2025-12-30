@@ -25,7 +25,7 @@
 
 * [x] Prevent the player from being pushed by mobs, other players, minecarts, boats (other vehicles or rideable objects) from colliding with the flattened player
 
-* [ ] Prevent mobs, piston heads, other players, minecarts, boats (other vehicles or rideable objects) from colliding with the flattened player
+* [x] Prevent mobs, piston heads, other players, minecarts, boats (other vehicles or rideable objects) from colliding with the flattened player
 
 * [ ] Prevent the player from breaking the anvil that is squashing them
 

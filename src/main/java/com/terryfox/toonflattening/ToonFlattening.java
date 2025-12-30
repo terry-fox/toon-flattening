@@ -5,6 +5,7 @@ import org.slf4j.Logger;
 import com.mojang.logging.LogUtils;
 import com.terryfox.toonflattening.attachment.FlattenedStateAttachment;
 import com.terryfox.toonflattening.config.ToonFlatteningConfig;
+import com.terryfox.toonflattening.event.AnvilBreakHandler;
 import com.terryfox.toonflattening.event.AnvilStackHandler;
 import com.terryfox.toonflattening.event.FlatteningHandler;
 import com.terryfox.toonflattening.event.KnockbackHandler;
@@ -76,6 +77,8 @@ public class ToonFlattening {
         NeoForge.EVENT_BUS.addListener(LoginHandler::onPlayerLogin);
         NeoForge.EVENT_BUS.addListener(AnvilStackHandler::onEntityLeaveLevel);
         NeoForge.EVENT_BUS.addListener(KnockbackHandler::onLivingKnockBack);
+        NeoForge.EVENT_BUS.addListener(AnvilBreakHandler::onBlockBreak);
+        NeoForge.EVENT_BUS.addListener(AnvilBreakHandler::onLeftClickBlock);
     }
 
     private void commonSetup(FMLCommonSetupEvent event) {
