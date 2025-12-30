@@ -1,6 +1,6 @@
 package com.terryfox.toonflattening.mixin;
 
-import com.terryfox.toonflattening.core.FlatteningHelper;
+import com.terryfox.toonflattening.attachment.FlattenedStateAttachment;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import org.spongepowered.asm.mixin.Mixin;
@@ -16,12 +16,6 @@ public class LivingEntityPushMixin {
     @Inject(method = "pushEntities", at = @At("HEAD"), cancellable = true)
     private void onPushEntities(CallbackInfo ci) {
         LivingEntity entity = (LivingEntity) (Object) this;
-        if (!(entity instanceof Player player)) {
-            return;
-        }
-
-        if (FlatteningHelper.isFlattened(player)) {
-            ci.cancel();
-        }
+        FlattenedStateAttachment.ifFlattened(entity, () -> ci.cancel());
     }
 }

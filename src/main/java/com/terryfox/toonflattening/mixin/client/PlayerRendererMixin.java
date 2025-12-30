@@ -6,7 +6,6 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.terryfox.toonflattening.ToonFlattening;
 import com.terryfox.toonflattening.attachment.FlattenedStateAttachment;
 import com.terryfox.toonflattening.attachment.FrozenPoseData;
-import com.terryfox.toonflattening.core.FlatteningHelper;
 import com.terryfox.toonflattening.mixin.accessor.WalkAnimationStateAccessor;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.AbstractClientPlayer;
@@ -27,7 +26,7 @@ public class PlayerRendererMixin {
     @Inject(method = "render(Lnet/minecraft/client/player/AbstractClientPlayer;FFLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;I)V", at = @At("HEAD"))
     private void onRender(AbstractClientPlayer player, float entityYaw, float partialTicks, PoseStack poseStack, MultiBufferSource buffer, int packedLight, CallbackInfo ci,
                           @Share("xRot") LocalFloatRef originalXRot, @Share("xRotO") LocalFloatRef originalXRotO) {
-        if (!FlatteningHelper.isFlattened(player)) {
+        if (!FlattenedStateAttachment.isFlattened(player)) {
             return;
         }
 
@@ -75,7 +74,7 @@ public class PlayerRendererMixin {
     @Inject(method = "render(Lnet/minecraft/client/player/AbstractClientPlayer;FFLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;I)V", at = @At("RETURN"))
     private void onRenderPost(AbstractClientPlayer player, float entityYaw, float partialTicks, PoseStack poseStack, MultiBufferSource buffer, int packedLight, CallbackInfo ci,
                               @Share("xRot") LocalFloatRef originalXRot, @Share("xRotO") LocalFloatRef originalXRotO) {
-        if (!FlatteningHelper.isFlattened(player)) {
+        if (!FlattenedStateAttachment.isFlattened(player)) {
             return;
         }
 

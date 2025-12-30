@@ -2,7 +2,6 @@ package com.terryfox.toonflattening.client;
 
 import com.terryfox.toonflattening.ToonFlattening;
 import com.terryfox.toonflattening.attachment.FlattenedStateAttachment;
-import com.terryfox.toonflattening.core.FlatteningHelper;
 import com.terryfox.toonflattening.network.RequestReformPayload;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
@@ -24,7 +23,7 @@ public class ClientEventHandler {
             return;
         }
 
-        if (!FlatteningHelper.isFlattened(player)) {
+        if (!FlattenedStateAttachment.isFlattened(player)) {
             return;
         }
 
@@ -62,7 +61,7 @@ public class ClientEventHandler {
             return;
         }
 
-        if (!FlatteningHelper.isFlattened(player)) {
+        if (!FlattenedStateAttachment.isFlattened(player)) {
             return;
         }
 

@@ -1,6 +1,6 @@
 package com.terryfox.toonflattening.event;
 
-import com.terryfox.toonflattening.core.FlatteningHelper;
+import com.terryfox.toonflattening.attachment.FlattenedStateAttachment;
 
 import net.minecraft.world.entity.player.Player;
 import net.neoforged.neoforge.event.tick.EntityTickEvent;
@@ -20,7 +20,7 @@ public class PlayerMovementHandler {
             return;
         }
 
-        if (!FlatteningHelper.isFlattened(player)) {
+        if (!FlattenedStateAttachment.isFlattened(player)) {
             return;
         }
 

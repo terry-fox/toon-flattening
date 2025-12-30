@@ -2,9 +2,13 @@ package com.terryfox.toonflattening.attachment;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import com.terryfox.toonflattening.ToonFlattening;
 import com.terryfox.toonflattening.network.SyncFlattenStatePayload;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
 
 import java.util.Optional;
+import java.util.function.Consumer;
 
 public record FlattenedStateAttachment(boolean isFlattened, long flattenTime, FrozenPoseData frozenPose, double accumulatedSpread, String flatteningSource) {
 
@@ -28,5 +32,30 @@ public record FlattenedStateAttachment(boolean isFlattened, long flattenTime, Fr
 
     public SyncFlattenStatePayload toSyncPayload(int playerId) {
         return new SyncFlattenStatePayload(playerId, isFlattened, flattenTime, Optional.ofNullable(frozenPose), accumulatedSpread, flatteningSource);
+    }
+
+    public static boolean isFlattened(Player player) {
+        FlattenedStateAttachment state = player.getData(ToonFlattening.FLATTENED_STATE.get());
+        return state != null && state.isFlattened();
+    }
+
+    /**
+     * Executes action if entity is a flattened player.
+     * Common pattern: if (!(entity instanceof Player player)) return; if (isFlattened(player)) action();
+     */
+    public static void ifFlattened(Entity entity, Runnable action) {
+        if (entity instanceof Player player && isFlattened(player)) {
+            action.run();
+        }
+    }
+
+    /**
+     * Executes action if entity is a flattened player, passing the player.
+     * Common pattern: if (!(entity instanceof Player player)) return; if (isFlattened(player)) action(player);
+     */
+    public static void ifFlattened(Entity entity, Consumer<Player> action) {
+        if (entity instanceof Player player && isFlattened(player)) {
+            action.accept(player);
+        }
     }
 }
