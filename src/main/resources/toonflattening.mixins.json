@@ -6,7 +6,8 @@
   "mixins": [
     "accessor.WalkAnimationStateAccessor",
     "LivingEntityPushMixin",
-    "PlayerPushMixin"
+    "PlayerPushMixin",
+    "ServerPlayerGameModeMixin"
   ],
   "client": [
     "client.EntityRenderDispatcherMixin",
