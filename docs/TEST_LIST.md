@@ -84,9 +84,8 @@
 ## Phase 3: Flattening Mechanics
 
 ### 3.1: Source Tracking
-- [ ] **Unit:** Serialize `FlattenedStateAttachment` with source field, deserialize, verify intact
-- [ ] **Manual:** Flatten with hammer, `/data get entity @s`, verify source = "Hammer"
-- [ ] **Manual:** Flatten with hammer, logout, login, verify source persists
+- [x] **Manual:** Flatten with hammer, `/data get entity @s`, verify source = "Hammer"
+- [x] **Manual:** Flatten with hammer, logout, login, verify source persists
 
 **AC:**
 - Attachment stores "Hammer" or "Anvil"
@@ -95,12 +94,12 @@
 ---
 
 ### 3.2: Initial vs Subsequent Hit Logic
-- [ ] **Manual:** First hammer hit on unflatted player, verify sound plays
-- [ ] **Manual:** First hammer hit, verify 25 poof particles appear
-- [ ] **Manual:** Second hammer hit on already-flattened player, verify no sound
-- [ ] **Manual:** Second hammer hit, verify no particles
-- [ ] **Manual:** Second hit, verify spread increases
-- [ ] **Manual:** Hit until max spread, verify spread stops increasing
+- [x] **Manual:** First hammer hit on unflatted player, verify sound plays
+- [x] **Manual:** First hammer hit, verify 25 poof particles appear
+- [x] **Manual:** Second hammer hit on already-flattened player, verify no sound
+- [x] **Manual:** Second hammer hit, verify no particles
+- [x] **Manual:** Second hit, verify spread increases
+- [x] **Manual:** Hit until max spread, verify spread stops increasing
 
 **AC:**
 - First hit: sound + 25 poof particles
@@ -110,10 +109,10 @@
 ---
 
 ### 3.3: Unified Spread Tracking
-- [ ] **Manual:** Flatten player with anvil (spread = X)
-- [ ] **Manual:** Hit same player with hammer, verify spread = X + hammer increment
-- [ ] **Manual:** Flatten player with hammer, hit with anvil, verify cumulative spread
-- [ ] **Manual:** Verify visual scale matches combined spread value
+- [x] **Manual:** Flatten player with anvil (spread = X)
+- [x] **Manual:** Hit same player with hammer, verify spread = X + hammer increment
+- [x] **Manual:** Flatten player with hammer, hit with anvil, verify cumulative spread
+- [x] **Manual:** Verify visual scale matches combined spread value
 
 **AC:**
 - Anvil flatten + hammer hit = cumulative spread

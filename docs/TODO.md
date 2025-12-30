@@ -87,36 +87,36 @@ Add hammer weapon that flattens players on melee hit, integrating with existing 
 
 ## Phase 3: Flattening Mechanics (FR-13 to FR-21)
 
-### [ ] 3.1: Source Tracking (FR-21, FR-48)
-- [ ] Add `String flatteningSource` field to `FlattenedStateAttachment`
-- [ ] Update CODEC serialization
-- [ ] Set source in flatten method
+### [x] 3.1: Source Tracking (FR-21, FR-48)
+- [x] Add `String flatteningSource` field to `FlattenedStateAttachment`
+- [x] Update CODEC serialization
+- [x] Set source in flatten method
 
 **Files:**
 - MODIFY: `src/main/java/com/terryfox/toonflattening/attachment/FlattenedStateAttachment.java`
+- MODIFY: `src/main/java/com/terryfox/toonflattening/network/SyncFlattenStatePayload.java`
 - MODIFY: `src/main/java/com/terryfox/toonflattening/core/FlatteningStateController.java`
 
 ---
 
-### [ ] 3.2: Initial vs Subsequent Hit Logic
-- [ ] Check `FlatteningHelper.isFlattened(target)` in `HammerAttackHandler`
-- [ ] If not flattened: initial flatten + sound + particles
-- [ ] If flattened: increment spread only, no sound/particles
-- [ ] Ensure spread respects max config
+### [x] 3.2: Initial vs Subsequent Hit Logic
+- [x] Check `FlatteningHelper.isFlattened(target)` in `HammerAttackHandler`
+- [x] If not flattened: initial flatten + sound + particles
+- [x] If flattened: increment spread only, no sound/particles
+- [x] Ensure spread respects max config
 
 **Files:**
-- MODIFY: `src/main/java/com/terryfox/toonflattening/event/HammerAttackHandler.java`
-- MODIFY: `src/main/java/com/terryfox/toonflattening/core/FlatteningStateController.java`
+- Already implemented in `flattenWithHammer()` (Phase 1.4)
 
 ---
 
-### [ ] 3.3: Unified Spread Tracking (FR-46, FR-47)
-- [ ] Verify existing `spreadLevel` works for both sources
-- [ ] Ensure `incrementSpread()` is source-agnostic
-- [ ] Both hammer/anvil handlers use same spread logic
+### [x] 3.3: Unified Spread Tracking (FR-46, FR-47)
+- [x] Verify existing `spreadLevel` works for both sources
+- [x] Ensure `incrementSpread()` is source-agnostic
+- [x] Both hammer/anvil handlers use same spread logic
 
 **Files:**
-- MODIFY: `src/main/java/com/terryfox/toonflattening/core/FlatteningStateController.java` (if needed)
+- Already implemented - single `spreadLevel` field used by both sources
 
 ---
 

@@ -57,7 +57,7 @@ public class FlatteningStateController {
             sendSquashAnimation = true;
         }
 
-        FlattenedStateAttachment newState = new FlattenedStateAttachment(true, flattenTime, pose, spreadLevel);
+        FlattenedStateAttachment newState = new FlattenedStateAttachment(true, flattenTime, pose, spreadLevel, "ANVIL");
 
         player.setData(ToonFlattening.FLATTENED_STATE.get(), newState);
         player.setDeltaMovement(Vec3.ZERO);
@@ -155,14 +155,15 @@ public class FlatteningStateController {
             return;
         }
 
-        // Update attachment with new spread level (preserve flattenTime and frozenPose)
+        // Update attachment with new spread level (preserve flattenTime, frozenPose, and source)
         player.setData(
             ToonFlattening.FLATTENED_STATE.get(),
             new FlattenedStateAttachment(
                 true,
                 currentState.flattenTime(),
                 currentState.frozenPose(),
-                newSpreadLevel
+                newSpreadLevel,
+                currentState.flatteningSource()
             )
         );
 
@@ -214,7 +215,7 @@ public class FlatteningStateController {
             isInitialFlatten = true;
         }
 
-        FlattenedStateAttachment newState = new FlattenedStateAttachment(true, flattenTime, pose, spreadLevel);
+        FlattenedStateAttachment newState = new FlattenedStateAttachment(true, flattenTime, pose, spreadLevel, "HAMMER");
         player.setData(ToonFlattening.FLATTENED_STATE.get(), newState);
         player.setDeltaMovement(Vec3.ZERO);
 
