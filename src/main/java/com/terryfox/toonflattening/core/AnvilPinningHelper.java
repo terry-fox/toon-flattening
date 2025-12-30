@@ -23,4 +23,15 @@ public class AnvilPinningHelper {
         BlockPos abovePos = playerPos.above();
         return player.level().getBlockState(abovePos).is(BlockTags.ANVIL);
     }
+
+    /**
+     * Checks if an anvil at the given position is pinning the player.
+     *
+     * @param anvilPos The position of the anvil
+     * @param playerPos The position of the player
+     * @return true if the anvil is at the player's position or one block above
+     */
+    public static boolean isAnvilPinningPosition(BlockPos anvilPos, BlockPos playerPos) {
+        return anvilPos.equals(playerPos) || anvilPos.equals(playerPos.above());
+    }
 }

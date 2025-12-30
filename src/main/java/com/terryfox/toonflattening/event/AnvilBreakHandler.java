@@ -1,5 +1,6 @@
 package com.terryfox.toonflattening.event;
 
+import com.terryfox.toonflattening.core.AnvilPinningHelper;
 import com.terryfox.toonflattening.core.FlatteningHelper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerPlayer;
@@ -25,7 +26,7 @@ public class AnvilBreakHandler {
         // Check if anvil is pinning the breaking player
         BlockPos anvilPos = event.getPos();
         BlockPos playerPos = player.blockPosition();
-        boolean isPinningPlayer = anvilPos.equals(playerPos) || anvilPos.equals(playerPos.above());
+        boolean isPinningPlayer = AnvilPinningHelper.isAnvilPinningPosition(anvilPos, playerPos);
 
         // Check if player is flattened
         if (FlatteningHelper.isFlattened(player) && isPinningPlayer) {
@@ -52,7 +53,7 @@ public class AnvilBreakHandler {
         // Check if anvil is pinning player
         BlockPos anvilPos = event.getPos();
         BlockPos playerPos = player.blockPosition();
-        boolean isPinningPlayer = anvilPos.equals(playerPos) || anvilPos.equals(playerPos.above());
+        boolean isPinningPlayer = AnvilPinningHelper.isAnvilPinningPosition(anvilPos, playerPos);
 
         // Check if player is flattened
         if (FlatteningHelper.isFlattened(player) && isPinningPlayer) {

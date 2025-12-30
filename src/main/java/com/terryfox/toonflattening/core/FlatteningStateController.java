@@ -35,29 +35,39 @@ public class FlatteningStateController {
             return;
         }
 
+        double spreadToAdd = ToonFlatteningConfig.CONFIG.spreadMultiplier.get();
+        int animationTicks = calculateFlatteningAnimationTicks(anvilVelocity);
+        applyFlatteningState(player, spreadToAdd, "ANVIL", animationTicks);
+        applyDamageAndSound(player, damage);
+    }
+
+    private static boolean canFlatten(ServerPlayer player) {
+        return !player.isSpectator();
+    }
+
+    private static void applyFlatteningState(ServerPlayer player, double spreadToAdd, String source, int animationTicks) {
         FlattenedStateAttachment currentState = player.getData(ToonFlattening.FLATTENED_STATE.get());
 
         long flattenTime;
         FrozenPoseData pose;
         double accumulatedSpread;
         boolean sendSquashAnimation;
-        int animationTicks = calculateFlatteningAnimationTicks(anvilVelocity);
 
         if (currentState.isFlattened()) {
             // Already flattened - accumulate spread
-            accumulatedSpread = currentState.accumulatedSpread() + 1.0;
+            accumulatedSpread = currentState.accumulatedSpread() + spreadToAdd;
             flattenTime = currentState.flattenTime();
             pose = currentState.frozenPose();
             sendSquashAnimation = false;
         } else {
             // First flatten
-            accumulatedSpread = 1.0;
+            accumulatedSpread = spreadToAdd;
             flattenTime = player.level().getGameTime();
             pose = FrozenPoseData.capture(player);
             sendSquashAnimation = true;
         }
 
-        FlattenedStateAttachment newState = new FlattenedStateAttachment(true, flattenTime, pose, accumulatedSpread, "ANVIL");
+        FlattenedStateAttachment newState = new FlattenedStateAttachment(true, flattenTime, pose, accumulatedSpread, source);
 
         player.setData(ToonFlattening.FLATTENED_STATE.get(), newState);
         player.setDeltaMovement(Vec3.ZERO);
@@ -68,13 +78,7 @@ public class FlatteningStateController {
             NetworkHandler.sendSquashAnimation(player);
         }
 
-        applyDamageAndSound(player, damage);
-
         ToonFlattening.LOGGER.info("Player {} flattened (accumulated spread: {})", player.getName().getString(), accumulatedSpread);
-    }
-
-    private static boolean canFlatten(ServerPlayer player) {
-        return !player.isSpectator();
     }
 
     private static void applyDamageAndSound(ServerPlayer player, double damage) {
@@ -158,13 +162,7 @@ public class FlatteningStateController {
         // Update attachment with new accumulated spread (preserve flattenTime, frozenPose, and source)
         player.setData(
             ToonFlattening.FLATTENED_STATE.get(),
-            new FlattenedStateAttachment(
-                true,
-                currentState.flattenTime(),
-                currentState.frozenPose(),
-                newAccumulatedSpread,
-                currentState.flatteningSource()
-            )
+            currentState.withSpread(newAccumulatedSpread)
         );
 
         // Apply new scale with delay
@@ -190,19 +188,14 @@ public class FlatteningStateController {
             return;
         }
 
-        FlattenedStateAttachment currentState = player.getData(ToonFlattening.FLATTENED_STATE.get());
-
-        long flattenTime;
-        FrozenPoseData pose;
-        double accumulatedSpread;
-        boolean isInitialFlatten;
-
         // Calculate spread to add (normal: +spreadMultiplier, crit: +spreadMultiplier×1.5)
         double baseSpreadMultiplier = ToonFlatteningConfig.CONFIG.spreadMultiplier.get();
         double spreadToAdd = isCriticalHit ? baseSpreadMultiplier * 1.5 : baseSpreadMultiplier;
 
+        FlattenedStateAttachment currentState = player.getData(ToonFlattening.FLATTENED_STATE.get());
+
+        // Check max spread limit before applying
         if (currentState.isFlattened()) {
-            // Already flattened - accumulate spread
             double proposedSpread = currentState.accumulatedSpread() + spreadToAdd;
             double proposedWidth = 1.0 + proposedSpread;
             double maxSpreadWidth = ToonFlatteningConfig.CONFIG.maxSpreadWidth.get();
@@ -210,37 +203,19 @@ public class FlatteningStateController {
             if (proposedWidth >= maxSpreadWidth) {
                 return; // At max spread, do nothing
             }
-
-            accumulatedSpread = proposedSpread;
-            flattenTime = currentState.flattenTime();
-            pose = currentState.frozenPose();
-            isInitialFlatten = false;
-        } else {
-            // First flatten
-            accumulatedSpread = spreadToAdd;
-            flattenTime = player.level().getGameTime();
-            pose = FrozenPoseData.capture(player);
-            isInitialFlatten = true;
         }
 
-        FlattenedStateAttachment newState = new FlattenedStateAttachment(true, flattenTime, pose, accumulatedSpread, "HAMMER");
-        player.setData(ToonFlattening.FLATTENED_STATE.get(), newState);
+        applyFlatteningState(player, spreadToAdd, "HAMMER", 5);
 
         // Apply damage effect (sound + red flash, no animation)
         player.hurt(player.damageSources().generic(), 0.1f);
         player.setDeltaMovement(Vec3.ZERO);  // Cancel knockback
         player.hurtTime = 0;  // Cancel hurt animation
 
-        PehkuiIntegration.setPlayerScaleWithDelay(player, ScaleDimensions.fromConfig(accumulatedSpread), 5);
-
-        syncToClient(player);
-        if (isInitialFlatten) {
-            NetworkHandler.sendSquashAnimation(player);
-        }
         playFlattenSound(player);
 
         ToonFlattening.LOGGER.info("Player {} hammer-flattened (accumulated spread: {}, critical: {})",
-            player.getName().getString(), accumulatedSpread, isCriticalHit);
+            player.getName().getString(), player.getData(ToonFlattening.FLATTENED_STATE.get()).accumulatedSpread(), isCriticalHit);
     }
 
     private static void playFlattenSound(ServerPlayer player) {

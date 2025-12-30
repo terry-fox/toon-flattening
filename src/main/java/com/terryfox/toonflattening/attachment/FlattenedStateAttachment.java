@@ -22,6 +22,10 @@ public record FlattenedStateAttachment(boolean isFlattened, long flattenTime, Fr
             new FlattenedStateAttachment(isFlattened, flattenTime, frozenPose.orElse(null), accumulatedSpread, flatteningSource))
     );
 
+    public FlattenedStateAttachment withSpread(double newSpread) {
+        return new FlattenedStateAttachment(isFlattened, flattenTime, frozenPose, newSpread, flatteningSource);
+    }
+
     public SyncFlattenStatePayload toSyncPayload(int playerId) {
         return new SyncFlattenStatePayload(playerId, isFlattened, flattenTime, Optional.ofNullable(frozenPose), accumulatedSpread, flatteningSource);
     }
