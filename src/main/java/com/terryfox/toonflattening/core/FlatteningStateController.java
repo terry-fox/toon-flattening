@@ -180,6 +180,69 @@ public class FlatteningStateController {
             player.getName().getString(), newSpreadLevel, proposedDimensions.width());
     }
 
+    public static void flattenWithHammer(ServerPlayer player) {
+        if (!canFlatten(player)) {
+            return;
+        }
+
+        FlattenedStateAttachment currentState = player.getData(ToonFlattening.FLATTENED_STATE.get());
+
+        long flattenTime;
+        FrozenPoseData pose;
+        int spreadLevel;
+        boolean isInitialFlatten;
+
+        if (currentState.isFlattened()) {
+            // Already flattened - check max spread
+            int proposedSpread = currentState.spreadLevel() + 1;
+            ScaleDimensions proposedDimensions = ScaleDimensions.fromConfig(proposedSpread);
+            double maxSpreadWidth = ToonFlatteningConfig.CONFIG.maxSpreadWidth.get();
+
+            if (proposedDimensions.width() >= maxSpreadWidth) {
+                return; // At max spread, do nothing
+            }
+
+            spreadLevel = proposedSpread;
+            flattenTime = currentState.flattenTime();
+            pose = currentState.frozenPose();
+            isInitialFlatten = false;
+        } else {
+            // First flatten
+            spreadLevel = 1;
+            flattenTime = player.level().getGameTime();
+            pose = FrozenPoseData.capture(player);
+            isInitialFlatten = true;
+        }
+
+        FlattenedStateAttachment newState = new FlattenedStateAttachment(true, flattenTime, pose, spreadLevel);
+        player.setData(ToonFlattening.FLATTENED_STATE.get(), newState);
+        player.setDeltaMovement(Vec3.ZERO);
+
+        PehkuiIntegration.setPlayerScaleWithDelay(player, ScaleDimensions.fromConfig(spreadLevel), 5);
+
+        syncToClient(player);
+        if (isInitialFlatten) {
+            NetworkHandler.sendSquashAnimation(player);
+            playFlattenSound(player);
+        }
+
+        ToonFlattening.LOGGER.info("Player {} hammer-flattened (spread level: {})",
+            player.getName().getString(), spreadLevel);
+    }
+
+    private static void playFlattenSound(ServerPlayer player) {
+        player.level().playSound(
+            null,
+            player.getX(),
+            player.getY(),
+            player.getZ(),
+            ToonFlattening.FLATTEN_SOUND.get(),
+            SoundSource.PLAYERS,
+            1.0f,
+            1.0f
+        );
+    }
+
     public static void syncToClient(ServerPlayer player) {
         NetworkHandler.syncFlattenState(player);
     }

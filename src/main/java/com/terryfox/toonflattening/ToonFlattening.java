@@ -8,12 +8,14 @@ import com.terryfox.toonflattening.config.ToonFlatteningConfig;
 import com.terryfox.toonflattening.event.AnvilBreakHandler;
 import com.terryfox.toonflattening.event.AnvilStackHandler;
 import com.terryfox.toonflattening.event.FlatteningHandler;
+import com.terryfox.toonflattening.event.HammerAttackHandler;
 import com.terryfox.toonflattening.event.KnockbackHandler;
 import com.terryfox.toonflattening.event.LoginHandler;
 import com.terryfox.toonflattening.event.PlayerMovementHandler;
 import com.terryfox.toonflattening.event.RespawnHandler;
 import com.terryfox.toonflattening.event.SuffocationHandler;
 import com.terryfox.toonflattening.core.FlatteningStateController;
+import com.terryfox.toonflattening.registry.ModItems;
 
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
@@ -66,6 +68,7 @@ public class ToonFlattening {
     public ToonFlattening(IEventBus modEventBus, ModContainer modContainer) {
         ATTACHMENT_TYPES.register(modEventBus);
         SOUND_EVENTS.register(modEventBus);
+        ModItems.ITEMS.register(modEventBus);
 
         modContainer.registerConfig(ModConfig.Type.SERVER, ToonFlatteningConfig.CONFIG_SPEC);
 
@@ -81,6 +84,7 @@ public class ToonFlattening {
         NeoForge.EVENT_BUS.addListener(SuffocationHandler::onLivingIncomingDamage);
         NeoForge.EVENT_BUS.addListener(AnvilBreakHandler::onBlockBreak);
         NeoForge.EVENT_BUS.addListener(AnvilBreakHandler::onLeftClickBlock);
+        NeoForge.EVENT_BUS.addListener(HammerAttackHandler::onLivingIncomingDamage);
     }
 
     private void commonSetup(FMLCommonSetupEvent event) {
