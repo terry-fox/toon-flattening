@@ -46,4 +46,36 @@ public class PlayerPushMixin {
             ci.cancel();
         }
     }
+
+    /**
+     * Prevents other entities from colliding with flattened players.
+     */
+    @Inject(method = "canBeCollidedWith", at = @At("HEAD"), cancellable = true)
+    private void onCanBeCollidedWith(CallbackInfoReturnable<Boolean> cir) {
+        Entity entity = (Entity) (Object) this;
+        if (!(entity instanceof Player player)) {
+            return;
+        }
+
+        FlattenedStateAttachment state = player.getData(ToonFlattening.FLATTENED_STATE.get());
+        if (state != null && state.isFlattened()) {
+            cir.setReturnValue(false);
+        }
+    }
+
+    /**
+     * Prevents flattened players from colliding with other entities.
+     */
+    @Inject(method = "canCollideWith", at = @At("HEAD"), cancellable = true)
+    private void onCanCollideWith(Entity entity, CallbackInfoReturnable<Boolean> cir) {
+        Entity self = (Entity) (Object) this;
+        if (!(self instanceof Player player)) {
+            return;
+        }
+
+        FlattenedStateAttachment state = player.getData(ToonFlattening.FLATTENED_STATE.get());
+        if (state != null && state.isFlattened()) {
+            cir.setReturnValue(false);
+        }
+    }
 }
