@@ -3,8 +3,8 @@
 ## Phase 1: Walking Skeleton
 
 ### 1.1: Item Registration Infrastructure
-- [ ] **Manual:** Launch game, verify no crashes
-- [ ] **Manual:** `/registries` shows `toonflattening` items registry
+- [x] **Manual:** Launch game, verify no crashes
+- [x] **Manual:** `/registries` shows `toonflattening` items registry
 
 **AC:**
 - Mod loads without errors
@@ -13,8 +13,8 @@
 ---
 
 ### 1.2: Hammer Item Class
-- [ ] **Manual:** `/give @s toonflattening:hammer` works
-- [ ] **Manual:** Item appears in creative inventory (Combat tab)
+- [x] **Manual:** `/give @s toonflattening:hammer` works
+- [x] **Manual:** Item appears in creative inventory (Combat tab)
 
 **AC:**
 - Command gives hammer item
@@ -23,9 +23,9 @@
 ---
 
 ### 1.3: Attack Detection Event Handler
-- [ ] **Manual:** Enable PvP, hit player with hammer, verify console log
-- [ ] **Manual:** Hit mob with hammer, verify no log
-- [ ] **Manual:** Hit block with hammer, verify no log
+- [x] **Manual:** Enable PvP, hit player with hammer, verify console log
+- [x] **Manual:** Hit mob with hammer, verify no log
+- [x] **Manual:** Hit block with hammer, verify no log
 
 **AC:**
 - Console log on player hit only
@@ -34,9 +34,9 @@
 ---
 
 ### 1.4: Trigger Flattening
-- [ ] **Manual:** Two players, attacker hits target with hammer, verify visual flattening
-- [ ] **Manual:** Verify target Y-scale reduces to ~5%
-- [ ] **Manual:** Verify target X/Z scale increases
+- [x] **Manual:** Two players, attacker hits target with hammer, verify visual flattening
+- [x] **Manual:** Verify target Y-scale reduces to ~5%
+- [x] **Manual:** Verify target X/Z scale increases
 
 **AC:**
 - Hitting player causes visible flattening
