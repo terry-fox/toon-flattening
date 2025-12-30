@@ -35,13 +35,13 @@ Tests for commits since dc28882 (4 commits: 90b62b1, f20f9bf, 797a14e, 74128e8)
 ## 2. Entity Collision Prevention (f20f9bf)
 
 ### 2.1 Pass-Through Collision
-- [ ] While flattened, mobs should walk THROUGH you (not around)
-- [ ] While flattened, other players should walk through you (if multiplayer)
-- [ ] While NOT flattened, entities collide normally (control test)
+- [x] While flattened, mobs should walk THROUGH you (not around)
+- [x] While flattened, other players should walk through you (if multiplayer)
+- [x] While NOT flattened, entities collide normally (control test)
 
 ### 2.2 Pushing Other Entities
-- [ ] While flattened, you shouldn't push mobs when they're on you
-- [ ] While NOT flattened, walking into mobs pushes them (control test)
+- [x] While flattened, you shouldn't push mobs when they're on you
+- [x] While NOT flattened, walking into mobs pushes them (control test)
 
 ### 2.3 Piston Still Works
 - [x] Place piston next to flattened player - should push player normally
