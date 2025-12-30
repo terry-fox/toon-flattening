@@ -6,6 +6,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.terryfox.toonflattening.ToonFlattening;
 import com.terryfox.toonflattening.attachment.FlattenedStateAttachment;
 import com.terryfox.toonflattening.attachment.FrozenPoseData;
+import com.terryfox.toonflattening.core.FlatteningHelper;
 import com.terryfox.toonflattening.mixin.accessor.WalkAnimationStateAccessor;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.AbstractClientPlayer;
@@ -26,8 +27,12 @@ public class PlayerRendererMixin {
     @Inject(method = "render(Lnet/minecraft/client/player/AbstractClientPlayer;FFLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;I)V", at = @At("HEAD"))
     private void onRender(AbstractClientPlayer player, float entityYaw, float partialTicks, PoseStack poseStack, MultiBufferSource buffer, int packedLight, CallbackInfo ci,
                           @Share("xRot") LocalFloatRef originalXRot, @Share("xRotO") LocalFloatRef originalXRotO) {
+        if (!FlatteningHelper.isFlattened(player)) {
+            return;
+        }
+
         FlattenedStateAttachment state = player.getData(ToonFlattening.FLATTENED_STATE.get());
-        if (!state.isFlattened() || state.frozenPose() == null) {
+        if (state.frozenPose() == null) {
             return;
         }
 
@@ -35,12 +40,12 @@ public class PlayerRendererMixin {
         boolean isLocalPlayer = player == Minecraft.getInstance().player;
 
         // Override body rotation (both current and old for smooth interpolation)
-        player.yBodyRot = pose.yBodyRot();
-        player.yBodyRotO = pose.yBodyRot();
+        player.yBodyRot = pose.rotation().yBodyRot();
+        player.yBodyRotO = pose.rotation().yBodyRot();
 
         // Freeze head rotation for all players
-        player.yHeadRot = pose.yHeadRot();
-        player.yHeadRotO = pose.yHeadRot();
+        player.yHeadRot = pose.rotation().yHeadRot();
+        player.yHeadRotO = pose.rotation().yHeadRot();
 
         // Freeze pitch (xRot) for head visual
         // Store original for camera, will be restored in POST
@@ -48,30 +53,34 @@ public class PlayerRendererMixin {
             originalXRot.set(player.getXRot());
             originalXRotO.set(player.xRotO);
         }
-        player.setXRot(pose.xRot());
-        player.xRotO = pose.xRot();
+        player.setXRot(pose.rotation().xRot());
+        player.xRotO = pose.rotation().xRot();
 
         // Override walk animation
-        ((WalkAnimationStateAccessor) player.walkAnimation).setPosition(pose.walkAnimPos());
-        player.walkAnimation.setSpeed(pose.walkAnimSpeed());
+        ((WalkAnimationStateAccessor) player.walkAnimation).setPosition(pose.animation().walkAnimPos());
+        player.walkAnimation.setSpeed(pose.animation().walkAnimSpeed());
 
         // Override attack animation (both current and old)
-        player.attackAnim = pose.attackAnim();
-        player.oAttackAnim = pose.attackAnim();
+        player.attackAnim = pose.animation().attackAnim();
+        player.oAttackAnim = pose.animation().attackAnim();
 
         // Override swing state
-        player.swingTime = pose.swingTime();
-        player.swinging = pose.swinging();
+        player.swingTime = pose.animation().swingTime();
+        player.swinging = pose.animation().swinging();
 
         // Override crouch state
-        player.setShiftKeyDown(pose.crouching());
+        player.setShiftKeyDown(pose.animation().crouching());
     }
 
     @Inject(method = "render(Lnet/minecraft/client/player/AbstractClientPlayer;FFLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;I)V", at = @At("RETURN"))
     private void onRenderPost(AbstractClientPlayer player, float entityYaw, float partialTicks, PoseStack poseStack, MultiBufferSource buffer, int packedLight, CallbackInfo ci,
                               @Share("xRot") LocalFloatRef originalXRot, @Share("xRotO") LocalFloatRef originalXRotO) {
+        if (!FlatteningHelper.isFlattened(player)) {
+            return;
+        }
+
         FlattenedStateAttachment state = player.getData(ToonFlattening.FLATTENED_STATE.get());
-        if (!state.isFlattened() || state.frozenPose() == null) {
+        if (state.frozenPose() == null) {
             return;
         }
 

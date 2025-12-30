@@ -1,7 +1,6 @@
 package com.terryfox.toonflattening.event;
 
-import com.terryfox.toonflattening.ToonFlattening;
-import com.terryfox.toonflattening.attachment.FlattenedStateAttachment;
+import com.terryfox.toonflattening.core.FlatteningHelper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.BlockTags;
@@ -29,8 +28,7 @@ public class AnvilBreakHandler {
         boolean isPinningPlayer = anvilPos.equals(playerPos) || anvilPos.equals(playerPos.above());
 
         // Check if player is flattened
-        FlattenedStateAttachment state = player.getData(ToonFlattening.FLATTENED_STATE.get());
-        if (state != null && state.isFlattened() && isPinningPlayer) {
+        if (FlatteningHelper.isFlattened(player) && isPinningPlayer) {
             event.setCanceled(true);
         }
     }
@@ -57,8 +55,7 @@ public class AnvilBreakHandler {
         boolean isPinningPlayer = anvilPos.equals(playerPos) || anvilPos.equals(playerPos.above());
 
         // Check if player is flattened
-        FlattenedStateAttachment state = player.getData(ToonFlattening.FLATTENED_STATE.get());
-        if (state != null && state.isFlattened() && isPinningPlayer) {
+        if (FlatteningHelper.isFlattened(player) && isPinningPlayer) {
             event.setUseItem(TriState.FALSE);
             event.setCanceled(true);
         }

@@ -1,7 +1,6 @@
 package com.terryfox.toonflattening.mixin;
 
-import com.terryfox.toonflattening.ToonFlattening;
-import com.terryfox.toonflattening.attachment.FlattenedStateAttachment;
+import com.terryfox.toonflattening.core.FlatteningHelper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.protocol.game.ServerboundPlayerActionPacket;
@@ -43,8 +42,7 @@ public class ServerPlayerGameModeMixin {
         boolean isPinning = pos.equals(playerPos) || pos.equals(playerPos.above());
         if (!isPinning) return;
 
-        FlattenedStateAttachment state = player.getData(ToonFlattening.FLATTENED_STATE.get());
-        if (state != null && state.isFlattened()) {
+        if (FlatteningHelper.isFlattened(player)) {
             ci.cancel();
         }
     }

@@ -1,7 +1,6 @@
 package com.terryfox.toonflattening.mixin;
 
-import com.terryfox.toonflattening.ToonFlattening;
-import com.terryfox.toonflattening.attachment.FlattenedStateAttachment;
+import com.terryfox.toonflattening.core.FlatteningHelper;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import org.spongepowered.asm.mixin.Mixin;
@@ -23,8 +22,7 @@ public class PlayerPushMixin {
             return;
         }
 
-        FlattenedStateAttachment state = player.getData(ToonFlattening.FLATTENED_STATE.get());
-        if (state != null && state.isFlattened()) {
+        if (FlatteningHelper.isFlattened(player)) {
             cir.setReturnValue(false);
         }
     }
@@ -41,8 +39,7 @@ public class PlayerPushMixin {
             return;
         }
 
-        FlattenedStateAttachment state = player.getData(ToonFlattening.FLATTENED_STATE.get());
-        if (state != null && state.isFlattened()) {
+        if (FlatteningHelper.isFlattened(player)) {
             ci.cancel();
         }
     }
@@ -57,8 +54,7 @@ public class PlayerPushMixin {
             return;
         }
 
-        FlattenedStateAttachment state = player.getData(ToonFlattening.FLATTENED_STATE.get());
-        if (state != null && state.isFlattened()) {
+        if (FlatteningHelper.isFlattened(player)) {
             cir.setReturnValue(false);
         }
     }
@@ -73,8 +69,7 @@ public class PlayerPushMixin {
             return;
         }
 
-        FlattenedStateAttachment state = player.getData(ToonFlattening.FLATTENED_STATE.get());
-        if (state != null && state.isFlattened()) {
+        if (FlatteningHelper.isFlattened(player)) {
             cir.setReturnValue(false);
         }
     }

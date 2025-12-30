@@ -21,8 +21,4 @@ public class PehkuiIntegration {
         ScaleTypes.WIDTH.getScaleData(player).setScaleTickDelay(tickDelay);
         ScaleTypes.WIDTH.getScaleData(player).setTargetScale(scale.width());
     }
-
-    public static void resetPlayerScaleWithDelay(Player player, int tickDelay) {
-        setPlayerScaleWithDelay(player, ScaleDimensions.NORMAL, tickDelay);
-    }
 }

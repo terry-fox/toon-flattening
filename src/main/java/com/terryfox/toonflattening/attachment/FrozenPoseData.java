@@ -10,29 +10,13 @@ import net.minecraft.world.entity.player.Player;
  * Used to freeze body/head rotations and animation states for third-person rendering.
  */
 public record FrozenPoseData(
-    float yBodyRot,
-    float yHeadRot,
-    float xRot,
-    float walkAnimPos,
-    float walkAnimSpeed,
-    float attackAnim,
-    int swingTime,
-    boolean swinging,
-    float swimAmount,
-    boolean crouching
+    RotationState rotation,
+    AnimationState animation
 ) {
     public static final Codec<FrozenPoseData> CODEC = RecordCodecBuilder.create(instance ->
         instance.group(
-            Codec.FLOAT.fieldOf("yBodyRot").forGetter(FrozenPoseData::yBodyRot),
-            Codec.FLOAT.fieldOf("yHeadRot").forGetter(FrozenPoseData::yHeadRot),
-            Codec.FLOAT.fieldOf("xRot").forGetter(FrozenPoseData::xRot),
-            Codec.FLOAT.fieldOf("walkAnimPos").forGetter(FrozenPoseData::walkAnimPos),
-            Codec.FLOAT.fieldOf("walkAnimSpeed").forGetter(FrozenPoseData::walkAnimSpeed),
-            Codec.FLOAT.fieldOf("attackAnim").forGetter(FrozenPoseData::attackAnim),
-            Codec.INT.fieldOf("swingTime").forGetter(FrozenPoseData::swingTime),
-            Codec.BOOL.fieldOf("swinging").forGetter(FrozenPoseData::swinging),
-            Codec.FLOAT.fieldOf("swimAmount").forGetter(FrozenPoseData::swimAmount),
-            Codec.BOOL.fieldOf("crouching").forGetter(FrozenPoseData::crouching)
+            RotationState.CODEC.fieldOf("rotation").forGetter(FrozenPoseData::rotation),
+            AnimationState.CODEC.fieldOf("animation").forGetter(FrozenPoseData::animation)
         ).apply(instance, FrozenPoseData::new)
     );
 
@@ -40,10 +24,13 @@ public record FrozenPoseData(
      * Captures the current pose state from a player.
      */
     public static FrozenPoseData capture(Player player) {
-        return new FrozenPoseData(
+        RotationState rotation = new RotationState(
             player.yBodyRot,
             player.yHeadRot,
-            player.getXRot(),
+            player.getXRot()
+        );
+
+        AnimationState animation = new AnimationState(
             ((WalkAnimationStateAccessor) player.walkAnimation).getPosition(),
             player.walkAnimation.speed(),
             player.getAttackAnim(1.0f),
@@ -52,5 +39,7 @@ public record FrozenPoseData(
             player.getSwimAmount(1.0f),
             player.isCrouching()
         );
+
+        return new FrozenPoseData(rotation, animation);
     }
 }
