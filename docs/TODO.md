@@ -55,29 +55,29 @@ Add hammer weapon that flattens players on melee hit, integrating with existing 
 
 ## Phase 2: Item Properties (FR-3 to FR-6)
 
-### [ ] 2.1: Durability & Damage
-- [ ] Override `getMaxDamage()` return 0 or use `Item.Properties.durability(-1)`
-- [ ] Use `Item.Properties.attributes()` with `AttackDamageAttribute` = 0
+### [x] 2.1: Durability & Damage
+- [x] Override `getMaxDamage()` return 0 or use `Item.Properties.durability(-1)`
+- [x] Use `Item.Properties.attributes()` with `AttackDamageAttribute` = 0
 
 **Files:**
 - MODIFY: `src/main/java/com/terryfox/toonflattening/item/HammerItem.java`
 
 ---
 
-### [ ] 2.2: Attack Speed
-- [ ] Set attack speed attribute via `Item.Properties.attributes()`
-- [ ] Attack speed 0.8 = -3.2 from base (base is 4.0)
+### [x] 2.2: Attack Speed
+- [x] Set attack speed attribute via `Item.Properties.attributes()`
+- [x] Attack speed 0.8 = -3.2 from base (base is 4.0)
 
 **Files:**
 - MODIFY: `src/main/java/com/terryfox/toonflattening/item/HammerItem.java`
 
 ---
 
-### [ ] 2.3: Prevent Enchanting (FR-6)
-- [ ] Override `isEnchantable()` return false
-- [ ] Override `isBookEnchantable()` return false
-- [ ] Override `supportsEnchantment()` return false (blocks `/enchant` command)
-- [ ] Subscribe to `AnvilRepairEvent` to cancel hammer + enchanted book
+### [x] 2.3: Prevent Enchanting (FR-6)
+- [x] Override `isEnchantable()` return false
+- [x] Override `isBookEnchantable()` return false
+- [x] Override `supportsEnchantment()` return false (blocks `/enchant` command)
+- [x] Subscribe to `AnvilRepairEvent` to cancel hammer + enchanted book
 
 **Files:**
 - MODIFY: `src/main/java/com/terryfox/toonflattening/item/HammerItem.java`

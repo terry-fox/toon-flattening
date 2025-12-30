@@ -47,9 +47,9 @@
 ## Phase 2: Item Properties
 
 ### 2.1: Durability & Damage
-- [ ] **Manual:** Use hammer repeatedly (20+ attacks), verify no durability loss
-- [ ] **Manual:** `/attribute @s minecraft:generic.attack_damage` shows 0 bonus
-- [ ] **Manual:** Verify no durability bar appears on item
+- [x] **Manual:** Use hammer repeatedly (20+ attacks), verify no durability loss
+- [x] **Manual:** `/attribute @s minecraft:generic.attack_damage` shows 0 bonus
+- [x] **Manual:** Verify no durability bar appears on item
 
 **AC:**
 - No durability bar
@@ -58,9 +58,9 @@
 ---
 
 ### 2.2: Attack Speed
-- [ ] **Manual:** Compare hammer swing speed to iron axe (should match)
-- [ ] **Manual:** Verify cooldown indicator visible on attack
-- [ ] **Manual:** Measure time between full-strength attacks (~1.25s)
+- [x] **Manual:** Compare hammer swing speed to iron axe (should match)
+- [x] **Manual:** Verify cooldown indicator visible on attack
+- [x] **Manual:** Measure time between full-strength attacks (~1.25s)
 
 **AC:**
 - Attack cooldown matches iron axe
@@ -69,10 +69,10 @@
 ---
 
 ### 2.3: Prevent Enchanting
-- [ ] **Manual:** Place hammer in enchanting table, verify no enchants available
-- [ ] **Manual:** Anvil with hammer + enchanted book, verify rejection
-- [ ] **Manual:** Hold hammer, `/enchant @s minecraft:sharpness 5`, verify failure
-- [ ] **Manual:** Grindstone with enchanted hammer (if enchanted via other means), verify behavior
+- [x] **Manual:** Place hammer in enchanting table, verify no enchants available
+- [x] **Manual:** Anvil with hammer + enchanted book, verify rejection
+- [x] **Manual:** Hold hammer, `/enchant @s minecraft:sharpness 5`, verify failure
+- [x] **Manual:** Grindstone with enchanted hammer (if enchanted via other means), verify behavior
 
 **AC:**
 - Enchanting table: no enchants
