@@ -15,7 +15,7 @@ import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 import java.util.Optional;
 
-public record SyncFlattenStatePayload(int playerId, boolean isFlattened, long flattenTime, Optional<FrozenPoseData> frozenPose, int spreadLevel, String flatteningSource) implements CustomPacketPayload {
+public record SyncFlattenStatePayload(int playerId, boolean isFlattened, long flattenTime, Optional<FrozenPoseData> frozenPose, double accumulatedSpread, String flatteningSource) implements CustomPacketPayload {
     public static final Type<SyncFlattenStatePayload> TYPE =
         new Type<>(ResourceLocation.fromNamespaceAndPath(ToonFlattening.MODID, "sync_flatten_state"));
 
@@ -29,8 +29,8 @@ public record SyncFlattenStatePayload(int playerId, boolean isFlattened, long fl
             SyncFlattenStatePayload::flattenTime,
             ByteBufCodecs.optional(ByteBufCodecs.fromCodec(FrozenPoseData.CODEC)),
             SyncFlattenStatePayload::frozenPose,
-            ByteBufCodecs.VAR_INT,
-            SyncFlattenStatePayload::spreadLevel,
+            ByteBufCodecs.DOUBLE,
+            SyncFlattenStatePayload::accumulatedSpread,
             ByteBufCodecs.STRING_UTF8,
             SyncFlattenStatePayload::flatteningSource,
             SyncFlattenStatePayload::new
@@ -53,7 +53,7 @@ public record SyncFlattenStatePayload(int playerId, boolean isFlattened, long fl
             }
             player.setData(
                 ToonFlattening.FLATTENED_STATE.get(),
-                new FlattenedStateAttachment(payload.isFlattened(), payload.flattenTime(), payload.frozenPose().orElse(null), payload.spreadLevel(), payload.flatteningSource())
+                new FlattenedStateAttachment(payload.isFlattened(), payload.flattenTime(), payload.frozenPose().orElse(null), payload.accumulatedSpread(), payload.flatteningSource())
             );
         });
     }
