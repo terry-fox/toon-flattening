@@ -8,6 +8,7 @@ import com.terryfox.toonflattening.config.ToonFlatteningConfig;
 import com.terryfox.toonflattening.event.AnvilBreakHandler;
 import com.terryfox.toonflattening.event.AnvilStackHandler;
 import com.terryfox.toonflattening.event.FlatteningHandler;
+import com.terryfox.toonflattening.event.HammerAnvilHandler;
 import com.terryfox.toonflattening.event.HammerAttackHandler;
 import com.terryfox.toonflattening.event.KnockbackHandler;
 import com.terryfox.toonflattening.event.LoginHandler;
@@ -85,6 +86,7 @@ public class ToonFlattening {
         NeoForge.EVENT_BUS.addListener(AnvilBreakHandler::onBlockBreak);
         NeoForge.EVENT_BUS.addListener(AnvilBreakHandler::onLeftClickBlock);
         NeoForge.EVENT_BUS.addListener(HammerAttackHandler::onLivingIncomingDamage);
+        NeoForge.EVENT_BUS.addListener(HammerAnvilHandler::onAnvilUpdate);
     }
 
     private void commonSetup(FMLCommonSetupEvent event) {

@@ -7,10 +7,10 @@ Add hammer weapon that flattens players on melee hit, integrating with existing 
 
 ## Phase 1: Walking Skeleton
 
-### [ ] 1.1: Item Registration Infrastructure
-- [ ] Create `ModItems.java` in `com.terryfox.toonflattening.registry`
-- [ ] Add `DeferredRegister<Item>` pattern matching `SOUND_EVENTS` in `ToonFlattening.java`
-- [ ] Register to mod event bus in `ToonFlattening` constructor
+### [x] 1.1: Item Registration Infrastructure
+- [x] Create `ModItems.java` in `com.terryfox.toonflattening.registry`
+- [x] Add `DeferredRegister<Item>` pattern matching `SOUND_EVENTS` in `ToonFlattening.java`
+- [x] Register to mod event bus in `ToonFlattening` constructor
 
 **Files:**
 - NEW: `src/main/java/com/terryfox/toonflattening/registry/ModItems.java`
@@ -18,10 +18,10 @@ Add hammer weapon that flattens players on melee hit, integrating with existing 
 
 ---
 
-### [ ] 1.2: Hammer Item Class
-- [ ] Create `HammerItem.java` extending `Item`
-- [ ] Register as `toonflattening:hammer` in `ModItems`
-- [ ] Add to vanilla Combat creative tab via `BuildCreativeModeTabContentsEvent`
+### [x] 1.2: Hammer Item Class
+- [x] Create `HammerItem.java` extending `Item`
+- [x] Register as `toonflattening:hammer` in `ModItems`
+- [x] Add to vanilla Combat creative tab via `BuildCreativeModeTabContentsEvent`
 
 **Files:**
 - NEW: `src/main/java/com/terryfox/toonflattening/item/HammerItem.java`
@@ -29,12 +29,12 @@ Add hammer weapon that flattens players on melee hit, integrating with existing 
 
 ---
 
-### [ ] 1.3: Attack Detection Event Handler
-- [ ] Create `HammerAttackHandler.java` event handler
-- [ ] Subscribe to `LivingIncomingDamageEvent`
-- [ ] Check: attacker holding hammer, target is player, PvP rules pass
-- [ ] Check `player.getAttackStrengthScale() >= 1.0` (full-strength requirement)
-- [ ] Register handler in `ToonFlattening` constructor
+### [x] 1.3: Attack Detection Event Handler
+- [x] Create `HammerAttackHandler.java` event handler
+- [x] Subscribe to `LivingIncomingDamageEvent`
+- [x] Check: attacker holding hammer, target is player, PvP rules pass
+- [x] Check `player.getAttackStrengthScale() >= 1.0` (full-strength requirement)
+- [x] Register handler in `ToonFlattening` constructor
 
 **Files:**
 - NEW: `src/main/java/com/terryfox/toonflattening/event/HammerAttackHandler.java`
@@ -42,10 +42,10 @@ Add hammer weapon that flattens players on melee hit, integrating with existing 
 
 ---
 
-### [ ] 1.4: Trigger Flattening
-- [ ] Call `event.setCanceled(true)` in `HammerAttackHandler` (no damage)
-- [ ] Call `FlatteningStateController.flattenWithHammer()` on valid hit
-- [ ] Add `flattenWithHammer(ServerPlayer target)` overload in `FlatteningStateController`
+### [x] 1.4: Trigger Flattening
+- [x] Call `event.setCanceled(true)` in `HammerAttackHandler` (no damage)
+- [x] Call `FlatteningStateController.flattenWithHammer()` on valid hit
+- [x] Add `flattenWithHammer(ServerPlayer target)` overload in `FlatteningStateController`
 
 **Files:**
 - MODIFY: `src/main/java/com/terryfox/toonflattening/event/HammerAttackHandler.java`

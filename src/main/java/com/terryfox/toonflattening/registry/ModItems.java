@@ -17,7 +17,9 @@ public class ModItems {
         DeferredRegister.create(BuiltInRegistries.ITEM, ToonFlattening.MODID);
 
     public static final DeferredHolder<Item, HammerItem> HAMMER =
-        ITEMS.register("hammer", () -> new HammerItem(new Item.Properties()));
+        ITEMS.register("hammer", () -> new HammerItem(
+            new Item.Properties().attributes(HammerItem.createHammerAttributes())
+        ));
 
     @SubscribeEvent
     public static void addCreative(BuildCreativeModeTabContentsEvent event) {
