@@ -1,8 +1,7 @@
 package com.terryfox.toonflattening.mixin.client;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.terryfox.toonflattening.ToonFlattening;
-import com.terryfox.toonflattening.attachment.FlattenedStateAttachment;
+import com.terryfox.toonflattening.core.FlatteningHelper;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
@@ -22,8 +21,7 @@ public class EntityRenderDispatcherMixin {
             float weight, float partialTicks, LevelReader level, float radius,
             CallbackInfo ci) {
         if (entity instanceof AbstractClientPlayer player) {
-            FlattenedStateAttachment state = player.getData(ToonFlattening.FLATTENED_STATE.get());
-            if (state.isFlattened()) {
+            if (FlatteningHelper.isFlattened(player)) {
                 ci.cancel();
             }
         }

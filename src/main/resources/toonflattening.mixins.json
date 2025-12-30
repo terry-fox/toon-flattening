@@ -4,7 +4,10 @@
   "compatibilityLevel": "JAVA_21",
   "minVersion": "0.8",
   "mixins": [
-    "accessor.WalkAnimationStateAccessor"
+    "accessor.WalkAnimationStateAccessor",
+    "LivingEntityPushMixin",
+    "PlayerPushMixin",
+    "ServerPlayerGameModeMixin"
   ],
   "client": [
     "client.EntityRenderDispatcherMixin",
