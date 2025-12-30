@@ -12,6 +12,7 @@ import com.terryfox.toonflattening.event.KnockbackHandler;
 import com.terryfox.toonflattening.event.LoginHandler;
 import com.terryfox.toonflattening.event.PlayerMovementHandler;
 import com.terryfox.toonflattening.event.RespawnHandler;
+import com.terryfox.toonflattening.event.SuffocationHandler;
 import com.terryfox.toonflattening.core.FlatteningStateController;
 
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -77,6 +78,7 @@ public class ToonFlattening {
         NeoForge.EVENT_BUS.addListener(LoginHandler::onPlayerLogin);
         NeoForge.EVENT_BUS.addListener(AnvilStackHandler::onEntityLeaveLevel);
         NeoForge.EVENT_BUS.addListener(KnockbackHandler::onLivingKnockBack);
+        NeoForge.EVENT_BUS.addListener(SuffocationHandler::onLivingIncomingDamage);
         NeoForge.EVENT_BUS.addListener(AnvilBreakHandler::onBlockBreak);
         NeoForge.EVENT_BUS.addListener(AnvilBreakHandler::onLeftClickBlock);
     }
