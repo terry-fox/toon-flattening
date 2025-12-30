@@ -122,10 +122,10 @@ Add hammer weapon that flattens players on melee hit, integrating with existing 
 
 ## Phase 4: Crafting & Configuration
 
-### [ ] 4.1: Crafting Recipe (FR-2)
-- [ ] Create JSON recipe at `data/toonflattening/recipe/hammer.json`
-- [ ] Pattern: ISI / _S_ / _S_ (I=iron_ingot, S=stick)
-- [ ] Add recipe advancement (optional)
+### [x] 4.1: Crafting Recipe (FR-2)
+- [x] Create JSON recipe at `data/toonflattening/recipe/hammer.json`
+- [x] Pattern: ISI / _S_ / _S_ (I=iron_ingot, S=stick)
+- [x] Add recipe advancement (optional)
 
 **Files:**
 - NEW: `src/main/resources/data/toonflattening/recipe/hammer.json`
@@ -133,10 +133,10 @@ Add hammer weapon that flattens players on melee hit, integrating with existing 
 
 ---
 
-### [ ] 4.2: Configuration (NFR-9)
-- [ ] Add `hammer.spreadIncrement` (double) to `ToonFlatteningConfig.java`
-- [ ] Add `hammer.enabled` (boolean, default true)
-- [ ] Wire config values to handler
+### [x] 4.2: Configuration (NFR-9)
+- [x] Add `hammer.spreadIncrement` (double) to `ToonFlatteningConfig.java`
+- [x] Add `hammer.enabled` (boolean, default true)
+- [x] Wire config values to handler
 
 **Files:**
 - MODIFY: `src/main/java/com/terryfox/toonflattening/config/ToonFlatteningConfig.java`
