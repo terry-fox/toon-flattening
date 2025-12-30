@@ -27,7 +27,6 @@ public class PlayerMovementHandler {
             return;
         }
 
-        player.setDeltaMovement(Vec3.ZERO);
         player.setOnGround(true);
         player.setSprinting(false);
         player.setSwimming(false);

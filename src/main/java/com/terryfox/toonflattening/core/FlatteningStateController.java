@@ -9,6 +9,7 @@ import com.terryfox.toonflattening.network.NetworkHandler;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.phys.Vec3;
 
 public class FlatteningStateController {
     private static int calculateFlatteningAnimationTicks(double anvilVelocityBlocksPerTick) {
@@ -82,6 +83,8 @@ public class FlatteningStateController {
     }
 
     private static void applyPhysicalEffects(ServerPlayer player, FlattenState state) {
+        player.setDeltaMovement(Vec3.ZERO);
+
         PehkuiIntegration.setPlayerScaleWithDelay(
             player,
             ScaleDimensions.fromConfig(state.spreadLevel()),

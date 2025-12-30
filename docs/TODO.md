@@ -23,8 +23,10 @@
   1. Apply spread
   1. Repeat for further anvils, further applying spread until max spread hit
 
-* [x] Prevent the player from being pushed
+* [x] Prevent the player from being pushed by mobs, other players, minecarts, boats (other vehicles or rideable objects) from colliding with the flattened player
 
-* [x] Prevent the player from breaking the anvil that is squashing them
+* [ ] Prevent mobs, piston heads, other players, minecarts, boats (other vehicles or rideable objects) from colliding with the flattened player
 
-* [x] Prevent accidental suffocation in walls
+* [ ] Prevent the player from breaking the anvil that is squashing them
+
+* [ ] Prevent accidental suffocation in walls
