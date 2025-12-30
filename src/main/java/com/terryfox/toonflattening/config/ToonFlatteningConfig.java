@@ -9,7 +9,6 @@ public class ToonFlatteningConfig {
 
     public final ModConfigSpec.DoubleValue flattenDamage;
     public final ModConfigSpec.DoubleValue heightScale;
-    public final ModConfigSpec.IntValue reformationTicks;
     public final ModConfigSpec.BooleanValue anvilPinningEnabled;
     public final ModConfigSpec.IntValue anvilPinningTimeoutSeconds;
     public final ModConfigSpec.DoubleValue spreadMultiplier;
@@ -29,10 +28,6 @@ public class ToonFlatteningConfig {
             .translation("config.toonflattening.height_scale")
             .defineInRange("heightScale", 0.05, 0.01, 1.0);
 
-        reformationTicks = builder
-            .comment("Animation duration for reformation in ticks (20 = 1 second)")
-            .defineInRange("reformationTicks", 5, 1, 100);
-
         anvilPinningEnabled = builder
             .comment("Whether anvils can pin flattened players, preventing them from reforming")
             .define("anvilPinningEnabled", true);
@@ -42,12 +37,12 @@ public class ToonFlatteningConfig {
             .defineInRange("anvilPinningTimeoutSeconds", 300, 0, 3600);
 
         spreadMultiplier = builder
-            .comment("Width added per anvil hit (default 0.8)")
+            .comment("Base spread multiplier (default 0.8)")
             .translation("config.toonflattening.spread_multiplier")
             .defineInRange("spreadMultiplier", 0.8, 0.0, 2.0);
 
         maxSpreadWidth = builder
-            .comment("Maximum width multiplier from spread accumulation (default 6.0)")
+            .comment("Maximum width from spreading (default 6.0)")
             .translation("config.toonflattening.max_spread_width")
             .defineInRange("maxSpreadWidth", 6.0, 2.0, 20.0);
 

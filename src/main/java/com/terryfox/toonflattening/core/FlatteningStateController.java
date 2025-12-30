@@ -147,7 +147,8 @@ public class FlatteningStateController {
         }
 
         // Calculate new accumulated spread
-        double newAccumulatedSpread = currentState.accumulatedSpread() + 1.0;
+        double spreadToAdd = ToonFlatteningConfig.CONFIG.spreadMultiplier.get();
+        double newAccumulatedSpread = currentState.accumulatedSpread() + spreadToAdd;
 
         // Check if max spread reached via config
         ScaleDimensions proposedDimensions = ScaleDimensions.fromConfig(newAccumulatedSpread);
