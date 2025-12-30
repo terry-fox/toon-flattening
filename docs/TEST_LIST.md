@@ -1,85 +1,94 @@
-## v0.6.0
+# Manual In-Game Test Plan
 
-### Re-drop Spread
+Tests for commits since dc28882 (4 commits: 90b62b1, f20f9bf, 797a14e, 74128e8)
 
-Basic Spread Accumulation
+## Prerequisites
+- Get flattened by an anvil before each test group
+- Have both survival and creative mode available
+- Spawn various mobs for entity tests
 
-- First anvil: flatten + animation + particles + sound
-- Subsequent anvils: spread increase + sound only
-- Reform: returns to normal
+---
 
-Spread Reset
+## 1. No-Push When Flattened (90b62b1)
 
-- Verify spread resets after reform, not cumulative across sessions
+### 1.1 Entity Collision Push
+- [x] While flattened, have a cow/pig walk into you - should NOT push you
+- [x] While flattened, have a zombie walk into you - should NOT push you
+- [x] While NOT flattened, entities should push you normally (control test)
 
-Max Width Cap
+### 1.2 Damage Knockback
+- [x] While flattened, get hit by zombie - should take damage but NO knockback
+- [x] While flattened, get hit by skeleton arrow - should take damage but NO knockback
+- [x] While NOT flattened, attacks should knockback normally (control test)
 
-- Verify 6.0x cap
+### 1.3 External Forces Still Work
+- [x] While flattened, get hit by explosion (TNT/creeper) - SHOULD move you
+- [x] While flattened, get pushed by piston - SHOULD move you
+- [x] While flattened, get pushed by minecart - should NOT move you
 
-Damage Consistency
+### 1.4 Initial Velocity Zero
+- [x] Get flattened while moving - should stop immediately
+- [x] After stopping, external forces (explosion) should still work
 
-- Same damage each hit
+---
 
-Persistence
+## 2. Entity Collision Prevention (f20f9bf)
 
-- Spread level survives disconnect/reconnect
+### 2.1 Pass-Through Collision
+- [ ] While flattened, mobs should walk THROUGH you (not around)
+- [ ] While flattened, other players should walk through you (if multiplayer)
+- [ ] While NOT flattened, entities collide normally (control test)
 
-Config Validation
+### 2.2 Pushing Other Entities
+- [ ] While flattened, you shouldn't push mobs when they're on you
+- [ ] While NOT flattened, walking into mobs pushes them (control test)
 
-- Test custom spreadMultiplier and maxSpreadWidth values
+### 2.3 Piston Still Works
+- [x] Place piston next to flattened player - should push player normally
 
-Edge: Reform While Pinned
+---
 
-- Spread resets properly with anvil pinning enabled
+## 3. Anvil Break Prevention (797a14e)
 
-### Stacking Spread
+### 3.1 Survival Mode - Cannot Break
+- [x] While flattened (survival), try to break anvil - should NOT break
+- [x] While flattened (survival), hold left click on anvil - no break animation/sound
+- [x] While NOT flattened (survival), can break anvil normally (control test)
 
-Basic Stacking Behavior
+### 3.2 Creative Mode - Can Break
+- [x] While flattened (creative), try to break anvil - SHOULD break instantly
 
-- Flatten player with first anvil (normal: damage + sound + particles)
-- Stack second anvil on top of first anvil
-- Verify player spreads wider (NO damage, NO sound, NO particles)
-- Stack third anvil, verify further spread
-- Verify spread stops at maxSpreadWidth (6.0x default)
+### 3.3 Other Blocks
+- [x] While flattened (survival), can break non-anvil blocks normally
+- [x] Verify damaged anvil and chipped anvil also protected (uses BlockTags.ANVIL)
 
-Stacking Requirements
+---
 
-- Anvils must be contiguous (no gaps)
-- Place anvil with gap above first anvil - verify NO spread
-- Fill gap, then stack - verify spread triggers
+## 4. Suffocation & Cramming Prevention (74128e8)
 
-Raycast Detection (20 blocks)
+### 4.1 Suffocation Damage
+- [x] While flattened, push yourself into a wall - should NOT take suffocation damage
+- [x] While flattened, piston pushes you into wall - should NOT take suffocation damage
+- [x] While NOT flattened, suffocation works normally (control test)
 
-- Flatten player at ground level
-- Build anvil stack 5 blocks above player - verify spread works
-- Build anvil stack 15 blocks above player - verify spread works
-- Build anvil stack 21+ blocks above player - verify NO spread (beyond raycast)
+### 4.2 Suffocation Overlay
+- [x] While flattened inside a block, screen should NOT show red suffocation overlay
+- [x] While NOT flattened inside a block, overlay shows normally (control test)
 
-Non-Stacking Scenarios
+### 4.3 Cramming Damage
+- [x] While flattened, spawn 24+ mobs in same space - should NOT take cramming damage
+- [x] While NOT flattened, cramming damage works normally (control test)
 
-- Drop anvil directly on flattened player (not on another anvil) - verify normal behavior (damage + sound)
-- Place anvil block manually on stack - verify NO spread (only falling anvils)
+---
 
-Multiple Players
+## Test Commands Reference
 
-- Flatten two players side-by-side
-- Stack anvil above player A only - verify only player A spreads
-- Verify player B unchanged
-
-Persistence
-
-- Stack anvils to spread level 3
-- Disconnect/reconnect - verify spread level persists
-- Add another anvil to stack - verify continues from level 3
-
-Max Spread Interaction
-
-- Hit player with anvils until maxSpreadWidth reached
-- Stack more anvils - verify NO further spread
-- Check logs for "already at max spread" message
-
-Pinning Timeout
-
-- Flatten player with anvil
-- Stack additional anvils
-- Verify pinning timeout NOT reset (continues from first flatten time)
+```
+/effect give @p minecraft:resistance 1000 255 true  # Temp invincibility for setup
+/summon cow ~ ~ ~                                    # Spawn test mobs
+/setblock ~ ~2 ~ minecraft:anvil                    # Place anvil above
+/gamemode survival                                   # Switch modes
+/gamemode creative
+/summon tnt ~ ~ ~ {Fuse:40}                        # Explosion test
+/gamerule maxEntityCramming 24                     # Verify cramming rule
+```
