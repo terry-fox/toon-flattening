@@ -1,11 +1,5 @@
 # Software Requirements Specification
-## Cartoon Flattening Mod — Hammer Feature
-**Version:** 1.0.0-DRAFT  
-**Date:** 2025-01-01  
-**Target Platform:** Minecraft 1.21.1, NeoForge 21.1.214  
-**Document Standard:** Wiegers & Beatty, Software Requirements 3rd Edition
-
----
+## Cartoon Flattening Mod: Hammer Feature
 
 ## 1. Introduction
 
@@ -282,7 +276,7 @@ The system shall prevent flattened players from jumping.
 The system shall prevent flattened players from sprinting.
 
 #### FR-27: Block Interaction Prevention
-The system shall prevent flattened players from interacting with blocks (placing, breaking, using).
+The system shall prevent flattened players from interacting with the anvil that is flattening them from above.
 
 #### FR-28: Item Holding Permitted
 The system shall allow flattened players to hold items in their hand.
@@ -298,7 +292,7 @@ The movement restrictions (FR-24 through FR-29) shall use the same implementatio
 ### 4.5 Reform Mechanic
 
 #### FR-31: Reform Keybind Registration
-The system shall register a new keybind action named "Reform" in the Controls menu.
+The system shall register a keybind action named "Reform from Flattened" in the Controls menu.
 
 #### FR-32: Reform Keybind Default
 The Reform keybind shall default to the Space key.
@@ -322,7 +316,7 @@ The system shall NOT play a sound effect during or after the reform animation.
 The system shall NOT spawn particles during or after the reform animation.
 
 #### FR-39: Reform Completion — State Removal
-Upon completion of the reform animation, the system shall remove the `FlattenedCapability` from the player.
+Upon completion of the reform animation, the system shall remove the flattened state from the player.
 
 #### FR-40: Reform Completion — Movement Restoration
 Upon completion of the reform animation, the system shall restore all movement capabilities to the player.
@@ -335,16 +329,16 @@ Upon completion of the reform animation, the system shall restore all movement c
 When a flattened player disconnects, the system shall serialize and persist the player's flattened state (including Spread Value and source) to the player's persistent data store.
 
 #### FR-42: Login Restoration
-When a player with persisted flattened state reconnects, the system shall deserialize and reapply the `FlattenedCapability` with the saved parameters.
+When a player with persisted flattened state reconnects, the system shall deserialize and reapply the flattened state with the saved parameters.
 
 #### FR-43: Death Reset
-When a flattened player dies, the system shall remove the `FlattenedCapability` and shall NOT persist the flattened state.
+When a flattened player dies, the system shall remove the flattened state and shall NOT persist the flattened state.
 
 #### FR-44: Respawn Normal State
 When a player respawns after death, the system shall ensure the player is in a normal, unflattened state.
 
 #### FR-45: Dimension Change Persistence
-When a flattened player changes dimensions (via portal or teleportation), the system shall maintain the `FlattenedCapability` and all associated parameters.
+When a flattened player changes dimensions (via portal or teleportation), the system shall maintain the flattened state and all associated parameters.
 
 ---
 
@@ -429,48 +423,7 @@ The system shall retain a record of the most recent flattening source for potent
 
 ---
 
-## 6. Configuration Schema
-
-The following parameters shall be configurable within `toonflattening.toml`. Hammer-specific settings reside under the `[hammer]` section and reference shared values where applicable.
-
-```toml
-# ===========================================
-# Cartoon Flattening Mod Configuration
-# ===========================================
-
-[flattening]
-# Y-axis scale when flattened (0.0 - 1.0)
-y_scale = 0.05
-
-# Initial X/Z scale multiplier when first flattened
-initial_spread = 2.0  # TBD: Confirm default with existing anvil config
-
-# X/Z scale increment per subsequent hit
-spread_increment = 0.5  # TBD: Confirm default with existing anvil config
-
-# Maximum X/Z scale multiplier
-max_spread = 5.0  # TBD: Confirm default with existing anvil config
-
-# Reform animation duration in milliseconds
-reform_duration_ms = 250  # TBD: Confirm default with existing anvil config
-
-[hammer]
-# Attack speed (hits per second equivalent; lower = slower)
-attack_speed = 0.8
-
-# Whether hammer hits deal HP damage (should remain false)
-deals_damage = false
-
-[particles]
-# Number of poof particles on initial flatten
-flatten_particle_count = 25
-```
-
-**Note:** Exact default values for shared parameters (`initial_spread`, `spread_increment`, `max_spread`, `reform_duration_ms`) should be aligned with the existing anvil flattening configuration. Values shown are placeholders pending confirmation.
-
----
-
-## 7. Traceability Matrix
+## 6. Traceability Matrix
 
 | Requirement | Use Case(s) | Business Requirement |
 |-------------|-------------|----------------------|
@@ -488,29 +441,3 @@ flatten_particle_count = 25
 | NFR-1, NFR-2 | UC-1 | BR-2.2, BR-2.3 |
 | NFR-4, NFR-5, NFR-6 | All | BR-2.4 |
 | NFR-9, NFR-10 | All | BR-2.1 |
-
----
-
-## 8. Open Items
-
-| ID | Description | Status | Owner |
-|----|-------------|--------|-------|
-| OPEN-1 | Confirm default values for `initial_spread`, `spread_increment`, `max_spread`, `reform_duration_ms` from existing anvil config | Pending | Developer |
-| OPEN-2 | Determine appropriate Creative Tab placement for Hammer item | Pending | Developer |
-
----
-
-## 9. Approval
-
-| Role | Name | Date | Signature |
-|------|------|------|-----------|
-| Stakeholder | | | |
-| Developer | | | |
-
----
-
-**Document History:**
-
-| Version | Date | Author | Changes |
-|---------|------|--------|---------|
-| 1.0.0-DRAFT | 2025-01-01 | Business Analyst (Claude) | Initial draft |
