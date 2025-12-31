@@ -41,7 +41,7 @@ public abstract class AbstractMinecartMixin {
 
         for (Entity entity : self.level().getEntities(self, box)) {
             if (entity instanceof ServerPlayer player && player.isPushable()) {
-                MinecartFlatteningHandler.tryFlatten(self, player);
+                MinecartFlatteningHandler.tryFlatten(self, player, toonflattening$savedVelocity);
                 flattenedSomeone = true;
             }
         }

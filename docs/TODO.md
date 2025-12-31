@@ -32,7 +32,7 @@ Implement minecart collision flattening per MINECART_SRS.md. Minecarts at suffic
 
 ## Phase 2: Velocity Threshold (FR-4, FR-5)
 
-- [ ] **2.1: Implement velocity check**
+- [x] **2.1: Implement velocity check**
   - In `MinecartFlatteningHandler.tryFlatten()`:
   - Calculate horizontal velocity: `cart.getDeltaMovement().horizontalDistance()`
   - Threshold constant: `0.2` blocks/tick (50% of max powered rail speed)

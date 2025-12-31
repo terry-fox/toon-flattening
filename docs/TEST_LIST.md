@@ -17,10 +17,10 @@
 ## Phase 2: Velocity Threshold
 
 ### 2.1: Velocity Check
-- [ ] **Manual:** Push cart gently (< 4 blocks/sec)
-- [ ] **Expected:** No flattening occurs
-- [ ] **Manual:** Powered rail full speed (≥ 4 blocks/sec)
-- [ ] **Expected:** Flattening occurs
+- [x] **Manual:** Push cart gently (< 4 blocks/sec)
+- [x] **Expected:** No flattening occurs
+- [x] **Manual:** Powered rail full speed (≥ 4 blocks/sec)
+- [x] **Expected:** Flattening occurs
 
 ---
 
