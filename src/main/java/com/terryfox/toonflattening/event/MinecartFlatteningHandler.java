@@ -1,8 +1,10 @@
 package com.terryfox.toonflattening.event;
 
 import com.terryfox.toonflattening.core.FlatteningStateController;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.vehicle.AbstractMinecart;
+import net.minecraft.world.level.GameType;
 import net.minecraft.world.phys.Vec3;
 
 public class MinecartFlatteningHandler {
@@ -16,6 +18,12 @@ public class MinecartFlatteningHandler {
      * 0.5 = ~60° cone in front of cart's movement direction.
      */
     private static final double DIRECTION_THRESHOLD = 0.5;
+
+    /**
+     * Maximum Y-level difference between cart and player for flattening.
+     * Player must be grounded near cart's rail level.
+     */
+    private static final double Y_TOLERANCE = 0.5;
 
     /**
      * Attempt to flatten a player hit by a minecart.
@@ -48,6 +56,30 @@ public class MinecartFlatteningHandler {
         double dot = cartVelocity.normalize().dot(toPlayer.normalize());
         if (dot < DIRECTION_THRESHOLD) {
             return false; // Player not in front
+        }
+
+        // Player must be grounded
+        double railY = cart.blockPosition().getY();
+        double playerY = victim.getY();
+        if (Math.abs(playerY - railY) > Y_TOLERANCE) {
+            return false;
+        }
+
+        // Game mode check
+        GameType gameMode = victim.gameMode.getGameModeForPlayer();
+        if (gameMode == GameType.CREATIVE || gameMode == GameType.SPECTATOR) {
+            return false;
+        }
+
+        // Riding entity check
+        if (victim.isPassenger()) {
+            return false;
+        }
+
+        // PvP check
+        MinecraftServer server = victim.getServer();
+        if (server != null && !server.isPvpAllowed()) {
+            return false;
         }
 
         FlatteningStateController.flattenWithMinecart(victim);

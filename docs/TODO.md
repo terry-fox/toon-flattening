@@ -42,7 +42,7 @@ Implement minecart collision flattening per MINECART_SRS.md. Minecarts at suffic
 
 ## Phase 3: Y-Level Validation (FR-2)
 
-- [ ] **3.1: Implement grounded check**
+- [x] **3.1: Implement grounded check**
   - Get cart rail block Y: `cart.blockPosition().getY()`
   - Compare with `victim.getY()`
   - Tolerance: `Math.abs(playerY - railY) <= 0.5`
@@ -52,15 +52,15 @@ Implement minecart collision flattening per MINECART_SRS.md. Minecarts at suffic
 
 ## Phase 4: Immunity Conditions (FR-16 to FR-19)
 
-- [ ] **4.1: Game mode check**
+- [x] **4.1: Game mode check**
   - Check `victim.gameMode.getGameModeForPlayer()`
   - Return false if CREATIVE or SPECTATOR
 
-- [ ] **4.2: Riding entity check**
+- [x] **4.2: Riding entity check**
   - Check `victim.isPassenger()`
   - Return false if true
 
-- [ ] **4.3: PvP check**
+- [x] **4.3: PvP check**
   - Get server: `victim.getServer()`
   - Check: `server.isPvpAllowed()`
   - Return false if PvP disabled

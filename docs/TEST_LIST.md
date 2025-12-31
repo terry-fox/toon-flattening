@@ -103,12 +103,12 @@
 ## SRS Acceptance Tests
 
 ### AT-1: Standard Flattening
-- [ ] Player in Survival on powered rail; empty cart at full speed
-- [ ] Cart collides with player
-- [ ] **Expected:** Player enters Flattened State; sound plays; cart continues unimpeded
+- [x] Player in Survival on powered rail; empty cart at full speed
+- [x] Cart collides with player
+- [x] **Expected:** Player enters Flattened State; sound plays; cart continues unimpeded
 
 ### AT-2: Below Velocity Threshold
-- [ ] Player on rail; cart at <50% max speed
+- [ ] Player on rail; cart at <25% max speed
 - [ ] Cart contacts player
 - [ ] **Expected:** No flattening; vanilla push/stop behavior
 

@@ -36,13 +36,14 @@ public abstract class AbstractMinecartMixin {
         if (toonflattening$savedVelocity == null) return;
 
         // Detect players AFTER movement (cart now overlaps player)
-        AABB box = self.getBoundingBox().inflate(0.2F, 0.0D, 0.2F);
+        AABB box = self.getBoundingBox().inflate(0.2, 0.0, 0.2);
         boolean flattenedSomeone = false;
 
         for (Entity entity : self.level().getEntities(self, box)) {
             if (entity instanceof ServerPlayer player && player.isPushable()) {
-                MinecartFlatteningHandler.tryFlatten(self, player, toonflattening$savedVelocity);
-                flattenedSomeone = true;
+                if (MinecartFlatteningHandler.tryFlatten(self, player, toonflattening$savedVelocity)) {
+                    flattenedSomeone = true;
+                }
             }
         }
 
