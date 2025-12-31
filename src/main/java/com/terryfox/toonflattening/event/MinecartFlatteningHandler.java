@@ -12,6 +12,12 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
+/**
+ * This code relies on many confusing tricks and hacks to get decent minecart flattening working. I've
+ * tried to document to my best ability all of the edge cases encountered for future reference, but
+ * ultimately I barely understand this code myself and will probably forget how it works tomorrow. Please
+ * don't try to understand this code. I hope I don't have to touch it again.
+ */
 public class MinecartFlatteningHandler {
     /**
      * Minimum relative velocity (blocks/tick) required for minecart to flatten.

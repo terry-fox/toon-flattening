@@ -12,9 +12,26 @@ import org.spongepowered.asm.mixin.injection.At;
 
 import java.util.function.Predicate;
 
+/**
+ * Modifies EntitySelector.pushableBy() to exclude players from minecart push lists.
+ * This is part of the push system (separate from collision system).
+ * 
+ * When a minecart calls getEntities(EntitySelector.pushableBy(this)), this mixin
+ * wraps the predicate to return false for players when the cart is approaching fast,
+ * preventing the cart from pushing the player and instead allowing it to pass through.
+ */
 @Mixin(EntitySelector.class)
 public class EntitySelectorMixin {
 
+    /**
+     * Wraps the pushableBy predicate to exclude players from fast-approaching carts.
+     * 
+     * Execution flow: AbstractMinecart.tick() → getEntities(pushableBy) → this predicate
+     * 
+     * When cart is approaching fast, returns false to exclude player from push list,
+     * allowing cart to pass through. The actual flattening is triggered separately
+     * in AbstractMinecartCollisionMixin.canCollideWith().
+     */
     @ModifyReturnValue(method = "pushableBy", at = @At("RETURN"))
     private static Predicate<Entity> wrapPushablePredicate(
             Predicate<Entity> original, Entity pusher) {

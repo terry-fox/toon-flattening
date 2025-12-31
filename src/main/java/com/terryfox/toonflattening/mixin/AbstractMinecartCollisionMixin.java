@@ -10,6 +10,12 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
+/**
+ * This code relies on many confusing tricks and hacks to get decent minecart flattening working. I've
+ * tried to document to my best ability all of the edge cases encountered for future reference, but
+ * ultimately I barely understand this code myself and will probably forget how it works tomorrow. Please
+ * don't try to understand this code. I hope I don't have to touch it again.
+ */
 @Mixin(AbstractMinecart.class)
 public class AbstractMinecartCollisionMixin {
 
