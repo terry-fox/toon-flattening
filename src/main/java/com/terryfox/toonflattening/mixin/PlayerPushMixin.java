@@ -29,7 +29,10 @@ public class PlayerPushMixin {
     @Inject(method = "push(Lnet/minecraft/world/entity/Entity;)V", at = @At("HEAD"), cancellable = true)
     private void onPushByEntity(Entity entity, CallbackInfo ci) {
         Entity self = (Entity) (Object) this;
+        // Cancel if self is flattened (don't get pushed)
         FlattenedStateAttachment.ifFlattened(self, () -> ci.cancel());
+        // Cancel if pusher is flattened (flattened entities can't push)
+        FlattenedStateAttachment.ifFlattened(entity, () -> ci.cancel());
     }
 
     /**
@@ -48,5 +51,7 @@ public class PlayerPushMixin {
     private void onCanCollideWith(Entity entity, CallbackInfoReturnable<Boolean> cir) {
         Entity self = (Entity) (Object) this;
         FlattenedStateAttachment.ifFlattened(self, () -> cir.setReturnValue(false));
+        // Also prevent collision with flattened entities
+        FlattenedStateAttachment.ifFlattened(entity, () -> cir.setReturnValue(false));
     }
 }

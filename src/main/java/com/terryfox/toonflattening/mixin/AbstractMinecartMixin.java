@@ -1,5 +1,7 @@
 package com.terryfox.toonflattening.mixin;
 
+import com.terryfox.toonflattening.ToonFlattening;
+import com.terryfox.toonflattening.attachment.FlattenedStateAttachment;
 import com.terryfox.toonflattening.event.MinecartFlatteningHandler;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
@@ -37,18 +39,32 @@ public abstract class AbstractMinecartMixin {
 
         // Detect players AFTER movement (cart now overlaps player)
         AABB box = self.getBoundingBox().inflate(0.2, 0.0, 0.2);
-        boolean flattenedSomeone = false;
+        boolean hitFlattenedPlayer = false;
 
         for (Entity entity : self.level().getEntities(self, box)) {
-            if (entity instanceof ServerPlayer player && player.isPushable()) {
+            if (entity instanceof ServerPlayer player) {
+                FlattenedStateAttachment state = player.getData(ToonFlattening.FLATTENED_STATE.get());
+                boolean alreadyFlattened = state.isFlattened();
+
+                // Skip if not pushable AND not already flattened
+                if (!player.isPushable() && !alreadyFlattened) {
+                    continue;
+                }
+
+                // If already flattened, cart should pass through (even if tryFlatten fails)
+                if (alreadyFlattened) {
+                    hitFlattenedPlayer = true;
+                }
+
+                // Try to flatten - restore velocity on success OR if already flattened
                 if (MinecartFlatteningHandler.tryFlatten(self, player, toonflattening$savedVelocity)) {
-                    flattenedSomeone = true;
+                    hitFlattenedPlayer = true;
                 }
             }
         }
 
-        // Restore velocity if we flattened someone (cart passes through)
-        if (flattenedSomeone) {
+        // Restore velocity if we hit a flattened player (cart passes through)
+        if (hitFlattenedPlayer) {
             self.setDeltaMovement(toonflattening$savedVelocity);
         }
     }

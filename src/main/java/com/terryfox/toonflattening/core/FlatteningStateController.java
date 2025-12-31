@@ -74,7 +74,7 @@ public class FlatteningStateController {
         PehkuiIntegration.setPlayerScaleWithDelay(player, ScaleDimensions.fromConfig(accumulatedSpread), animationTicks);
 
         syncToClient(player);
-        if (sendSquashAnimation) {
+        if (sendSquashAnimation && !source.equals("MINECART")) {
             NetworkHandler.sendSquashAnimation(player);
         }
 

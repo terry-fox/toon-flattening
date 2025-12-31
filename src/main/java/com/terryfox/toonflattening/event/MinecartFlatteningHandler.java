@@ -7,6 +7,10 @@ import net.minecraft.world.entity.vehicle.AbstractMinecart;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.phys.Vec3;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
+
 public class MinecartFlatteningHandler {
     /**
      * Minimum relative velocity (blocks/tick) required for minecart to flatten.
@@ -26,11 +30,29 @@ public class MinecartFlatteningHandler {
     private static final double Y_TOLERANCE = 0.5;
 
     /**
+     * Cooldown period in ticks (1 second = 20 ticks).
+     */
+    private static final int COOLDOWN_TICKS = 20;
+
+    /**
+     * Tracks last flatten time per player to enforce cooldown.
+     */
+    private static final Map<UUID, Long> lastFlattenTime = new HashMap<>();
+
+    /**
      * Attempt to flatten a player hit by a minecart.
      * Uses relative velocity - cart must be approaching player faster than threshold.
      * @param cartVelocity The cart's velocity at the start of the tick (before collisions)
      */
     public static boolean tryFlatten(AbstractMinecart cart, ServerPlayer victim, Vec3 cartVelocity) {
+        // Check cooldown
+        UUID playerUuid = victim.getUUID();
+        long currentTime = victim.level().getGameTime();
+        Long lastTime = lastFlattenTime.get(playerUuid);
+        if (lastTime != null && (currentTime - lastTime) < COOLDOWN_TICKS) {
+            return false; // Still in cooldown
+        }
+
         // Get cart's horizontal direction (normalized)
         Vec3 cartDir = new Vec3(cartVelocity.x, 0, cartVelocity.z).normalize();
         double cartSpeed = cartVelocity.horizontalDistance();
@@ -83,6 +105,10 @@ public class MinecartFlatteningHandler {
         }
 
         FlatteningStateController.flattenWithMinecart(victim);
+
+        // Update cooldown
+        lastFlattenTime.put(playerUuid, currentTime);
+
         return true;
     }
 }

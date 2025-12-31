@@ -69,34 +69,53 @@ Implement minecart collision flattening per MINECART_SRS.md. Minecarts at suffic
 
 ## Phase 5: Cart Pass-Through (FR-11, FR-12)
 
-- [ ] **5.1: Permanent collision suppression**
-  - In `AbstractMinecartMixin`: check if player already flattened BEFORE collision
-  - If `player.getData(FLATTENED_STATE).isFlattened()` is true, skip push entirely
-  - Covers both newly flattened and previously flattened players
+- [x] **5.1: Permanent collision suppression**
+  - Fixed `AbstractMinecartMixin`: allows flattened players in loop (for re-flattening)
+  - Non-pushable players skipped UNLESS already flattened
+  - Cart velocity always restored on flatten/re-flatten
 
 ---
 
 ## Phase 6: Sound and Spread Logic (FR-7, FR-8, FR-10)
 
-- [ ] **6.1: Verify sound/spread behavior**
-  - Confirm `flattenWithMinecart()` handles sound conditional correctly
-  - Confirm `applyFlatteningState()` accumulates spread on re-flatten
+- [x] **6.1: Sound/spread behavior implemented**
+  - Sound only on first flatten ✓
+  - Spread accumulates on re-flatten ✓
+  - Particles suppressed for MINECART source ✓
 
 ---
 
 ## Phase 7: Edge Cases and Polish
 
-- [ ] **7.1: Multi-victim handling (FR-14, FR-15)**
-  - Ensure Mixin processes ALL entities in collision list
-  - No artificial limits
+- [x] **7.1: Multi-victim handling (FR-14, FR-15)**
+  - Mixin processes ALL entities in collision list ✓
+  - No artificial limits ✓
 
-- [ ] **7.2: All minecart variants (FR-22, FR-23)**
-  - Verify Mixin targets `AbstractMinecart` (all variants inherit)
-  - TNT cart: flattening occurs, vanilla TNT behavior unmodified
+- [x] **7.2: All minecart variants (FR-22, FR-23)**
+  - Mixin targets `AbstractMinecart` (all variants inherit) ✓
+  - TNT cart: flattening occurs, vanilla TNT behavior unmodified ✓
 
-- [ ] **7.3: Player states (FR-20, FR-21)**
-  - Verify sneaking/swimming/crawling players get flattened
-  - Verify crawling player bbox intersects cart path
+- [x] **7.3: Player states (FR-20, FR-21)**
+  - Y-level check uses feet position - works for all poses ✓
+  - Sneaking/swimming/crawling all handled ✓
+
+---
+
+## Phase 8: Cooldown System
+
+- [x] **8.1: Minecart flatten cooldown**
+  - 1-second (20 tick) cooldown after each flatten ✓
+  - Prevents spread accumulation from successive ticks ✓
+  - Tracked via static Map<UUID, Long> ✓
+
+---
+
+## Phase 9: Max Spread Pass-Through Fix
+
+- [x] **9.1: Fix cart stopping at max spread**
+  - Cart now passes through flattened players even when tryFlatten() fails ✓
+  - Velocity restored based on hitFlattenedPlayer flag, not flatten success ✓
+  - Works for max spread, cooldown, and any other failure case ✓
 
 ---
 
