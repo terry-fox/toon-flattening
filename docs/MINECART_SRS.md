@@ -95,7 +95,7 @@ This feature adds environmental/trap-based flattening to complement the existing
 
 ### 4.2 Velocity Threshold
 
-**FR-4:** The system shall enforce a minimum velocity threshold equal to 50% of the maximum speed achievable on a powered rail (approximately 4 blocks/second).
+**FR-4:** The system shall enforce a minimum relative velocity threshold between the player and the minecart equal to 25% of the maximum speed achievable on a powered rail (approximately 2 blocks/second).
 
 **FR-5:** The system shall apply the same velocity threshold regardless of whether the minecart is occupied or empty.
 
@@ -195,7 +195,7 @@ This feature adds environmental/trap-based flattening to complement the existing
 | Parameter | Scope | Notes |
 |-----------|-------|-------|
 | *(Global Spread Multiplier)* | Existing | Reused for re-flattening spread calculation. No new parameter introduced. |
-| *(Velocity Threshold)* | Hard-coded | Fixed at ~50% max powered rail speed. Not configurable. |
+| *(Relative Velocity Threshold)* | Hard-coded | Fixed at ~25% max powered rail speed. Not configurable. |
 | *(Feature Toggle)* | None | Feature is always enabled when mod is installed. |
 
 ---
@@ -205,7 +205,7 @@ This feature adds environmental/trap-based flattening to complement the existing
 | ID | Scenario | Preconditions | Action | Expected Outcome | Status |
 |----|----------|---------------|--------|------------------|--------|
 | AT-1 | Standard flattening | Player in Survival on powered rail; empty cart at full speed | Cart collides with player | Player enters Flattened State; sound plays; cart continues unimpeded | Pending |
-| AT-2 | Below velocity threshold | Player on rail; cart at <50% max speed | Cart contacts player | No flattening; vanilla push/stop behavior | Pending |
+| AT-2 | Below velocity threshold | Player on rail; cart at <25% max speed | Cart contacts player | No flattening; vanilla push/stop behavior | Pending |
 | AT-3 | Airborne evasion | Player on rail; cart approaching | Player jumps before collision | No flattening; cart passes beneath | Pending |
 | AT-4 | Landing on cart | Cart moving at speed | Player falls onto cart path, lands at rail Y-level | Flattening triggers upon intersection | Pending |
 | AT-5 | Re-flattening (spread) | Player already flattened on rail; cart approaching | Cart collides with flattened player | Spread increases; no sound; no particles | Pending |
