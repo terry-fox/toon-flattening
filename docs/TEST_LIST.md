@@ -3,14 +3,14 @@
 ## Phase 1: Walking Skeleton
 
 ### 1.1: Mixin Collision Detection
-- [ ] **Manual:** Ride minecart into player, observe log output showing collision detected
+- [x] **Manual:** Ride minecart into player, observe log output showing collision detected
 
 ### 1.2: flattenWithMinecart() Method
-- [ ] **Manual:** Verify method compiles and can be called from handler
+- [x] **Manual:** Verify method compiles and can be called from handler
 
 ### 1.3: MinecartFlatteningHandler
-- [ ] **Manual:** Place powered rail, send empty cart into standing player
-- [ ] **Expected:** Player enters Flattened State (no velocity/y-level checks yet)
+- [x] **Manual:** Place powered rail, send empty cart into standing player
+- [x] **Expected:** Player enters Flattened State (no velocity/y-level checks yet)
 
 ---
 

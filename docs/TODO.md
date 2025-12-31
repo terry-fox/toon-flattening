@@ -7,24 +7,24 @@ Implement minecart collision flattening per MINECART_SRS.md. Minecarts at suffic
 
 ## Phase 1: Walking Skeleton
 
-- [ ] **1.1: Create AbstractMinecartMixin**
+- [x] **1.1: Create AbstractMinecartMixin**
   - Create `src/main/java/com/terryfox/toonflattening/mixin/AbstractMinecartMixin.java`
   - Use `@Inject` at HEAD of collision loop in `tick()` method (lines 311-335)
   - Capture when minecart detects player in bounding box
   - Add log message for collision detection
 
-- [ ] **1.2: Add flattenWithMinecart() method**
+- [x] **1.2: Add flattenWithMinecart() method**
   - Add to `src/main/java/com/terryfox/toonflattening/core/FlatteningStateController.java`
   - No damage, sound only on first flatten
   - Use 3-tick animation (fast)
   - Source: "MINECART"
 
-- [ ] **1.3: Create MinecartFlatteningHandler**
+- [x] **1.3: Create MinecartFlatteningHandler**
   - Create `src/main/java/com/terryfox/toonflattening/event/MinecartFlatteningHandler.java`
   - Method: `tryFlatten(AbstractMinecart cart, ServerPlayer victim)` returns boolean
   - Call `FlatteningStateController.flattenWithMinecart(victim)`
 
-- [ ] **1.4: Register mixin**
+- [x] **1.4: Register mixin**
   - Update `src/main/resources/toonflattening.mixins.json`
   - Add `AbstractMinecartMixin` to mixins array
 
