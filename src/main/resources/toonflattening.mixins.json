@@ -4,8 +4,9 @@
   "compatibilityLevel": "JAVA_21",
   "minVersion": "0.8",
   "mixins": [
+    "AbstractMinecartCollisionMixin",
     "accessor.WalkAnimationStateAccessor",
-    "AbstractMinecartMixin",
+    "EntitySelectorMixin",
     "LivingEntityPushMixin",
     "PlayerPushMixin",
     "ServerPlayerGameModeMixin"
