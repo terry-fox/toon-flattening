@@ -232,6 +232,25 @@ public class FlatteningStateController {
         );
     }
 
+    public static void flattenWithMinecart(ServerPlayer player) {
+        if (!canFlatten(player)) {
+            return;
+        }
+
+        FlattenedStateAttachment currentState = player.getData(ToonFlattening.FLATTENED_STATE.get());
+        boolean wasAlreadyFlattened = currentState.isFlattened();
+
+        double spreadToAdd = ToonFlatteningConfig.CONFIG.spreadMultiplier.get();
+        applyFlatteningState(player, spreadToAdd, "MINECART", 3);
+
+        // Sound only on first flatten
+        if (!wasAlreadyFlattened) {
+            playFlattenSound(player);
+        }
+
+        ToonFlattening.LOGGER.info("Player {} minecart-flattened", player.getName().getString());
+    }
+
     public static void syncToClient(ServerPlayer player) {
         NetworkHandler.syncFlattenState(player);
     }
